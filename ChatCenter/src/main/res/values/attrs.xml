@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="WidgetView">
+        <attr name="text" format="string" />
+        <attr name="image" format="reference" />
+        <attr name="backgroundConfirmPositive" format="reference|color" />
+        <attr name="backgroundConfirmNegative" format="reference|color" />
+        <attr name="backgroundSelect" format="reference|color" />
+        <attr name="backgroundSelectLast" format="reference|color" />
+        <attr name="actionTextColor" format="reference|color|color" />
+        <attr name="textColor" format="color|reference" />
+        <attr name="backgroundMain" format="reference|color"/>
+    </declare-styleable>
+</resources>

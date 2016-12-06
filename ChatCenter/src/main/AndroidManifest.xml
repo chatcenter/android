@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="ly.appsocial.chatcenter"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk tools:overrideLibrary="com.opentok"/>
+
+    <!-- ========================================================================== -->
+    <!-- パーミッション -->
+    <!-- ========================================================================== -->
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- ビデオチャット -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <uses-feature android:name="android.hardware.camera"/>
+
+    <!-- ========================================================================== -->
+    <!-- アプリケーション -->
+    <!-- ========================================================================== -->
+    <application>
+
+        <!-- ========================================================================== -->
+        <!-- アクティビティ -->
+        <!-- ========================================================================== -->
+
+        <!-- 履歴 -->
+        <activity
+            android:name=".activity.MessagesActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+
+        <!-- チャット -->
+        <activity
+            android:name=".activity.ChatActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"
+            android:windowSoftInputMode="stateHidden"/>
+        <!-- 写真 -->
+        <activity
+            android:name=".activity.PhotoActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.NoActionBar"/>
+        <activity
+            android:name=".activity.InfoActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.AboutActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.WebViewActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.AssigneeFollowersUsersActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.CopyrightActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.FixedPhraseActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.ScheduleActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.QuestionActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.PreviewActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.VideoChatActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.FunnelActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.NoteActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+    </application>
+
+</manifest>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:paddingTop="4dp"
+    android:layout_height="wrap_content">
+
+    <!-- タイムスタンプ -->
+    <TextView
+        android:id="@+id/chat_customer_listitem_timestamp_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/color_chatcenter_text"
+        android:textSize="13sp"/>
+
+    <!-- Message status -->
+    <TextView
+        android:id="@+id/chat_customer_listitem_message_status_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/chat_customer_listitem_message_container"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/chat_customer_listitem_message_container"
+        android:textColor="@color/color_chatcenter_text"
+        android:textSize="10sp"/>
+
+    <!-- メッセージ -->
+    <LinearLayout
+        android:id="@+id/chat_customer_listitem_message_container"
+        style="@style/common_sticker_container"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/chat_customer_listitem_timestamp_textview">
+
+        <ly.appsocial.chatcenter.widgets.views.WidgetView
+            android:id="@+id/chat_customer_listitem_message_sticker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="7dp"
+            custom:actionTextColor="@drawable/selector_action_button_text_color"
+            custom:backgroundConfirmNegative="@drawable/selector_action_confirm_left"
+            custom:backgroundConfirmPositive="@drawable/selector_action_confirm_right"
+            custom:backgroundSelect="@drawable/selector_action_select"
+            custom:backgroundSelectLast="@drawable/selector_action_select_last"
+            custom:textColor="@color/color_chatcenter_widget_text"
+            custom:backgroundMain="@drawable/bg_my_common_sticker">
+        </ly.appsocial.chatcenter.widgets.views.WidgetView>
+    </LinearLayout>
+
+
+</RelativeLayout>

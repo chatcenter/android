@@ -1,0 +1,149 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_chatcenter_msg_history_background"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:theme="@style/ToolbarStyle">
+
+        <!--タイトル -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_org_name"
+                style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/chatcenter_messages_title"
+                android:textColor="@color/color_chatcenter_title_text"/>
+
+            <TextView
+                android:id="@+id/tv_header_funnel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="@dimen/margin5dp"
+                android:drawableRight="@drawable/icon_one_triangle"
+                android:text="@string/all"
+                android:textColor="@color/color_chatcenter_title_text"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <!-- 削除 -->
+        <Button
+            android:id="@+id/messages_delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@null"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:padding="@dimen/margin10dp"
+            android:text="削除"
+            android:textColor="@drawable/selector_messages_header_text_color"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/messages_edit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@null"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:padding="@dimen/margin10dp"
+            android:text="編集"
+            android:textColor="@drawable/selector_messages_header_text_color"
+            android:visibility="visible"/>
+
+    </android.support.v7.widget.Toolbar>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/toolbar"
+        android:background="@color/color_chatcenter_separator_light"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/toolbar"
+        android:background="@color/color_chatcenter_separator_light"/>
+
+    <!-- リスト -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- 0件メッセージ -->
+        <TextView
+            android:id="@+id/messages_empty_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:lineSpacingExtra="2sp"
+            android:padding="15dp"
+            android:text="@string/msg_messages_empty"
+            android:visibility="gone"/>
+
+        <!-- リスト -->
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ListView
+                android:id="@+id/messages_listview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@color/color_chatcenter_separator_light"
+                android:dividerHeight="@dimen/widget_line_width"/>
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <!-- ネットワークエラー -->
+        <TextView
+            android:id="@+id/messages_network_error_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#fb000a"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="データロードに失敗しました。"
+            android:textColor="#fff"/>
+
+        <!-- プログレスバー -->
+        <LinearLayout
+            android:id="@+id/messages_progressbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#62000000"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_progress"
+                android:padding="25dp">
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+</LinearLayout>

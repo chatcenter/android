@@ -1,0 +1,38 @@
+<resources>
+    <!-- リストの上部の隙間 -->
+    <dimen name="chat_list_space_top_padding">10dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="chat_list_user_ava_size">35dp</dimen>
+    <dimen name="common_sticker_width">250dp</dimen>
+    <dimen name="sticker_radius">10dp</dimen>
+    <dimen name="message_text_size">12sp</dimen>
+    <dimen name="sticker_image_min_height">135dp</dimen>
+    <dimen name="sticker_menu_button_vertical_margin">25dp</dimen>
+    <dimen name="sticker_menu_button_horizontal_margin">10dp</dimen>
+    <dimen name="activity_header_height">50dp</dimen>
+    <dimen name="sticker_select_button_height">44dp</dimen>
+    <dimen name="widget_line_width">1px</dimen>
+    <dimen name="margin10dp">10dp</dimen>
+    <dimen name="margin5dp">5dp</dimen>
+    <dimen name="margin8dp">8dp</dimen>
+
+    <!-- Schedule widget -->
+    <dimen name="time_block_height">30dp</dimen>
+    <dimen name="resizable_view_margin">10dp</dimen>
+    <dimen name="button_zoom_size">20dp</dimen>
+    <dimen name="button_horizontal_margin">60dp</dimen>
+    <dimen name="button_delete_size">20dp</dimen>
+    <!-- Always set time_label_height = 2 * time_block_height-->
+    <dimen name="time_label_height">60dp</dimen>
+    <!-- Always set time_list_view_height = 24 * time_label_height + button_zoom_size-->
+    <dimen name="list_view_height">1460dp</dimen>
+
+    <dimen name="keyboard_height">240dp</dimen>
+    <dimen name="chatcenter_suggestion_holder_height">100dp</dimen>
+    <dimen name="chat_history_user_ava_size">32dp</dimen>
+    <dimen name="assignee_ava_size">30dp</dimen>
+    <dimen name="info_item_vertical_margin">20dp</dimen>
+
+</resources>

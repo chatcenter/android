@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016.
+  -->
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+	<stroke android:width="@dimen/widget_line_width" android:color="@color/color_chatcenter_widget_border" />
+	<corners android:radius="10dp" />
+</shape>

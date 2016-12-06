@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/root_view"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/text_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/resizable_view_margin"
+        android:layout_marginTop="@dimen/resizable_view_margin"
+        android:background="@drawable/bg_zoomable_view"
+        android:padding="5dp"
+        android:textSize="9sp"
+        android:textColor="@android:color/white"/>
+
+    <ImageButton
+        android:id="@+id/button_scale_to_top"
+        android:layout_width="44dp"
+        android:layout_height="@dimen/button_zoom_size"
+        android:layout_marginRight="@dimen/button_horizontal_margin"
+        android:layout_alignParentRight="true"
+        android:background="@android:color/transparent"
+        android:src="@drawable/oval_bt_zoom_time_session"/>
+
+    <ImageButton
+        android:id="@+id/button_scale_to_bottom"
+        android:layout_width="44dp"
+        android:layout_height="@dimen/button_zoom_size"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="@dimen/button_horizontal_margin"
+        android:background="@android:color/transparent"
+        android:src="@drawable/oval_bt_zoom_time_session"/>
+
+    <ImageButton
+        android:id="@+id/button_remove_zoom_view"
+        android:layout_width="@dimen/button_delete_size"
+        android:layout_height="@dimen/button_delete_size"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="8dp"
+        android:background="@drawable/bt_zoomable_delete"/>
+</RelativeLayout>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/activity_note"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ly.appsocial.chatcenter.activity.NoteActivity"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:theme="@style/ToolbarStyle">
+
+        <Button
+            android:id="@+id/bt_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="@string/save"
+            android:background="@android:color/transparent"
+            android:textColor="@color/color_chatcenter_text_light"
+            android:textStyle="bold"
+            android:padding="@dimen/margin10dp"
+            android:layout_gravity="right"/>
+
+    </android.support.v7.widget.Toolbar>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/toolbar"
+        android:background="@color/color_chatcenter_separator_light"/>
+
+    <EditText
+        android:id="@+id/edt_note"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@drawable/edittext_border"
+        android:layout_margin="@dimen/margin10dp"
+        android:padding="@dimen/margin8dp"
+        android:gravity="top|left"
+        android:hint="@string/note_hint"/>
+
+</LinearLayout>

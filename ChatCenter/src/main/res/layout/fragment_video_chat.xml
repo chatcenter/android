@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#494949">
+
+	<LinearLayout
+		android:id="@+id/subscriberview"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:layout_alignParentLeft="true"
+		android:orientation="horizontal"/>
+
+	<RelativeLayout
+		android:id="@+id/publisherview"
+		android:layout_height="128dp"
+		android:layout_width="128dp"
+		android:layout_above="@+id/button_bar"
+		android:layout_marginBottom="17dp"
+		android:layout_alignParentRight="true" />
+
+	<TextView
+		android:id="@+id/ringing"
+		android:layout_marginTop="150dp"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center_horizontal"
+		android:text="@string/ringing"
+		android:textColor="#fff"
+		android:textSize="22sp"/>
+
+	<ImageView
+		android:id="@+id/other_mic_off"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/other_mic_off"
+		android:layout_marginLeft="15dp"
+		android:layout_marginTop="15dp" />
+
+	<ImageView
+		android:id="@+id/other_video_off"
+		android:layout_marginTop="150dp"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:src="@drawable/other_video_off"/>
+
+	<TextView
+		android:id="@+id/video_off_label"
+		android:layout_below="@+id/other_video_off"
+		android:layout_marginTop="8dp"
+		android:gravity="center_horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/video_off"
+		android:textColor="#959595"
+		android:textSize="16sp" />
+
+	<LinearLayout
+		android:id="@+id/button_bar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_marginBottom="26dp"
+		android:orientation="horizontal">
+
+		<ImageView
+			android:id="@+id/mute_audio"
+			android:layout_width="64dp"
+			android:layout_height="64dp"
+			android:layout_weight="2"
+			android:src="@drawable/mic_on_btn" />
+
+		<ImageView
+			android:id="@+id/hangup"
+			android:layout_width="64dp"
+			android:layout_height="64dp"
+			android:src="@drawable/hangup_btn" />
+
+		<ImageView
+			android:id="@+id/mute_video"
+			android:layout_width="64dp"
+			android:layout_height="64dp"
+			android:layout_weight="2"
+			android:src="@drawable/camera_on_btn" />
+	</LinearLayout>
+
+
+</RelativeLayout>

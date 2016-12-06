@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- 罫線 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:background="@color/color_chatcenter_widget_divider"/>
+
+    <!-- 入力ボックス -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="3dp">
+
+        <ImageButton
+            android:id="@+id/ibt_add_sticker"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/btn_add_widget"
+            android:tint="@color/color_chatcenter_widget_border"
+            android:visibility="gone"/>
+
+        <EditText
+            android:id="@+id/chat_edittext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:background="#00000000"
+            android:hint="@string/chat_textbox_hint_message"
+            android:maxLines="5"
+            android:padding="3dp"
+            android:paddingLeft="5dp"
+            android:textColor="#FF000000"
+            android:textColorHint="#BBBBBB"
+            android:textSize="15sp"/>
+
+        <Button
+            android:id="@+id/chat_send_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#fff"
+            android:enabled="false"
+            android:gravity="center"
+            android:padding="7dp"
+            android:text="@string/chat_send_button"
+            android:textColor="@drawable/selector_chat_send_text_color"/>
+    </LinearLayout>
+
+</LinearLayout>

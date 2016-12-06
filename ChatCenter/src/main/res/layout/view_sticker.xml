@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="@dimen/common_sticker_width"
+	android:layout_height="wrap_content">
+
+	<RelativeLayout
+		android:id="@+id/sticker_title"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignLeft="@+id/sticker_image"
+		android:layout_alignRight="@+id/sticker_image">
+
+		<ImageView
+			android:id="@+id/widget_icon"
+			android:layout_width="16dp"
+			android:layout_height="16dp"
+			android:src="@drawable/icon_widget_attachment"
+			android:tint="@color/color_chatcenter_widget_text"
+			android:layout_marginTop="@dimen/margin10dp"
+			android:layout_marginLeft="@dimen/margin8dp"
+			android:layout_marginBottom="@dimen/margin8dp"
+			android:visibility="gone"/>
+
+		<TextView
+			android:id="@+id/sticker_textview"
+			style="@style/chat_bubble_customer_textview"
+			android:layout_alignParentTop="true"
+			android:layout_toRightOf="@id/widget_icon"
+			android:textColor="@color/color_chatcenter_widget_text"
+			android:textColorLink="@color/color_chatcenter_widget_text"
+			android:layout_marginLeft="@dimen/margin8dp"
+			android:layout_marginTop="@dimen/margin8dp"
+			android:layout_marginRight="@dimen/margin8dp"
+			android:layout_marginBottom="@dimen/margin8dp"
+			android:textSize="@dimen/message_text_size"
+			android:visibility="visible"/>
+
+	</RelativeLayout>
+
+	<ly.appsocial.chatcenter.ui.RoundImageView
+		android:id="@id/sticker_image"
+		android:layout_width="match_parent"
+		android:layout_height="@dimen/sticker_image_min_height"
+		android:layout_below="@id/sticker_title"
+		android:layout_marginBottom="0dp"
+		android:minHeight="@dimen/sticker_image_min_height"
+		android:scaleType="centerCrop"
+		android:visibility="gone"/>
+
+	<LinearLayout
+		android:id="@+id/sticker_action_select_container"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignLeft="@id/sticker_image"
+		android:layout_alignRight="@id/sticker_image"
+		android:layout_below="@id/sticker_image"
+		android:orientation="vertical"
+		android:visibility="gone">
+	</LinearLayout>
+
+	<RelativeLayout
+		android:id="@+id/sticker_action_linear_container"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignLeft="@id/sticker_image"
+		android:layout_alignRight="@id/sticker_image"
+		android:layout_below="@+id/sticker_action_select_container"
+		android:layout_marginBottom="10dp"
+		android:visibility="gone">
+
+		<View
+			android:layout_width="match_parent"
+			android:layout_height="@dimen/widget_line_width"
+			android:layout_alignParentTop="true"
+			android:background="@color/color_chatcenter_widget_border"/>
+
+		<RadioGroup
+			android:id="@+id/radio_group"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="10dp"
+			android:layout_marginRight="10dp"
+			android:layout_marginTop="10dp">
+
+			<LinearLayout
+				android:id="@+id/linear_layout"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginBottom="10dp"
+				android:orientation="horizontal">
+			</LinearLayout>
+		</RadioGroup>
+
+		<TextView
+			android:id="@+id/linear_label_min"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true"
+			android:layout_below="@+id/radio_group"
+			android:layout_marginLeft="10dp"
+			android:text="Terrible"
+			android:textColor="@color/color_chatcenter_widget_text"/>
+
+		<TextView
+			android:id="@+id/linear_label_max"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_below="@+id/radio_group"
+			android:layout_marginRight="10dp"
+			android:text="Excellent"
+			android:textColor="@color/color_chatcenter_widget_text"/>
+
+	</RelativeLayout>
+
+	<LinearLayout
+		android:id="@+id/sticker_action_confirm_contaier"
+		android:layout_width="match_parent"
+		android:layout_height="@dimen/sticker_select_button_height"
+		android:layout_alignLeft="@id/sticker_image"
+		android:layout_alignRight="@id/sticker_image"
+		android:layout_below="@+id/sticker_action_linear_container"
+		android:orientation="vertical"
+		android:visibility="visible">
+
+		<View
+			android:layout_width="match_parent"
+			android:layout_height="@dimen/widget_line_width"
+			android:background="@color/color_chatcenter_widget_border"/>
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="horizontal">
+
+			<Button
+				android:id="@+id/sticker_action_confirm_positive"
+				style="@style/sticker_actions_button_style"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:text="Yes"/>
+
+			<View
+				android:layout_width="@dimen/widget_line_width"
+				android:layout_height="match_parent"
+				android:background="@color/color_chatcenter_widget_border"/>
+
+			<Button
+				android:id="@+id/sticker_action_confirm_negative"
+				style="@style/sticker_actions_button_style"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:text="No"/>
+
+		</LinearLayout>
+	</LinearLayout>
+</RelativeLayout>

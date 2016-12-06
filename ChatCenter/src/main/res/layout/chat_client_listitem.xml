@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:custom="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="#fff"
+              android:paddingTop="4dp"
+              android:orientation="vertical">
+
+    <!-- タイムスタンプ -->
+    <TextView
+        android:id="@+id/chat_client_listitem_timestamp_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="4dp"
+        android:textColor="@color/color_chatcenter_text"
+        android:textSize="11sp"/>
+
+    <!-- 担当者名 -->
+    <TextView
+        android:id="@+id/chat_client_listitem_name_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginLeft="60dp"
+        android:textColor="@color/color_chatcenter_text"
+        android:textSize="11sp"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_below="@+id/chat_customer_listitem_timestamp_textview">
+
+        <RelativeLayout
+            android:layout_width="@dimen/chat_list_user_ava_size"
+            android:layout_height="@dimen/chat_list_user_ava_size"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/user_ava_container">
+            <!-- アイコンテキスト -->
+            <TextView
+                android:id="@+id/chat_client_listitem_icon_textview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/shape_chat_client_icon_textview"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"/>
+
+            <!-- アイコン画像 -->
+            <ImageView
+                android:id="@+id/chat_client_listitem_icon_imageview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"/>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/chat_customer_listitem_message_container"
+            style="@style/common_customer_sticker_view"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/user_ava_container">
+            <!-- メッセージ -->
+            <ly.appsocial.chatcenter.widgets.views.WidgetView
+                android:id="@+id/chat_client_listitem_sticker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6dp"
+                custom:actionTextColor="@drawable/selector_action_button_text_color"
+                custom:backgroundConfirmNegative="@drawable/selector_action_confirm_left"
+                custom:backgroundConfirmPositive="@drawable/selector_action_confirm_right"
+                custom:backgroundSelect="@drawable/selector_action_select"
+                custom:backgroundSelectLast="@drawable/selector_action_select_last"
+                custom:textColor="@color/color_chatcenter_widget_text"
+                custom:backgroundMain="@drawable/bg_client_common_sticker">
+            </ly.appsocial.chatcenter.widgets.views.WidgetView>
+        </LinearLayout>
+
+    </RelativeLayout>
+</LinearLayout>

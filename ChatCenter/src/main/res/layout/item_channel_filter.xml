@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="30dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/margin10dp"
+    android:paddingRight="@dimen/margin10dp"
+    android:descendantFocusability="blocksDescendants">
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:button="@drawable/btn_selected"
+        android:clickable="false"/>
+
+    <TextView
+        android:id="@+id/tv_filter_option"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/color_chatcenter_text"/>
+
+    <TextView
+        android:id="@+id/tv_channel_matching_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/color_chatcenter_text"/>
+
+</LinearLayout>

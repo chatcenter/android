@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/activity_schedule"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/schedule_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_header_height">
+
+        <ImageButton
+            android:id="@+id/schedule_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:background="@drawable/bt_close"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="50dp"
+            android:text="@string/schedule_title"
+            android:textColor="@color/color_chatcenter_title_text"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/schedule_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:background="@android:color/transparent"
+            android:text="@string/next"
+            android:textAllCaps="false"
+            android:textColor="@color/color_chatcenter_title_text"
+            android:textStyle="bold"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/widget_line_width"
+            android:background="@color/color_chatcenter_separator_light"
+            android:layout_alignParentBottom="true"/>
+
+    </RelativeLayout>
+
+    <!--<org.lucasr.twowayview.TwoWayView-->
+    <!--android:id="@+id/schedule_date_selector"-->
+    <!--style="@style/TwoWayView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="70dp"-->
+    <!--android:drawSelectorOnTop="false"-->
+    <!--android:layout_below="@id/schedule_header"/>-->
+    <LinearLayout
+        android:id="@+id/date_selector_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/schedule_header"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/schedule_guide"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/time_block_height"
+            android:gravity="center"
+            android:text="@string/schedule_guide"
+            android:textColor="@color/color_chatcenter_text"
+            android:textSize="11sp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/color_chatcenter_separator"/>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/schedule_date_selector"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_below="@id/schedule_guide"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/color_chatcenter_separator"/>
+
+        <TextView
+            android:id="@+id/schedule_selected_date"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/time_block_height"
+            android:layout_below="@id/schedule_date_selector"
+            android:gravity="center"
+            android:text="Sunday, October 30, 2016"
+            android:textColor="@color/color_chatcenter_text"
+            android:textStyle="bold"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/color_chatcenter_separator"/>
+    </LinearLayout>
+
+    <ly.appsocial.chatcenter.ui.LockableScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/date_selector_container"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/hour_number"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/schedule_time_selector"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/list_view_height"
+                android:layout_weight="1"/>
+        </LinearLayout>
+    </ly.appsocial.chatcenter.ui.LockableScrollView>
+</RelativeLayout>

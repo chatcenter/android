@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingLeft="@dimen/margin10dp"
+    android:paddingRight="@dimen/margin10dp">
+
+    <RelativeLayout
+        android:id="@+id/user_ava_container"
+        android:layout_width="@dimen/chat_list_user_ava_size"
+        android:layout_height="@dimen/chat_list_user_ava_size"
+        android:layout_marginTop="@dimen/margin8dp"
+        android:layout_marginBottom="@dimen/margin8dp"
+        android:layout_marginRight="@dimen/margin10dp">
+        <!-- アイコンテキスト -->
+        <TextView
+            android:id="@+id/chat_client_listitem_icon_textview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/shape_chat_client_icon_textview"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"/>
+
+        <!-- アイコン画像 -->
+        <ImageView
+            android:id="@+id/chat_client_listitem_icon_imageview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/color_chatcenter_text"/>
+
+    <CheckBox
+        android:id="@+id/cb_selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:button="@drawable/btn_selected"
+        android:clickable="false"/>
+
+</LinearLayout>

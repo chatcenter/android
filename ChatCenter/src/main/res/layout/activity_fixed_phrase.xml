@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/activity_fixed_phrase"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_header_height"
+        android:background="@color/color_chatcenter_title_background">
+
+        <Button
+            android:id="@+id/bt_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:text="@string/cancel"
+            android:padding="5dp"
+            android:layout_centerVertical="true"
+            android:textAllCaps="false"
+            android:textColor="@color/color_chatcenter_text"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_centerInParent="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fixed_phrases"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="@color/color_chatcenter_text"
+                android:text="@string/tap_to_select"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/widget_line_width"
+            android:background="@color/color_chatcenter_separator_light"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/lv_fixed_phrases"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

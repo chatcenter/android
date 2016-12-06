@@ -1,0 +1,214 @@
+<resources>
+    <!-- アプリ名 -->
+    <string name="app_name">ChatCenter  iO</string>
+
+    <!-- ## 履歴 ## -->
+    <string name="msg_messages_empty">No Chat</string>
+
+    <!-- ========================================================================== -->
+    <!-- ダイアログ -->
+    <!-- ========================================================================== -->
+
+    <!-- 共通エラーダイアログ -->
+    <string name="dialog_error_body">Cannot connect to server. Please check you internet connection.</string>
+
+    <!-- 電話確認ダイアログ -->
+    <string name="dialog_tel_title">Calling %1$s</string>
+    <string name="dialog_tel_body">Do you want to open dial application?</string>
+
+    <!-- 電話番号未登録ダイアログ -->
+    <string name="dialog_tel_number_not_register_body">Number was not registered.</string>
+
+    <!-- 認証エラーダイアログ -->
+    <string name="dialog_auth_error_body">You are logout from server. Please login again.</string>
+
+    <!-- チャット未選択ダイアログ -->
+    <string name="dialog_no_select_chat_body">Please select a channel.</string>
+
+    <!-- チャット削除エラーダイアログ -->
+    <string name="dialog_chat_delete_error_body">Cannot delete channel. Please check you internet connection.</string>
+
+    <!-- メッセージ送信エラーダイアログ -->
+    <string name="chatcenter_dialog_message_send_error_body">Cannot send the message. Please check you internet connection.</string>
+
+    <string name="chatcenter_dialog_message_error_body">Error happened. Please check you internet connection.</string>
+
+    <string name="chatcenter_messages_title">Messages</string>
+
+    <string name="chatcenter_messages_signout">Logout</string>
+
+    <!-- ========================================================================== -->
+    <!-- チャネル詳細画面 -->
+    <!-- ========================================================================== -->
+    <string name="channel_detail_header">Channel Detail</string>
+    <string name="info_header">Information</string>
+    <string name="about_header">About ChatCenter.iO</string>
+    <string name="terms_of_service">Terms of service</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="service_level_agreement">Service Level Agreement</string>
+    <string name="copyright">Copyright</string>
+    <string name="assignee_or_follower">Assignee/Followers</string>
+    <string name="assignee">Assignee</string>
+    <string name="followers">Followers</string>
+    <string name="no_assignee">No Assignee</string>
+    <string name="no_followers">No Followers</string>
+    <string name="status_online">Online</string>
+    <string name="google_map">Google Map</string>
+    <string name="share_image">Share Image</string>
+    <string name="download_image_failed">Failed to download this image</string>
+
+    <!-- ========================================================================== -->
+    <!-- Message Status -->
+    <!-- ========================================================================== -->
+    <string name="message_status_read">Read</string>
+    <string name="message_status_sending">Sending</string>
+    <string name="message_status_sent">Sent</string>
+    <string name="message_status_send_failed">Send failed</string>
+
+    <string name="online_at" formatted="false">Online at %s ago</string>
+    <string name="year">year</string>
+    <string name="years">years</string>
+    <string name="month">month</string>
+    <string name="months">months</string>
+    <string name="day">day</string>
+    <string name="days">days</string>
+    <string name="hour">hour</string>
+    <string name="hours">hours</string>
+    <string name="second">second</string>
+    <string name="seconds">seconds</string>
+    <string name="minute">minute</string>
+    <string name="minutes">minutes</string>
+
+    <string name="sticker_menu_header">Sticker Menu</string>
+    <string name="sticker_menu_close">Close</string>
+
+    <string name="sticker_label_confirm">Question</string>
+    <string name="sticker_label_calendar">Calendar</string>
+    <string name="sticker_label_location">Location</string>
+    <string name="sticker_label_image">Image</string>
+    <string name="sticker_label_phrase">Phrase</string>
+    <string name="sticker_label_camera">Camera</string>
+    <string name="sticker_label_video_call">Video call</string>
+    <string name="fixed_phrases">Fixed phrases</string>
+    <string name="tap_to_select">Tap to select</string>
+    <string name="fixed_phrases_session_label_app">App\'s Recommendation</string>
+    <string name="fixed_phrases_session_label_org">Team\'s Recommendation</string>
+    <string name="fixed_phrases_session_label_myphrases">Mine</string>
+    <string name="fixed_phrases_myphrase_empty">You have not created any fixed phrases.</string>
+    <string name="fixed_phrases_no_app_fixed_phrases">You have not any app\'s recommendation fixed phrases.</string>
+    <string name="fixed_phrases_no_org_fixed_phrases">You have not any org\'s recommendation fixed phrases.</string>
+    <string name="alert_message_text_too_long" formatted="false">Please input %d characters or less.</string>
+
+    <string name="select_file">Please select image or Pdf file to send</string>
+    <string name="camera_permission_denied">Without the permission to access the camera you cannot take a photo inside the application.</string>
+    <string name="storage_permission_denied">Without the permission to access your files you cannot import photos from your storage.</string>
+    <string name="location_permission_denied">Without the permission to access your location you cannot send map</string>
+    <string name="video_permission_denied">Without the permission to access the camera you cannot start video chat.</string>
+    <string name="audio_permission_denied">Without the permission to access the mic you cannot start video chat.</string>
+    <string name="alert">Alert</string>
+    <string name="file_uploading">Uploading</string>
+    <string name="preview_title">Preview</string>
+
+    <string name="schedule_guide">Tap dates and time you are available</string>
+    <string name="preview">Preview</string>
+    <string name="schedule_title">Schedule</string>
+    <string name="next">Next</string>
+    <string name="schedule_monday">M</string>
+    <string name="schedule_tuesday">T</string>
+    <string name="schedule_wednesday">W</string>
+    <string name="schedule_thursday">T</string>
+    <string name="schedule_friday">F</string>
+    <string name="schedule_saturday">S</string>
+    <string name="schedule_sunday">S</string>
+    <string name="cancel">Cancel</string>
+    <string name="message_reply_sticker_header">My answer is</string>
+    <string name="schedule_widget_title">Please select your available time.</string>
+    <string name="schedule_create_other">Propose other slots</string>
+    <string name="enter_question">Enter Question</string>
+    <string name="answer_type">Type of Answer</string>
+
+    <string name="answer_type_yes_no">Yes / No</string>
+    <string name="answer_type_multi_choice">Multiple Choice</string>
+    <string name="answer_type_checkbox">Checkbox</string>
+    <string name="answer_type_leaner_scale">Linear Scale</string>
+
+    <string-array name="linear_scale_list">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="ok">OK</string>
+    <string name="add_more_options">Add more options</string>
+    <string name="scale_to">To</string>
+    <string name="default_scale_label_from">Very Bad</string>
+    <string name="default_scale_label_to">Very Good</string>
+
+    <string name="hour_am">AM</string>
+    <string name="hour_pm">PM</string>
+
+    <string name="sticker_label_phone_call">Phone call</string>
+    <string name="ringing">Calling...</string>
+    <string name="calling">is calling you...</string>
+    <string name="video_off">Video is disabled</string>
+    <string name="processing">Please wait...</string>
+
+    <string name="option">Option %d</string>
+
+    <string name="sticker_video_call_title" formatted="false">%s call %s through this channel.\n</string>
+    <string name="sticker_video_call_missed">Missed call</string>
+    <string name="sticker_video_call_time" formatted="false">%02d:%02d</string>
+    <string name="sticker_video_call_now">%s is calling\n</string>
+    <string name="dialog_confirm_reply_sticker">You are about to send following message.</string>
+    <string name="save">Save</string>
+    <string name="you">You:&#160;</string>
+    <string name="no_message">No message yet.</string>
+    <string name="sent_a_sticker">Sent a sticker.</string>
+    <string name="called">Called</string>
+
+    <!-- 項目エラーダイアログ -->
+    <string name="widget_create_error">Please check variable.</string>
+
+
+    <string name="funnel">Funnel</string>
+    <string name="note">Note</string>
+    <string name="close_conversation">Close Conversation</string>
+    <string name="delete_conversation">Delete Conversation</string>
+    <string name="open_conversation">Open Conversation</string>
+    <string name="suggestion">Suggestion</string>
+
+    <string name="schedule_date_format">EEEE, MMMM d, yyyy</string>
+    <string name="schedule_hour" >%1$02d%2$s</string>
+    <string name="date_format_short">h:mm a</string>
+    <string name="date_format_date">EEE MMM d</string>
+
+	<string name="note_hint">Content</string>
+    <string name="business_funnel">Business Funnel</string>
+    <string name="message_status">Messages Status</string>
+    <string name="unassigned_status"> Unassigned</string>
+    <string name="assigned_status">Assigned</string>
+    <string name="close_status">Closed</string>
+    <string name="all">All</string>
+    <string name="accept">Yes</string>
+    <string name="chat_network_error_message">Can not load data</string>
+    <string name="chat_send_button">Send</string>
+    <string name="chat_textbox_hint_message">Compose your message</string>
+    <string name="done">Done</string>
+    <string name="message_reply_choosed_value">Selected %s</string>
+    <string name="datetime_today">Today</string>
+    <string name="datetime_yesterday">Yesterday</string>
+    <string name="datetime_2_days_ago">2days</string>
+    <string name="datetime_format_time">HH:mm</string>
+    <string name="widget_question_hint">Question</string>
+    <string name="datetime_format_day">MM/dd</string>
+    <string name="datetime_format_default">yyyy/MM/dd HH:mm</string>
+    <string name="datetime_format_full">yyyy/MM/dd HH:mm:ss</string>
+
+    <string name="conversation_closed">Conversation Closed</string>
+    <string name="conversation_opened">Conversation Opened</string>
+    <string name="datetime_format_today">Today HH:mm</string>
+</resources>

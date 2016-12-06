@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ChatCenter API URL -->
+    <string name="api_chatcenter">https://api.chatcenter.io</string>
+
+    <!-- ChatCenter WebSocket URL -->
+    <string name="url_chatcenter_websocket">wss://api.chatcenter.io</string>
+
+    <!-- Password Recovery -->
+    <string name="password_recovery_chatcenter">http://app.chatcenter.io/users/password/new</string>
+
+    <!-- Metadata Parameter -->
+    <string name="apptoken_param">ly.appsocial.chatcenter.AppToken</string>
+
+	<!-- GCM Sender -->
+    <string name="product_gcm_notification_sender" translatable="false"></string>
+
+</resources>

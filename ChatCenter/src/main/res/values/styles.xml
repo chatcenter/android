@@ -1,0 +1,158 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ========================================================================== -->
+    <!-- テーマ -->
+    <!-- ========================================================================== -->
+    <!-- テーマ -->
+    <style name="ChatCenterTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowAnimationStyle">@android:style/Animation.Activity</item>
+        <item name="android:windowBackground">@color/color_chatcenter_background</item>
+        <item name="android:buttonStyle">@style/ChatCeterButtonStyle</item>
+        <item name="android:textColorPrimary">@color/color_chatcenter_text</item>
+        <item name="android:textColorSecondary">@color/color_chatcenter_text_light</item>
+        <item name="android:textColorTertiary">@color/color_chatcenter_text_light</item>
+        <item name="android:windowContentOverlay">@null</item>
+		<item name="colorPrimary">@color/color_chatcenter_title_background</item>
+		<item name="colorAccent">@color/color_chatcenter_text_light</item>
+		<item name="android:colorBackground">@color/color_chatcenter_background</item>
+	</style>
+
+    <!-- テーマ(アクションバー無し) -->
+    <style name="ChatCenterTheme.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+    <style name="ChatCenterTheme.Slide">
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowAnimationStyle">@style/SlideAnimation</item>
+        <item name="windowActionModeOverlay">true</item>
+    </style>
+
+    <!-- ツールバー -->
+    <style name="ToolbarStyle" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:background">@color/color_chatcenter_title_background</item>
+        <item name="android:textColorPrimary">@color/color_chatcenter_title_text</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="colorControlNormal">@color/color_chatcenter_title_text</item>
+    </style>
+
+    <!-- プルアップ画面用 -->
+    <style name="ChatCenterTheme.PullUp">
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowAnimationStyle">@style/PullAnimation</item>
+        <item name="windowActionModeOverlay">true</item>
+    </style>
+
+    <!-- ボタン -->
+    <style name="ChatCeterButtonStyle" parent="@android:style/Widget.Holo.Light.Button" tools:targetApi="11">
+        <item name="android:minHeight">1dip</item>
+        <item name="android:minWidth">1dip</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:padding">0dp</item>
+    </style>
+
+    <!-- ========================================================================== -->
+    <!-- アニメーション -->
+    <!-- ========================================================================== -->
+    <!-- プルアップ -->
+    <style name="PullAnimation" parent="android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/activity_open_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/activity_open_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/activity_close_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/activity_close_exit</item>
+    </style>
+
+    <!-- ========================================================================== -->
+    <!-- 共通 -->
+    <!-- ========================================================================== -->
+    <style name="common_sticker_container">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:maxWidth">@dimen/common_sticker_width</item>
+        <item name="android:padding">0dp</item>
+    </style>
+
+    <style name="common_customer_sticker_view" parent="common_sticker_container">
+        <item name="android:textColor">@color/color_chatcenter_widget_text</item>
+        <item name="android:textColorLink">@color/color_chatcenter_widget_text</item>
+    </style>
+
+    <!-- 吹き出し(お客様) -->
+    <style name="chat_bubble_customer_container" parent="common_sticker_container">
+        <item name="android:background">@drawable/widget_border</item>
+    </style>
+
+    <style name="chat_bubble_customer_textview" parent="common_sticker_container">
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:autoLink">web|phone|email</item>
+        <item name="android:textColor">@color/color_chatcenter_customer_bubble_text</item>
+        <item name="android:textColorLink">@color/color_chatcenter_customer_bubble_text</item>
+    </style>
+
+    <!-- 吹き出し(クライアント) -->
+    <style name="chat_bubble_client_container" parent="common_sticker_container">
+        <item name="android:background">@drawable/widget_border</item>
+    </style>
+
+    <style name="chat_bubble_client_textview" parent="common_sticker_container">
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:autoLink">web|phone|email</item>
+        <item name="android:textColor">@color/color_chatcenter_operator_bubble_text</item>
+        <item name="android:textColorLink">@color/color_chatcenter_operator_bubble_text</item>
+    </style>
+
+
+    <!-- 太字 -->
+    <style name="common_bold_textview">
+        <item name="android:typeface">monospace</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 普通字 -->
+    <style name="common_normal_textview">
+        <item name="android:typeface">normal</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <!-- Sticker actions button style-->
+    <style name="sticker_actions_button_style" parent="@android:style/Widget.Holo.Light.Button.Small" tools:targetApi="11">
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@drawable/selector_widget_action_text_color</item>
+    </style>
+
+    <style name="Dialog.StickerMenu" parent="ChatCenterTheme.NoActionBar">
+        <item name="android:padding">0dp</item>
+        <item name="android:windowAnimationStyle">@style/Dialog.StickerMenu.Animation</item>
+    </style>
+
+    <style name="Dialog.StickerMenu.Animation" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/slide_in_right</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_right</item>
+    </style>
+
+    <style name="SlideAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/activity_open_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/activity_close_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_out_right</item>
+    </style>
+
+    <style name="NotificationTextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">16dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingLeft">@dimen/margin8dp</item>
+        <item name="android:paddingRight">@dimen/margin8dp</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:background">@drawable/bg_notification</item>
+    </style>
+
+</resources>

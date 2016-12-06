@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- チェックON かつ 選択されている状態 -->
+	<item
+		android:state_checked="true"
+		android:state_pressed="true"
+		android:drawable="@drawable/btn_checkbox_select" />
+	<!-- チェックON　かつ 選択されていない状態-->
+	<item
+		android:state_checked="true"
+		android:drawable="@drawable/btn_checkbox_select" />
+	<!-- チェックOFF かつ 選択されている状態-->
+	<item
+		android:state_checked="false"
+		android:state_pressed="true"
+		android:drawable="@drawable/btn_checkbox" />
+	<!-- チェックOFF かつ 選択されていない状態-->
+	<item
+		android:state_checked="false"
+		android:drawable="@drawable/btn_checkbox" />
+</selector>
