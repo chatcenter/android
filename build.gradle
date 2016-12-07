@@ -1,5 +1,3 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
 	repositories {
 		mavenCentral()
@@ -7,18 +5,13 @@ buildscript {
 	dependencies {
 		classpath 'com.android.tools.build:gradle:2.2.2'
 		classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-
-		// NOTE: Do not place your application dependencies here; they belong
-		// in the individual module build.gradle files
 	}
 }
 
-allprojects {
-	repositories {
-		mavenCentral()
-		maven { url 'https://maven.fabric.io/public' }
-		maven { url  "http://tokbox.bintray.com/maven" }
-	}
+repositories {
+	mavenCentral()
+	maven { url 'https://maven.fabric.io/public' }
+	maven { url  "http://tokbox.bintray.com/maven" }
 }
 
 task clean(type: Delete) {
@@ -26,7 +19,181 @@ task clean(type: Delete) {
 }
 
 ext {
-    versionName="1.0.0"
-    versionCode=1
-    defaultBuildType="debug"
+	versionName="1.0.0"
+	versionCode=1
+	defaultBuildType="debug"
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'com.neenbedankt.android-apt'
+
+group = 'ly.appsocial'
+version = '1.0.0-SNAPSHOT'
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+def DIR_BUNDLES = 'bundles'
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+android {
+	compileSdkVersion 23
+	buildToolsVersion '23.0.3'
+	publishNonDefault true
+
+	defaultConfig {
+		minSdkVersion 16
+		targetSdkVersion 22
+		versionCode rootProject.ext.versionCode
+		versionName rootProject.ext.versionName
+
+		buildConfigField "String", "SDK_VERSION", "\"$rootProject.ext.versionName\""
+	}
+
+	buildTypes {
+		release {
+			minifyEnabled false
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+		}
+
+		debug {
+			debuggable true
+		}
+	}
+
+	lintOptions {
+		abortOnError false
+	}
+
+}
+
+configurations.all {
+	resolutionStrategy {
+		force 'com.android.support:support-annotations:23.1.1'
+		force 'com.squareup.okio:okio:1.9.0'
+	}
+}
+
+dependencies {
+	compile fileTree(dir: 'libs', include: ['*.jar'])
+	compile 'com.android.support:appcompat-v7:23.4.0'
+	compile 'com.fasterxml.jackson.core:jackson-databind:2.8.2'
+	compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.2'
+	compile 'com.fasterxml.jackson.core:jackson-core:2.8.2'
+	compile 'com.google.code.gson:gson:2.4'
+	compile 'javax.inject:javax.inject:1'
+	compile 'com.squareup.picasso:picasso:2.5.2'
+	compile 'com.squareup.okhttp:okhttp:2.7.5'
+	compile 'com.squareup.okhttp:okhttp-ws:2.7.5'
+	compile 'com.github.chrisbanes.photoview:library:1.2.3'
+	compile 'com.google.android.gms:play-services-gcm:10.0.1'
+	compile 'com.google.android.gms:play-services-maps:10.0.1'
+	compile 'com.google.android.gms:play-services-places:10.0.1'
+	compile 'com.google.dagger:dagger:2.2'
+	compile 'com.android.support:support-v4:23.4.0'
+	compile 'com.opentok.android:opentok-android-sdk:2.9.+'
+	compile 'io.jsonwebtoken:jjwt:0.7.0'
+
+	testCompile 'junit:junit:4.12'
+	testCompile 'com.squareup.assertj:assertj-android:1.1.0'
+	testCompile 'com.squareup.okhttp3:mockwebserver:3.4.1'
+	testCompile 'org.java-websocket:Java-WebSocket:1.3.0'
+	testCompile 'org.robolectric:robolectric:3.1.1'
+	testCompile 'org.robolectric:shadows-multidex:3.0'
+	testCompile 'org.robolectric:shadows-httpclient:3.0'
+	testCompile 'org.robolectric:shadows-play-services:3.0'
+	apt 'com.google.dagger:dagger-compiler:2.2'
+	provided 'javax.annotation:jsr250-api:1.0'
+}
+
+android.libraryVariants.all { variant ->
+	if (variant.name == 'release') {
+		def javadocTaskName = "javadoc${variant.name.capitalize()}";
+		task(javadocTaskName, type: Javadoc) {
+			description "Generates Javadoc for ${variant.name}."
+			source = variant.javaCompile.source
+			destinationDir = reporting.file("${variant.name}-docs")
+			ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
+			classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
+			exclude '**/BuildConfig.java'
+			exclude '**/R.java'
+		}
+		task("javadocsJar${variant.name.capitalize()}", type: Jar) {
+			classifier = "javadoc"
+			from tasks[javadocTaskName].destinationDir
+		}
+		task("sourcesJar${variant.name.capitalize()}", type: Jar) {
+			classifier = "sources"
+			from variant.javaCompile.source
+		}
+
+		task("copyLicenseFile${variant.name.capitalize()}", type: Copy) {
+			from("./LICENSE.txt")
+			into("$project.buildDir/$DIR_BUNDLES/$variant.dirName")
+		}
+		bundleRelease.dependsOn project.tasks["copyLicenseFile${variant.name.capitalize()}"]
+
+		/* artifacts management.
+		 * See: http://www.gradle.org/docs/current/userguide/artifact_management.html */
+		artifacts {
+			archives tasks["javadocsJar${variant.name.capitalize()}"]
+			archives tasks["sourcesJar${variant.name.capitalize()}"]
+		}
+	}
+}
+
+signing {
+	required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+	sign configurations.archives
+}
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+			def sonatypeRepo = isReleaseVersion ?
+					"https://oss.sonatype.org/service/local/staging/deploy/maven2/" :
+					"https://oss.sonatype.org/content/repositories/snapshots/"
+
+			repository(url: sonatypeRepo) {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+
+			pom.artifactId = 'chatcenter'
+			pom.project {
+				name 'ChatCenter iO SDK for Android'
+				packaging 'aar'
+				description 'The ChatCenter iO SDK for Android. super-efficient business-customer communication platform'
+				url 'https://github.com/chatcenter/android'
+
+				scm {
+					url 'https://github.com/chatcenter/android/tree/master'
+					connection 'scm:git:git://github.com/chatcenter/android.git'
+					developerConnection 'scm:git:ssh://github.com:chatcenter/android.git'
+				}
+
+				licenses {
+					license {
+						name 'The Apache License, Version 2.0'
+						url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+						distribution 'repo'
+					}
+				}
+
+				developers {
+					developer {
+						id 'appsocially'
+						email 'yt@chatcenter.io'
+						organization 'AppSocially Inc.'
+						organizationUrl 'http://en.about.appsocial.ly/'
+					}
+				}
+			}
+
+		}
+	}
 }
