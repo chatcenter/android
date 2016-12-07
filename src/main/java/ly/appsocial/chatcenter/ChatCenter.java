@@ -1,8 +1,10 @@
 package ly.appsocial.chatcenter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v4.content.IntentCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import java.util.HashMap;
@@ -134,6 +136,9 @@ public class ChatCenter {
 		Intent intent = new Intent(context, MessagesActivity.class);
 		intent.putExtra(MessagesParamDto.class.getCanonicalName(), messagesParamDto);
 		context.startActivity(intent);
+		if (context instanceof Activity) {
+			((Activity) context).overridePendingTransition(R.anim.activity_open_enter, 0);
+		}
 	}
 
 	/**

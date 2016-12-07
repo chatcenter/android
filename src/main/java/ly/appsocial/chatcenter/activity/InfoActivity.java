@@ -471,10 +471,14 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         }
     }
 
+    private int mFollowResponse = 0;
+    private int mFollowRequest = 0;
     private void setUpFollowers(List<UserItem> users) {
+        DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+        mFollowRequest = users.size();
         // Un-follow if need
         for (UserItem user : mCurrentChannel.users) {
-            if(user.admin && !users.contains(user)) {
+            if(user.admin && isUserInList(users, user)) {
                 requestPostChannelUnFollow(mChannelUid, user);
             }
         }
@@ -485,6 +489,15 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
                 requestPostChannelFollow(mChannelUid, user);
             }
         }
+    }
+
+    private boolean isUserInList(List<UserItem> users, UserItem user) {
+        for (UserItem item: users) {
+            if (item.id.intValue() == user.id.intValue()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void setUpFunnel(FunnelItem funnel) {
@@ -570,11 +583,8 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
      * POST /api/channels/:channel_uid/assign
      */
     private void requestPostChannelAssignIfNeed(String channelUid, UserItem user) {
-        if (mPostChannelRequest != null) {
-            return;
-        }
 
-        if (mCurrentChannel.assignee != null && user.id == mCurrentChannel.assignee.id) {
+        if (mCurrentChannel.assignee != null && user.id.intValue() == mCurrentChannel.assignee.id.intValue()) {
             return;
         }
 
@@ -584,7 +594,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id + "");
+        params.put("user_id", user.id.intValue() + "");
 
         mPostChannelRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, params, headers, new PostAssigneeCallback(), new PostChannelsParser());
         if (mParamDto.appToken != null) {
@@ -597,9 +607,6 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
      * POST /api/channels/:channel_uid/unassign
      */
     private void requestPostChannelUnassign(String channelUid, UserItem user) {
-        if (mPostChannelRequest != null) {
-            return;
-        }
 
         String path = "channels/" + channelUid + "/unassign";
 
@@ -607,7 +614,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id + "");
+        params.put("user_id", user.id.intValue() + "");
 
         mPostChannelRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, params, headers, new PostUnAssigneeCallback(), new PostChannelsParser());
         if (mParamDto.appToken != null) {
@@ -627,7 +634,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id + "");
+        params.put("user_id", user.id.intValue() + "");
 
         ApiRequest<PostChannelsResponseDto> postChannelFollowRequest = new OkHttpApiRequest<>(this,
                 ApiRequest.Method.POST, path, params, headers, new PostFollowCallback(), new PostChannelsParser());
@@ -649,7 +656,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id + "");
+        params.put("user_id", user.id.intValue() + "");
 
         ApiRequest<PostChannelsResponseDto> postChannelFollowRequest = new OkHttpApiRequest<>(this,
                 ApiRequest.Method.POST, path, params, headers, new PostUnFollowCallback(), new PostChannelsParser());
@@ -851,12 +858,12 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     private class PostAssigneeCallback implements OkHttpApiRequest.Callback<PostChannelsResponseDto> {
         @Override
         public void onError(OkHttpApiRequest.Error error) {
-            mPostChannelRequest = null;
+//            mPostChannelRequest = null;
         }
 
         @Override
         public void onSuccess(PostChannelsResponseDto responseDto) {
-            mPostChannelRequest = null;
+//            mPostChannelRequest = null;
 
             mCurrentChannel = responseDto;
             runOnUiThread(new Runnable() {
@@ -874,12 +881,12 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     private class PostUnAssigneeCallback implements OkHttpApiRequest.Callback<PostChannelsResponseDto> {
         @Override
         public void onError(OkHttpApiRequest.Error error) {
-            mPostChannelRequest = null;
+//            mPostChannelRequest = null;
         }
 
         @Override
         public void onSuccess(PostChannelsResponseDto responseDto) {
-            mPostChannelRequest = null;
+//            mPostChannelRequest = null;
 
             mCurrentChannel = responseDto;
             runOnUiThread(new Runnable() {
@@ -897,18 +904,13 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     private class PostFollowCallback implements OkHttpApiRequest.Callback<PostChannelsResponseDto> {
         @Override
         public void onError(OkHttpApiRequest.Error error) {
-
+            updateFollowView();
         }
 
         @Override
         public void onSuccess(PostChannelsResponseDto responseDto) {
             mCurrentChannel = responseDto;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateView();
-                }
-            });
+            updateFollowView();
         }
     }
 
@@ -918,18 +920,23 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     private class PostUnFollowCallback implements OkHttpApiRequest.Callback<PostChannelsResponseDto> {
         @Override
         public void onError(OkHttpApiRequest.Error error) {
-
+            updateFollowView();
         }
 
         @Override
         public void onSuccess(PostChannelsResponseDto responseDto) {
             mCurrentChannel = responseDto;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateView();
-                }
-            });
+            updateFollowView();
+        }
+    }
+
+    private void updateFollowView() {
+        mFollowResponse += 1;
+        if (mFollowResponse == mFollowRequest) {
+            mFollowResponse = 0;
+            DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+
+            requestGetChannel(mChannelUid);
         }
     }
 

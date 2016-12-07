@@ -32,6 +32,15 @@
 		android:textSize="22sp"/>
 
 	<ImageView
+		android:id="@+id/switch_camera"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/switch_camera"
+		android:layout_alignParentRight="true"
+		android:layout_marginRight="15dp"
+		android:layout_marginTop="15dp"/>
+
+	<ImageView
 		android:id="@+id/other_mic_off"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"

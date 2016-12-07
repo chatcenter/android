@@ -70,6 +70,7 @@ import ly.appsocial.chatcenter.util.ApiUtil;
 import ly.appsocial.chatcenter.util.AuthUtil;
 import ly.appsocial.chatcenter.util.DialogUtil;
 import ly.appsocial.chatcenter.util.NetworkQueueHelper;
+import ly.appsocial.chatcenter.util.PreferenceUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.util.ViewUtil;
 import ly.appsocial.chatcenter.ws.ApiRequest;
@@ -210,6 +211,8 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 				// Load new channel
 				mCurrentOrgItem = item.getOrg();
+				PreferenceUtil.saveLastOrgUid(MessagesActivity.this, mCurrentOrgItem.uid);
+
 				mTvOrgName.setText(mCurrentOrgItem.name);
 				mTvFunnel.setEnabled(true);
 				requestGetChannels();
@@ -232,6 +235,8 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 				}
 
 				mCurrentAppId = item.getValue();
+				PreferenceUtil.saveLastAppId(MessagesActivity.this, mCurrentAppId);
+
 				requestGetOrgs(true);
 				mMenuAdapter.setSelectedApp(mCurrentAppId);
 
@@ -634,7 +639,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 	/**
 	 * 編集モード/通常モードにシフトします。
-	 * 
+	 *
 	 * @param editMode 編集モードの場合は true、通常モードの場合は false
 	 */
 	private void editMode(boolean editMode) {
@@ -1126,7 +1131,20 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			// Update data
 			mMenuAdapter.notifyDataSetChanged();
 			if (mCurrentOrgItem == null || mCleanOldOrgs) {
+
 				mCurrentOrgItem = responseDto.items.get(0);
+
+				// Set Save ORG if need
+				String lastOrgUid = PreferenceUtil.getLastOrgUid(MessagesActivity.this);
+				if (StringUtil.isNotBlank(lastOrgUid)) {
+					for (OrgItem item : responseDto.items) {
+						if (StringUtil.isNotBlank(item.uid) && item.uid.equals(lastOrgUid)) {
+							mCurrentOrgItem = item;
+							break;
+						}
+					}
+				}
+
 				mTvOrgName.setText(mCurrentOrgItem.name);
 				mTvFunnel.setEnabled(true);
 				mMenuAdapter.setSelectedOrg(mCurrentOrgItem.uid);
@@ -1160,13 +1178,19 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 				mMenuItems.add(new MessagesAgentMenuItem(MessagesAgentMenuItem.ITEM_TYPE_APPS, item.name, item.token, null, item));
 			}
 
-			// Update current application token
-			if (mCurrentAppId == null) {
-				mCurrentAppId = responseDto.items.get(0).token;
-			}
-
-			if (mCurrentApp == null) {
-				mCurrentApp = responseDto.items.get(0);
+			// Get last configuration for App and Org
+			String lastAppId = PreferenceUtil.getLastAppId(MessagesActivity.this);
+			if (StringUtil.isNotBlank(lastAppId)) {
+				for (GetAppsResponseDto.App app: responseDto.items) {
+					if (StringUtil.isNotBlank(app.token) && app.token.equals(lastAppId)) {
+						mCurrentAppId = app.token;
+						mCurrentApp = app;
+					}
+				}
+			} else {
+				// Update current application token
+                mCurrentAppId = responseDto.items.get(0).token;
+                mCurrentApp = responseDto.items.get(0);
 			}
 
 			// Update data

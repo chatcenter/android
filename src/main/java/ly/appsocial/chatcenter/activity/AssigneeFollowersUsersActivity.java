@@ -140,7 +140,8 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
     private int getAddedIndex(List<ItemListAssigneeFollower> items, UserItem user) {
         if(items != null && items.size() > 0) {
             for (int i = 0; i < items.size(); i ++) {
-                if (items.get(i).getUser().id == user.id) {
+                UserItem userItem = items.get(i).getUser();
+                if (userItem.id.intValue() == user.id.intValue()) {
                     return i;
                 }
             }

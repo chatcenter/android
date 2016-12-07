@@ -15,4 +15,7 @@
 	<!-- GCM Sender -->
     <string name="product_gcm_notification_sender" translatable="false"></string>
 
+    <!-- Google API Key-->
+    <string name="google_api_key" translatable="false">AIzaSyBbEP1GaeYV-chH7nWrDJKFUV8EJd65vWM</string>
+
 </resources>

@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import ly.appsocial.chatcenter.BuildConfig;
@@ -35,7 +36,6 @@ import ly.appsocial.chatcenter.fragment.ProgressDialogFragment;
 import ly.appsocial.chatcenter.task.AsyncTaskCallback;
 import ly.appsocial.chatcenter.util.DialogUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
-import uk.co.senab.photoview.PhotoView;
 
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -96,8 +96,10 @@ public class PhotoActivity extends BaseActivity implements View.OnClickListener,
 		mProgressBar = (ProgressBar) findViewById(R.id.progress);
 
 		// 写真
-		PhotoView photoView = (PhotoView) findViewById(R.id.photo_imageview);
-		Picasso.with(this).load(mParamDto.url).fit().into(photoView, new Callback() {
+		ImageView photoView = (ImageView) findViewById(R.id.photo_imageview);
+
+
+		Picasso.with(this).load(mParamDto.url).fit().centerInside().into(photoView, new Callback() {
 			@Override
 			public void onSuccess() {
 				mProgressBar.setVisibility(View.GONE);

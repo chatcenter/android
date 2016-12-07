@@ -102,6 +102,14 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 			mRingingLabel.setVisibility(View.INVISIBLE);
 		}
 
+		View cameraSwitch = layout.findViewById(R.id.switch_camera);
+		cameraSwitch.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				toggleCamera();
+			}
+		});
+
 		mVideoButton = (ImageView)layout.findViewById(R.id.mute_video);
 		mVideoButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -151,6 +159,12 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 		mSession.connect(token);
 
 		return layout;
+	}
+
+	private void toggleCamera(){
+		if ( mPublisher != null ){
+			mPublisher.cycleCamera();
+		}
 	}
 
 	private void updateButtonState(){

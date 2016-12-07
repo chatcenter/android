@@ -14,6 +14,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NavUtils;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -66,6 +68,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import ly.appsocial.chatcenter.BuildConfig;
+import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.adapter.ChatAdapter;
 import ly.appsocial.chatcenter.activity.adapter.WidgetMenuGridAdapter;
@@ -472,7 +475,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home:
-				finish();
+				if (isTaskRoot()) {
+					ChatCenter.showMessages(this, null, null);
+					finish();
+				} else {
+					finish();
+				}
+
 				return true;
 		}
 		return super.onOptionsItemSelected(item);
