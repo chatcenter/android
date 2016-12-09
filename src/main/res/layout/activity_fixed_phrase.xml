@@ -14,44 +14,100 @@
         <Button
             android:id="@+id/bt_cancel"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:text="@string/cancel"
-            android:padding="5dp"
+            android:layout_height="match_parent"
             android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/margin10dp"
+            android:background="@android:color/transparent"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="@string/cancel"
             android:textAllCaps="false"
-            android:textColor="@color/color_chatcenter_text"/>
+            android:textColor="@drawable/selector_messages_header_text_color"/>
 
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:layout_centerInParent="true"
             android:gravity="center"
-            android:layout_centerInParent="true">
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/fixed_phrases"
+                android:textColor="@color/color_chatcenter_text"
                 android:textSize="16sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="10sp"
+                android:text="@string/tap_to_select"
                 android:textColor="@color/color_chatcenter_text"
-                android:text="@string/tap_to_select"/>
+                android:textSize="10sp"/>
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/widget_line_width"
-            android:background="@color/color_chatcenter_separator_light"
-            android:layout_alignParentBottom="true"/>
+            android:layout_alignParentBottom="true"
+            android:background="@color/color_chatcenter_separator_light"/>
+
     </RelativeLayout>
+
+
+    <RadioGroup
+        android:id="@+id/segment_controller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="20dp">
+
+        <RadioButton
+            android:id="@+id/radio_mine"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/btn_segment_control_left"
+            android:button="@null"
+            android:checked="true"
+            android:gravity="center"
+            android:padding="@dimen/margin5dp"
+            android:text="@string/segment_mine"
+            android:textColor="@drawable/btn_segment_control_text_color"/>
+
+        <RadioButton
+            android:id="@+id/radio_team"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-1px"
+            android:layout_weight="1"
+            android:background="@drawable/btn_segment_control_middle"
+            android:button="@null"
+            android:gravity="center"
+            android:padding="@dimen/margin5dp"
+            android:text="@string/segment_team"
+            android:textColor="@drawable/btn_segment_control_text_color"/>
+
+        <RadioButton
+            android:id="@+id/radio_everyone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-1px"
+            android:layout_weight="1"
+            android:background="@drawable/btn_segment_control_right"
+            android:button="@null"
+            android:gravity="center"
+            android:padding="@dimen/margin5dp"
+            android:text="@string/segment_everyone"
+            android:textColor="@drawable/btn_segment_control_text_color"/>
+
+    </RadioGroup>
 
     <ListView
         android:id="@+id/lv_fixed_phrases"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:divider="@android:color/transparent"/>
 </LinearLayout>

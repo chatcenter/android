@@ -215,4 +215,7 @@
     <string name="all">全て</string>
     <string name="conversation_closed">対応を終了しました。</string>
     <string name="conversation_opened">対応を再開しました。</string>
+    <string name="segment_mine">Mine</string>
+    <string name="segment_team">Team\'s</string>
+    <string name="segment_everyone">Everyone\'s</string>
 </resources>

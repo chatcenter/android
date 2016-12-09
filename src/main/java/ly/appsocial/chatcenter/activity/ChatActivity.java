@@ -14,8 +14,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NavUtils;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -1563,8 +1561,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		if(data == null) {
 			return;
 		}
-		String content = data.getStringExtra(FixedPhraseActivity.SELECTED_FIXED_PHRASE);
-		requestPostSticker(content);
+		String selectedContentType = data.getStringExtra(FixedPhraseActivity.SELECTED_TYPE);
+		String content = data.getStringExtra(FixedPhraseActivity.SELECTED_CONTENT);
+		if (selectedContentType.equals(ResponseType.MESSAGE)) {
+			requestPostMessages(content);
+		} else if (selectedContentType.equals(ResponseType.STICKER)) {
+			requestPostSticker(content);
+		}
 	}
 
 	private void onQuestionSelected(Intent data){

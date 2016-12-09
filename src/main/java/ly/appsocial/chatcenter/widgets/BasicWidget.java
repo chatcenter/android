@@ -337,12 +337,18 @@ public class BasicWidget extends Widget {
 		}
 
 		public static class ResponseAction {
-			@SerializedName("action")
+			@SerializedName("actions")
 			public Object actionObj;
+
+			@SerializedName("action")
+			public Object actionOld;
 
 			public List<ActionData> actionDataList;
 
 			public List<ActionData> getActions(){
+				if ( actionObj == null ){
+					actionObj = actionOld;
+				}
 				if ( actionDataList == null && actionObj != null ){
 					actionDataList = new ArrayList<>();
 					if (actionObj.getClass().equals(ArrayList.class)) {

@@ -86,7 +86,7 @@
     <string name="sticker_label_calendar">Calendar</string>
     <string name="sticker_label_location">Location</string>
     <string name="sticker_label_image">Image</string>
-    <string name="sticker_label_phrase">Phrase</string>
+    <string name="sticker_label_phrase">Saved</string>
     <string name="sticker_label_camera">Camera</string>
     <string name="sticker_label_video_call">Video call</string>
     <string name="fixed_phrases">Fixed phrases</string>

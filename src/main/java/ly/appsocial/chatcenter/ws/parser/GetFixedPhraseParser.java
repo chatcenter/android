@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ly.appsocial.chatcenter.dto.ChatItem;
+import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.ws.response.GetFixedPhraseResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetMessagesResponseDto;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
@@ -64,9 +65,21 @@ public class GetFixedPhraseParser implements ApiRequest.Parser<GetFixedPhraseRes
 			for (int i = 0; i < itemArray.length(); i++ ){
 				JSONObject obj = itemArray.getJSONObject(i);
 				if ( obj != null ){
-					ChatItem item = new Gson().fromJson(obj.toString(), ChatItem.class);
-					if ( item != null ){
-						item.setupContent(BasicWidget.class, obj);
+					String contentType = obj.getString("content_type");
+					if (contentType.equals(ResponseType.STICKER)){
+						ChatItem item = new Gson().fromJson(obj.toString(), ChatItem.class);
+						if (item != null) {
+							item.setupContent(BasicWidget.class, obj);
+							item.type = ResponseType.STICKER;
+							items.add(item);
+						}
+					} else if (contentType.equals(ResponseType.TEXT)){
+						ChatItem item = new ChatItem();
+						BasicWidget widget = new BasicWidget();
+						item.widget = widget;
+						widget.message = new BasicWidget.Message();
+						widget.message.text = obj.getString("content");
+						item.type = ResponseType.MESSAGE;
 						items.add(item);
 					}
 				}

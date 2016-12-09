@@ -2,8 +2,8 @@ package ly.appsocial.chatcenter.activity.adapter;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +14,6 @@ import java.util.List;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.FixedPhraseActivity;
-import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
 
 
@@ -48,7 +47,7 @@ public class FixedPhrasesAdapter extends ArrayAdapter<FixedPhraseActivity.FPList
                 @Override
                 public void onClick(View v) {
                     if (mOnItemClickListener != null) {
-                        mOnItemClickListener.onItemClick(stickerItem.getChatItem());
+                        mOnItemClickListener.onItemClick(stickerItem);
                     }
                 }
             });
@@ -61,27 +60,32 @@ public class FixedPhrasesAdapter extends ArrayAdapter<FixedPhraseActivity.FPList
 
             FixedPhraseActivity.FPListItemSessionEmptyLabel labelItem = (FixedPhraseActivity.FPListItemSessionEmptyLabel) item;
             TextView textView = new TextView(getContext());
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             textView.setLayoutParams(params);
             textView.setText(labelItem.getLabel());
+            textView.setTextColor(getContext().getResources().getColor(R.color.color_chatcenter_text));
+            textView.setGravity(Gravity.CENTER);
             textView.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
-
-            return textView;
-        } else {
-            int verticalPadding = (int) convertDpToPixel(5, getContext());
-            int horizontalPadding = (int) convertDpToPixel(10, getContext());
-
-            FixedPhraseActivity.FPListItemSessionLabel labelItem = (FixedPhraseActivity.FPListItemSessionLabel) item;
-            TextView textView = new TextView(getContext());
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            textView.setLayoutParams(params);
-            textView.setText(labelItem.getLabel());
-            textView.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
-            textView.setTypeface(null, Typeface.BOLD);
-            textView.setBackgroundColor(getContext().getResources().getColor(R.color.color_chatcenter_widget_background));
 
             return textView;
         }
+//        else {
+//            int verticalPadding = (int) convertDpToPixel(5, getContext());
+//            int horizontalPadding = (int) convertDpToPixel(10, getContext());
+//
+//            FixedPhraseActivity.FPListItemSessionLabel labelItem = (FixedPhraseActivity.FPListItemSessionLabel) item;
+//            TextView textView = new TextView(getContext());
+//            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//            textView.setLayoutParams(params);
+//            textView.setText(labelItem.getLabel());
+//            textView.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+//            textView.setTypeface(null, Typeface.BOLD);
+//            textView.setBackgroundColor(getContext().getResources().getColor(R.color.color_chatcenter_widget_background));
+//
+//            return textView;
+//        }
+
+        return convertView;
     }
 
     @Override
@@ -99,7 +103,7 @@ public class FixedPhrasesAdapter extends ArrayAdapter<FixedPhraseActivity.FPList
     }
 
     public interface OnFixedPhrasesItemClickListener{
-        void onItemClick(ChatItem item);
+        void onItemClick(FixedPhraseActivity.FPListItemSticker item);
     }
 
     public float convertDpToPixel(float dp, Context context) {

@@ -5,17 +5,17 @@ buildscript {
 	dependencies {
 		classpath 'com.android.tools.build:gradle:2.2.3'
 		classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+		classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1'
 	}
 }
 
-repositories {
-	jcenter()
-	maven { url 'https://maven.fabric.io/public' }
-	maven { url  "http://tokbox.bintray.com/maven" }
-}
-
-task clean(type: Delete) {
-	delete rootProject.buildDir
+allprojects {
+	repositories {
+		jcenter()
+		maven { url 'https://maven.fabric.io/public' }
+		maven { url  "http://tokbox.bintray.com/maven" }
+	}
 }
 
 ext {
@@ -25,14 +25,16 @@ ext {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
-apply plugin: 'signing'
 apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: "com.jfrog.bintray"
+
 
 group = 'ly.appsocial'
 version = '1.0.0'
-ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
+def siteUrl = 'https://github.com/chatcenter/android'      // Homepage URL of the library
+def gitUrl = 'https://github.com/chatcenter/android.git'   // Git repository URL
 def DIR_BUNDLES = 'bundles'
 
 tasks.withType(JavaCompile) {
@@ -68,6 +70,42 @@ android {
 		abortOnError false
 	}
 
+}
+
+android.libraryVariants.all { variant ->
+	if (variant.name == 'release') {
+		def javadocTaskName = "javadoc${variant.name.capitalize()}";
+		task(javadocTaskName, type: Javadoc) {
+			description "Generates Javadoc for ${variant.name}."
+			source = variant.javaCompile.source
+			destinationDir = reporting.file("${variant.name}-docs")
+			ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
+			classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
+			exclude '**/BuildConfig.java'
+			exclude '**/R.java'
+		}
+		task("javadocsJar${variant.name.capitalize()}", type: Jar) {
+			classifier = "javadoc"
+			from tasks[javadocTaskName].destinationDir
+		}
+		task("sourcesJar${variant.name.capitalize()}", type: Jar) {
+			classifier = "sources"
+			from variant.javaCompile.source
+		}
+
+		task("copyLicenseFile${variant.name.capitalize()}", type: Copy) {
+			from("./LICENSE.txt")
+			into("$project.buildDir/$DIR_BUNDLES/$variant.dirName")
+		}
+		bundleRelease.dependsOn project.tasks["copyLicenseFile${variant.name.capitalize()}"]
+
+		/* artifacts management.
+		 * See: http://www.gradle.org/docs/current/userguide/artifact_management.html */
+		artifacts {
+			archives tasks["javadocsJar${variant.name.capitalize()}"]
+			archives tasks["sourcesJar${variant.name.capitalize()}"]
+		}
+	}
 }
 
 configurations.all {
@@ -109,81 +147,25 @@ dependencies {
 	provided 'javax.annotation:jsr250-api:1.0'
 }
 
-android.libraryVariants.all { variant ->
-	if (variant.name == 'release') {
-		def javadocTaskName = "javadoc${variant.name.capitalize()}";
-		task(javadocTaskName, type: Javadoc) {
-			description "Generates Javadoc for ${variant.name}."
-			source = variant.javaCompile.source
-			destinationDir = reporting.file("${variant.name}-docs")
-			ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-			classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
-			exclude '**/BuildConfig.java'
-			exclude '**/R.java'
-		}
-		task("javadocsJar${variant.name.capitalize()}", type: Jar) {
-			classifier = "javadoc"
-			from tasks[javadocTaskName].destinationDir
-		}
-		task("sourcesJar${variant.name.capitalize()}", type: Jar) {
-			classifier = "sources"
-			from variant.javaCompile.source
-		}
-
-		task("copyLicenseFile${variant.name.capitalize()}", type: Copy) {
-			from("./LICENSE.txt")
-			into("$project.buildDir/$DIR_BUNDLES/$variant.dirName")
-		}
-		bundleRelease.dependsOn project.tasks["copyLicenseFile${variant.name.capitalize()}"]
-
-		/* artifacts management.
-		 * See: http://www.gradle.org/docs/current/userguide/artifact_management.html */
-		artifacts {
-			archives tasks["javadocsJar${variant.name.capitalize()}"]
-			archives tasks["sourcesJar${variant.name.capitalize()}"]
-		}
-	}
-}
-
-signing {
-	required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
-	sign configurations.archives
-}
-
-uploadArchives {
-	repositories {
-		mavenDeployer {
-			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-			def sonatypeRepo = isReleaseVersion ?
-					"https://oss.sonatype.org/service/local/staging/deploy/maven2/" :
-					"https://oss.sonatype.org/content/repositories/snapshots/"
-
-			repository(url: sonatypeRepo) {
-				authentication(userName: sonatypeUsername, password: sonatypePassword)
-			}
-
-			pom.artifactId = 'chatcenter'
-			pom.project {
-				name 'ChatCenter iO SDK for Android'
+install {
+	repositories.mavenInstaller {
+		// This generates POM.xml with proper parameters
+		pom {
+			project {
 				packaging 'aar'
+
+				// Add your description here
+				name 'ChatCenter iO SDK for Android'
 				description 'The ChatCenter iO SDK for Android. super-efficient business-customer communication platform'
-				url 'https://github.com/chatcenter/android'
+				url siteUrl
 
-				scm {
-					url 'https://github.com/chatcenter/android/tree/master'
-					connection 'scm:git:git://github.com/chatcenter/android.git'
-					developerConnection 'scm:git:ssh://github.com:chatcenter/android.git'
-				}
-
+				// Set your license
 				licenses {
 					license {
-						name 'The Apache License, Version 2.0'
+						name 'The Apache Software License, Version 2.0'
 						url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-						distribution 'repo'
 					}
 				}
-
 				developers {
 					developer {
 						id 'appsocially'
@@ -192,8 +174,38 @@ uploadArchives {
 						organizationUrl 'http://en.about.appsocial.ly/'
 					}
 				}
+				scm {
+					connection gitUrl
+					developerConnection gitUrl
+					url siteUrl
+				}
 			}
+		}
+	}
+}
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+// https://github.com/bintray/gradle-bintray-plugin
+bintray {
+	user = properties.getProperty("bintray.user")
+	key = properties.getProperty("bintray.apikey")
+
+	configurations = ['archives']
+	pkg {
+		repo = "chatcenter"
+		// it is the name that appears in bintray when logged
+		name = "ly.appsocial:chatcenter-android-sdk"
+		websiteUrl = siteUrl
+		vcsUrl = gitUrl
+		licenses = ["Apache-2.0"]
+		publish = true
+		version {
+			gpg {
+				sign = true //Determines whether to GPG sign the files. The default is false
+				passphrase = properties.getProperty("bintray.gpg.password") //Optional. The passphrase for GPG signing'
+			}
 		}
 	}
 }

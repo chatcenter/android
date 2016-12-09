@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioGroup;
 
 import com.google.gson.Gson;
 
@@ -27,7 +28,8 @@ import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
 import ly.appsocial.chatcenter.ws.parser.GetFixedPhraseParser;
 
 public class FixedPhraseActivity extends BaseActivity implements View.OnClickListener,
-        ProgressDialogFragment.DialogListener, FixedPhrasesAdapter.OnFixedPhrasesItemClickListener{
+        ProgressDialogFragment.DialogListener, FixedPhrasesAdapter.OnFixedPhrasesItemClickListener,
+        RadioGroup.OnCheckedChangeListener{
 
     public static final String ORG_UID = "org_uid";
     public static final String API_TOKEN = "api_token";
@@ -36,15 +38,20 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
      * リクエストタグ
      */
     private static final String REQUEST_TAG = FixedPhraseActivity.class.getCanonicalName();
-    public static final String SELECTED_FIXED_PHRASE = "selected_fixed_phrase";
+    public static final String SELECTED_CONTENT = "selected_fixed_phrase";
+    public static final String SELECTED_TYPE = "selected_type";
 
     private Button mButtonCancel;
     private ListView mLvFixedPhrases;
+    private RadioGroup mSegmentController;
 
     private String mOrgUid;
     private String mApiToken;
 
     private List<FPListItem> mListItems;
+    private List<FPListItem> mListMineItems;
+    private List<FPListItem> mListTeamItems;
+    private List<FPListItem> mListEveryoneItems;
     private FixedPhrasesAdapter mFixedPhrasesAdapter;
 
     /**
@@ -67,9 +74,16 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
         mLvFixedPhrases = (ListView) findViewById(R.id.lv_fixed_phrases);
 
         mListItems = new ArrayList<>();
+        mListMineItems = new ArrayList<>();
+        mListTeamItems = new ArrayList<>();
+        mListEveryoneItems = new ArrayList<>();
+
         mFixedPhrasesAdapter = new FixedPhrasesAdapter(this, 0, mListItems);
         mFixedPhrasesAdapter.setOnItemClickListener(this);
         mLvFixedPhrases.setAdapter(mFixedPhrasesAdapter);
+
+        mSegmentController = (RadioGroup) findViewById(R.id.segment_controller);
+        mSegmentController.setOnCheckedChangeListener(this);
 
         requestGetFixedPhrase();
     }
@@ -133,13 +147,47 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
     }
 
     @Override
-    public void onItemClick(ChatItem item) {
+    public void onItemClick(FPListItemSticker item) {
         Gson gson = new Gson();
         Intent intent = new Intent();
-        intent.putExtra(SELECTED_FIXED_PHRASE, gson.toJson(item.widget).toString());
+        intent.putExtra(SELECTED_TYPE, item.getContentType());
+        if (item != null
+                && item.getContentType().equals(ResponseType.MESSAGE)
+                && item.getChatItem() != null
+                && item.getChatItem().widget != null
+                && item.getChatItem().widget.message != null) {
+            intent.putExtra(SELECTED_CONTENT, item.getChatItem().widget.message.text);
+        } else {
+            if (item != null
+                    && item.getChatItem() != null
+                    && item.getChatItem().widget != null) {
+                intent.putExtra(SELECTED_CONTENT, gson.toJson(item.getChatItem().widget).toString());
+            }
+        }
 
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    /**
+     * <p>Called when the checked radio button has changed. When the
+     * selection is cleared, checkedId is -1.</p>
+     *
+     * @param group     the group in which the checked radio button has changed
+     * @param checkedId the unique identifier of the newly checked radio button
+     */
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        mListItems.clear();
+        if (checkedId == R.id.radio_mine) {
+            mListItems.addAll(mListMineItems);
+        } else if (checkedId == R.id.radio_team) {
+            mListItems.addAll(mListTeamItems);
+        } else if (checkedId == R.id.radio_everyone) {
+            mListItems.addAll(mListEveryoneItems);
+        }
+
+        mFixedPhrasesAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -166,41 +214,47 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
                 return;
             }
 
-            mListItems.clear();
-
             // APPの定型ステッカー
-            mListItems.add(new FPListItemSessionLabel(getString(R.string.fixed_phrases_session_label_app)));
+            mListEveryoneItems.clear();
             if (responseDto.appFixedPhrases != null && responseDto.appFixedPhrases.size() > 0) {
                 for (ChatItem item : responseDto.appFixedPhrases) {
+                    FPListItemSticker itemSticker = new FPListItemSticker(item);
+                    itemSticker.setContentType(item.type);
                     item.type = ResponseType.STICKER;
-                    mListItems.add(new FPListItemSticker(item));
+                    mListEveryoneItems.add(itemSticker);
                 }
             } else {
-                mListItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_app_fixed_phrases)));
+                mListEveryoneItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_app_fixed_phrases)));
             }
 
             // ORGの定型ステッカー
-            mListItems.add(new FPListItemSessionLabel(getString(R.string.fixed_phrases_session_label_org)));
+            mListTeamItems.clear();
             if (responseDto.orgFixedPhrases != null && responseDto.orgFixedPhrases.size() > 0) {
                 for (ChatItem item : responseDto.orgFixedPhrases) {
+                    FPListItemSticker itemSticker = new FPListItemSticker(item);
+                    itemSticker.setContentType(item.type);
                     item.type = ResponseType.STICKER;
-                    mListItems.add(new FPListItemSticker(item));
+                    mListTeamItems.add(itemSticker);
                 }
             } else {
-                mListItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_org_fixed_phrases)));
+                mListTeamItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_org_fixed_phrases)));
             }
 
             // ユーザーの定型ステッカー
-            mListItems.add(new FPListItemSessionLabel(getString(R.string.fixed_phrases_session_label_myphrases)));
+            mListMineItems.clear();
             if (responseDto.userFixedPhrases != null && responseDto.userFixedPhrases.size() > 0) {
                 for (ChatItem item : responseDto.userFixedPhrases) {
+                    FPListItemSticker itemSticker = new FPListItemSticker(item);
+                    itemSticker.setContentType(item.type);
                     item.type = ResponseType.STICKER;
-                    mListItems.add(new FPListItemSticker(item));
+                    mListMineItems.add(itemSticker);
                 }
             } else {
-                mListItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_myphrase_empty)));
+                mListMineItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_myphrase_empty)));
             }
 
+            mListItems.clear();
+            mListItems.addAll(mListMineItems);
             mFixedPhrasesAdapter.notifyDataSetChanged();
         }
     }
@@ -222,10 +276,12 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
     /** 定型ステッカー一覧に表示される項目 */
     public static class FPListItem {
         public static int TYPE_STICKER = 1;
-        public static int TYPE_SESSION_LABEL = 2;
+//        public static int TYPE_SESSION_LABEL = 2;
         public static int TYPE_SESSION_EMPTY = 3;
 
         private int type;
+
+        private String contentType;
 
         public int getType() {
             return type;
@@ -234,24 +290,32 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
         public void setType(int type) {
             this.type = type;
         }
-    }
 
-    public static class FPListItemSessionLabel extends FPListItem{
-        private String label;
-
-        public FPListItemSessionLabel (String label) {
-            this.label = label;
-            setType(TYPE_SESSION_LABEL);
+        public String getContentType() {
+            return contentType;
         }
 
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
+        public void setContentType(String contentType) {
+            this.contentType = contentType;
         }
     }
+
+//    public static class FPListItemSessionLabel extends FPListItem{
+//        private String label;
+//
+//        public FPListItemSessionLabel (String label) {
+//            this.label = label;
+//            setType(TYPE_SESSION_LABEL);
+//        }
+//
+//        public String getLabel() {
+//            return label;
+//        }
+//
+//        public void setLabel(String label) {
+//            this.label = label;
+//        }
+//    }
 
     public static class FPListItemSessionEmptyLabel extends FPListItem{
         private String label;
