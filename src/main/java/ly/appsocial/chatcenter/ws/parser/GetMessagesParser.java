@@ -50,7 +50,9 @@ public class GetMessagesParser implements ApiRequest.Parser<GetMessagesResponseD
 							continue;
 						} else if ( item.type.equals(ResponseType.CALL) ){
 							item.setupContent(VideoCallWidget.class, obj);
-						} else {
+						} else if (item.type.equals(ResponseType.SUGGESTION)) {
+							item.setupContent(BasicWidget.class, obj);
+						}else {
 							item.setupContent(BasicWidget.class, obj);
 						}
 						resps.items.add(item);

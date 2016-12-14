@@ -17,7 +17,7 @@ import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
 
 /**
- * A simple {@link Fragment} subclass.
+ * PreviewWidgetFragment.
  */
 public class PreviewWidgetFragment extends Fragment {
 

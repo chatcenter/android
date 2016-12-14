@@ -314,6 +314,15 @@ public class BasicWidget extends Widget {
 			@SerializedName("value")
 			public Value value;
 
+			@SerializedName("type")
+			public String type;
+
+			@SerializedName("sticker")
+			public SuggestionSticker suggestionSticker;
+
+			@SerializedName("message")
+			public String message;
+
 			public static class Value {
 				/** The start value of a datetime action */
 				@SerializedName("start")
@@ -372,6 +381,21 @@ public class BasicWidget extends Widget {
 			}
 		}
 
+		public static class SuggestionSticker {
+			/** Sticker message */
+			@SerializedName("message")
+			public Message message;
+
+			@SerializedName("sticker-content")
+			public StickerContent stickerContent;
+
+			@SerializedName("sticker-action")
+			public StickerAction stickerAction;
+
+			@SerializedName("sticker-type")
+			public String stickerType;
+		}
+
 		public static class ViewInfo {
 			@SerializedName("type")
 			public String type;
@@ -389,6 +413,4 @@ public class BasicWidget extends Widget {
 		@SerializedName("text")
 		public String text;
 	}
-
-
 }

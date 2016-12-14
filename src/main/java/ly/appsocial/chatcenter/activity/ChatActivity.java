@@ -48,6 +48,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.gson.Gson;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.RequestBody;
@@ -92,8 +93,8 @@ import ly.appsocial.chatcenter.dto.ws.response.GetUsersResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostChannelsResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostMessagesReadResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostMessagesResponseDto;
-import ly.appsocial.chatcenter.dto.ws.response.StartVideoChatResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostUsersResponseDto;
+import ly.appsocial.chatcenter.dto.ws.response.StartVideoChatResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsChannelJoinMessageDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
 import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
@@ -147,7 +148,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private static final int REQUEST_CAMERA = 1002;
 	private static final int REQUEST_LOCATION_PICKER = 1003;
 	private static final int REQUEST_PREVIEW_IMAGE = 1004;
-	// private static final int REQUEST_PREVIEW_WIDGET = 1005;
+	private static final int REQUEST_PREVIEW_WIDGET = 1005;
 	private static final int REQUEST_SCHEDULE_WIDGET = 1006;
 	private static final int REQUEST_QUESTION = 1007;
 
@@ -295,6 +296,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 	/** Phone call button*/
 	private ImageButton mBtPhoneCall;
+	private String mSendingContent;
 
 	// //////////////////////////////////////////////////////////////////////////
 	// イベントメソッド
@@ -1076,9 +1078,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 					} else if (actionString.startsWith(WidgetAction.OPEN_CALENDAR)) {
 						onDateTimeAvailabilityClicked();
 						break;
-					} else if (actionString.startsWith(WidgetAction.REPLY_SUGGESTION_MSG)) {
-						mEditText.setText(getReplySuggestionMsg(action.label));
-						break;
 					}
 				}
 			}
@@ -1091,6 +1090,39 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				} else {
 					String message = String.format(getString(R.string.message_reply_choosed_value), action.label);
 					showDialogConfirmReply(message, action, msgId);
+				}
+			}
+		}
+	}
+
+	private void onSuggestionActionSelected(BasicWidget.StickerAction.ActionData actionData) {
+
+		// Old Suggestion Structure
+		if (StringUtil.isBlank(actionData.type)) {
+			for (String actionString : actionData.action) {
+				if (actionString.startsWith("http")) {
+					Intent intent = new Intent(this, WebViewActivity.class);
+					intent.putExtra(ChatCenterConstants.Extra.URL, actionData.action.get(0));
+					startActivity(intent);
+					break;
+				} else if (actionString.startsWith(WidgetAction.REPLY_SUGGESTION_MSG)) {
+					mEditText.setText(actionData.message);
+					break;
+				}
+			}
+		} else {
+			// New Suggestion Structure
+			if (actionData.type.equals(ResponseType.MESSAGE)) {
+				mEditText.setText(actionData.message);
+			} else if (actionData.type.equals(ResponseType.URL) && actionData.action != null && actionData.action.size() > 0) {
+				Intent intent = new Intent(this, WebViewActivity.class);
+				intent.putExtra(ChatCenterConstants.Extra.URL, actionData.action.get(0));
+				startActivity(intent);
+			} else {
+				if (actionData != null
+						&& actionData.suggestionSticker != null) {
+					Gson gson = new Gson();
+					openWidgetPreview(gson.toJson(actionData.suggestionSticker).toString());
 				}
 			}
 		}
@@ -1136,7 +1168,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		if (chatItem.widget.stickerAction != null && BasicWidget.WIDGET_TYPE_SELECT.equals(chatItem.widget.stickerAction.actionType)) {
 
 			for (BasicWidget.StickerAction.ActionData actionData: chatItem.widget.stickerAction.actionData) {
-				View view = getSuggestionViewForChatItem(actionData, chatItem);
+				View view = getSuggestionViewForChatItem(actionData);
 				mSuggestionHorizontalView.addView(view);
 				view.getLayoutParams().width = mSuggestionWidth;
 			}
@@ -1150,7 +1182,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		mSuggestionPlaceHolder.setVisibility(View.VISIBLE);
 	}
 
-	private View getSuggestionViewForChatItem(final BasicWidget.StickerAction.ActionData action, final ChatItem chatItem) {
+	private View getSuggestionViewForChatItem(final BasicWidget.StickerAction.ActionData action) {
 		if (action == null) {
 			return null;
 		}
@@ -1159,22 +1191,34 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		TextView contentView = (TextView) suggestionView.findViewById(R.id.suggestion_title);
 		ImageView icon = (ImageView) suggestionView.findViewById(R.id.suggestion_icon);
 
-		if (StringUtil.isNotBlank(action.label)) {
+		// Older suggestion object do not contain type
+		if (StringUtil.isBlank(action.type)) {
 			contentView.setText(action.label);
+			icon.setImageResource(R.drawable.icon_widget_schedule);
 		} else {
+			if (action.type.equals(ResponseType.MESSAGE) || action.type.equals(ResponseType.URL)) {
+				contentView.setText(action.label);
+				icon.setVisibility(View.GONE);
+			} else {
+				if (action.suggestionSticker != null
+						&& action.suggestionSticker.message != null) {
+					contentView.setText(action.suggestionSticker.message.text);
+					int iconDrawable = getSuggestionIcon(action.suggestionSticker.stickerType);
+					if (iconDrawable > 0) {
+						icon.setImageResource(iconDrawable);
+					}
+				} else {
+					contentView.setText(action.label);
+					icon.setVisibility(View.GONE);
+				}
+			}
 		}
 
-		int iconDrawable = getSuggestionIcon(chatItem.widget.stickerAction.actionType);
-		if (iconDrawable > 0) {
-			icon.setImageResource(iconDrawable);
-		} else {
-			icon.setVisibility(View.GONE);
-		}
 		// contentView.setCompoundDrawables(null, null, null, null);
 		suggestionView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				onActionClick(action, String.valueOf(chatItem.id));
+				onSuggestionActionSelected(action);
 			}
 		});
 
@@ -1531,9 +1575,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				case REQUEST_PREVIEW_IMAGE:
 					requestUploadFileWithUri(mImageUri);
 					break;
-//				case REQUEST_PREVIEW_WIDGET:
-//					requestPostSticker(mSendingContent);
-//					break;
+				case REQUEST_PREVIEW_WIDGET:
+					requestPostSticker(mSendingContent);
+					break;
 				case REQUEST_QUESTION:
 					onQuestionSelected(data);
 					break;
@@ -1580,39 +1624,28 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		}
 	}
 
-//	public void openWidgetPreview(String content){
-//		mSendingContent = content;
-//		Log.e(TAG, "Content: " + mSendingContent);
-//
-//		Intent intent = new Intent(this, PreviewActivity.class);
-//		intent.putExtra("type", "widget");
-//		intent.putExtra("content", mSendingContent);
-//		startActivityForResult(intent, REQUEST_PREVIEW_WIDGET);
-//	}
+	public void openWidgetPreview(String content){
+		mSendingContent = content;
+		Log.e(TAG, "Content: " + mSendingContent);
 
-	/**Label format ----> Tell " Some text "*/
-	private String getReplySuggestionMsg(String label) {
-		int start = label.indexOf("\'") + 1;
-		int end = label.lastIndexOf("\'");
-
-		if (start >= 0) {
-			if (end > start) {
-				label = label.substring(start, end);
-			} else {
-				label.substring(start);
-			}
-		}
-		return label;
+		Intent intent = new Intent(this, PreviewActivity.class);
+		intent.putExtra("type", "widget");
+		intent.putExtra("content", mSendingContent);
+		startActivityForResult(intent, REQUEST_PREVIEW_WIDGET);
 	}
 
 	public int getSuggestionIcon(String actionType) {
 		int drawable = 0;
-		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)) {
+		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)
+				|| actionType.equals(ResponseType.QUESTION)) {
 			drawable = R.drawable.icon_widget_question;
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_SELECT)) {
+		} else if (actionType.equals(ResponseType.LIST)) {
 			drawable = R.drawable.icon_widget_schedule;
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_LOCATION)) {
+		} else if (actionType.equals(ResponseType.LOCATION)
+				|| actionType.equals(ResponseType.LOCATION)) {
 			drawable = R.drawable.icon_widget_location;
+		} else if (actionType.equals(ResponseType.FILE)) {
+			drawable = R.drawable.icon_widget_attachment;
 		}
 
 		return drawable;
@@ -2277,24 +2310,24 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 						return;
 					}
 
-					Boolean bFound = false;
-					for (UserItem userItem : mChannelUsers) {
-						if (userItem.id.equals(channelUid)) {
-							bFound = true;
-							break;
-						}
-					}
-					if ( !bFound )
-						return;
-
 					try {
 						Integer currentUserId = user.getInt("id");
+						Boolean bFound = false;
+						for (UserItem userItem : mChannelUsers) {
+							if (userItem.id.equals(currentUserId)) {
+								bFound = true;
+								break;
+							}
+						}
+						if ( !bFound )
+							return;
+
 						ArrayList<JSONObject> tempUserVideoChat = new ArrayList<>(userVideoChat);
 						Log.d(TAG, "tempUserVideoChat original: " + tempUserVideoChat.size());
 						for (int i = 0; i < tempUserVideoChat.size(); i++) {
 							JSONObject userTmp = tempUserVideoChat.get(i);
 							Integer userId = userTmp.getInt("id");
-							if(currentUserId == userId) {
+							if(currentUserId.equals(userId)) {
 								tempUserVideoChat.remove(i); // remove old object
 								Log.d(TAG, "remove old object!");
 							}
@@ -2352,7 +2385,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 									messageId = messages.getInt(i);
 								} catch (JSONException e){
 								}
-								if ( messageId != null && msg.id.equals(messageId) && !ResponseType.SUGGESTION.equals(msg.type)) {
+								if ( messageId != null && msg != null
+										&& msg.id != null && StringUtil.isNotBlank(msg.type)
+										&& msg.id.equals(messageId) && !ResponseType.SUGGESTION.equals(msg.type)) {
 									//OK
 									JSONArray usersReadMessage;
 

@@ -72,7 +72,7 @@ public class ChatItem {
 		}
 
 		for (UserItem user : usersReadMessage) {
-			if (user.id == this.user.id) {
+			if (user.id.equals(this.user.id)) {
 				// Check only other users
 				continue;
 			}

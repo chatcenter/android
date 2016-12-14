@@ -26,5 +26,9 @@ public class ResponseType {
 	public static final String CALL =			"call";
 	public static final String SUGGESTION =		"suggestion";
 	public static final String CALLINVITE =		"call-invite";
-	public static final String TEXT = "text";
+	public static final String TEXT = 			"text";
+	public static final String FILE = 			"file";
+	public static final String URL = 			"url";
+	public static final String SAVED = 			"saved";
+	public static final String LIST = 			"list";
 }

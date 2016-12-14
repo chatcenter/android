@@ -27,7 +27,7 @@ import ly.appsocial.chatcenter.util.CircleTransformation;
 import static com.opentok.client.DeviceInfo.getApplicationContext;
 
 /**
- * A simple {@link Fragment} subclass.
+ * VideoCallFragment.
  */
 public class VideoCallFragment extends Fragment {
 

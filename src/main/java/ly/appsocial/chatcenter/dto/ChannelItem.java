@@ -66,7 +66,7 @@ public class ChannelItem implements Serializable {
     public UserItem getAssignee() {
         if(assignee != null) {
             for (UserItem user : users) {
-                if (user.id == assignee.id) {
+                if (user.id.equals(assignee.id)) {
                     return user;
                 }
             }

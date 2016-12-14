@@ -32,7 +32,7 @@ import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.util.CircleTransformation;
 
 /**
- * A simple {@link Fragment} subclass.
+ * VideoChatFragment.
  */
 public class VideoChatFragment extends Fragment implements Session.SessionListener,
 		Publisher.PublisherListener, Subscriber.VideoListener{

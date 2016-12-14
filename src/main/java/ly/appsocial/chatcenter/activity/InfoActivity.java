@@ -297,7 +297,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         int numberOfFollowers = 0;
         for (UserItem user : mCurrentChannel.users) {
             if (user.admin) {
-                if (mCurrentChannel.assignee != null && user.id == mCurrentChannel.assignee.id) {
+                if (mCurrentChannel.assignee != null && user.id.equals(mCurrentChannel.assignee.id)) {
                     continue;
                 } else {
                     mFollowersView.addView(createAvaLayout(user.displayName, user.iconUrl));
@@ -493,7 +493,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
 
     private boolean isUserInList(List<UserItem> users, UserItem user) {
         for (UserItem item: users) {
-            if (item.id.intValue() == user.id.intValue()) {
+            if (item.id.equals(user.id)) {
                 return true;
             }
         }
@@ -584,7 +584,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
      */
     private void requestPostChannelAssignIfNeed(String channelUid, UserItem user) {
 
-        if (mCurrentChannel.assignee != null && user.id.intValue() == mCurrentChannel.assignee.id.intValue()) {
+        if (mCurrentChannel.assignee != null && user.id.equals(mCurrentChannel.assignee.id)) {
             return;
         }
 
@@ -594,7 +594,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id.intValue() + "");
+        params.put("user_id", user.id + "");
 
         mPostChannelRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, params, headers, new PostAssigneeCallback(), new PostChannelsParser());
         if (mParamDto.appToken != null) {
@@ -614,7 +614,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id.intValue() + "");
+        params.put("user_id", user.id + "");
 
         mPostChannelRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, params, headers, new PostUnAssigneeCallback(), new PostChannelsParser());
         if (mParamDto.appToken != null) {
@@ -634,7 +634,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id.intValue() + "");
+        params.put("user_id", user.id + "");
 
         ApiRequest<PostChannelsResponseDto> postChannelFollowRequest = new OkHttpApiRequest<>(this,
                 ApiRequest.Method.POST, path, params, headers, new PostFollowCallback(), new PostChannelsParser());
@@ -656,7 +656,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         Map<String, String> params = new HashMap<>();
-        params.put("user_id", user.id.intValue() + "");
+        params.put("user_id", user.id + "");
 
         ApiRequest<PostChannelsResponseDto> postChannelFollowRequest = new OkHttpApiRequest<>(this,
                 ApiRequest.Method.POST, path, params, headers, new PostUnFollowCallback(), new PostChannelsParser());

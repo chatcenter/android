@@ -1320,7 +1320,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 						break;
 					}
 
-					if (found == null || found.latestMessage.id == response.id) {
+					if (found == null || found.latestMessage.id.equals(response.id)) {
 						return;
 					}
 

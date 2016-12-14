@@ -15,7 +15,7 @@ import java.io.File;
 import ly.appsocial.chatcenter.R;
 
 /**
- * A simple {@link Fragment} subclass.
+ * PreviewImageFragment.
  */
 public class PreviewImageFragment extends Fragment {
 

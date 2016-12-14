@@ -13,6 +13,7 @@ import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.adapter.ListQuestionAdapter;
 
 /**
+ * ListQuestionFragment
  * Created by karasawa on 2016/11/04.
  */
 

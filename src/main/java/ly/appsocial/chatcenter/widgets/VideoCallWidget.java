@@ -51,7 +51,7 @@ public class VideoCallWidget extends BasicWidget {
 	public void setupWithUsers(List<UserItem> users){
 		if(this.caller != null) {
 			for (UserItem userItem : users) {
-				if (userItem.id == this.caller.userId) {
+				if (userItem.id.equals(this.caller.userId)) {
 					this.caller.displayName = userItem.displayName;
 					this.caller.iconUrl = userItem.iconUrl;
 					break;

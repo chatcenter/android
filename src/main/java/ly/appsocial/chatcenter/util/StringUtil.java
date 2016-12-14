@@ -32,13 +32,6 @@ public class StringUtil {
 
 	/**
 	 * This function will take an URL as input and return the file name.
-	 * <p>Examples :</p>
-	 * <ul>
-	 * <li>http://example.com/a/b/c/test.txt -> test.txt</li>
-	 * <li>http://example.com/ -> an empty string </li>
-	 * <li>http://example.com/test.txt?param=value -> test.txt</li>
-	 * <li>http://example.com/test.txt#anchor -> test.txt</li>
-	 * </ul>
 	 *
 	 * @param url The input URL
 	 * @return The URL file name

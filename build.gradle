@@ -6,7 +6,7 @@ buildscript {
 		classpath 'com.android.tools.build:gradle:2.2.3'
 		classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
 		classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
-		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1'
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
 	}
 }
 
@@ -18,10 +18,8 @@ allprojects {
 	}
 }
 
-ext {
-	versionName="1.0.0"
-	versionCode=1
-	defaultBuildType="debug"
+subprojects {
+	tasks.withType(Javadoc).all { enabled = false }
 }
 
 apply plugin: 'com.android.library'
@@ -29,82 +27,56 @@ apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: "com.jfrog.bintray"
 
+ext {
+	bintrayRepo = 'chatcenter'
+	bintrayName = 'chatcenter-android-sdk'
 
-group = 'ly.appsocial'
-version = '1.0.0'
+	publishedGroupId = 'ly.appsocial'
+	libraryName = 'Chatcenter iO Android SDK'
+	artifact = 'chatcenter-android-sdk'
 
-def siteUrl = 'https://github.com/chatcenter/android'      // Homepage URL of the library
-def gitUrl = 'https://github.com/chatcenter/android.git'   // Git repository URL
-def DIR_BUNDLES = 'bundles'
+	libraryDescription = 'The ChatCenter iO SDK for Android. super-efficient business-customer communication platform'
 
-tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+	siteUrl = 'https://github.com/chatcenter/android'
+	gitUrl = 'https://github.com/chatcenter/android.git'
+
+	libraryVersion = '0.0.1'
+
+	developerId = 'appsocially'
+	developerName = 'AppSocially Inc.'
+	developerEmail = 'yt@chatcenter.io'
+
+	licenseName = 'The Apache Software License, Version 2.0'
+	licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+	allLicenses = ["Apache-2.0"]
 }
 
 android {
 	compileSdkVersion 23
 	buildToolsVersion '23.0.3'
-	publishNonDefault true
 
 	defaultConfig {
 		minSdkVersion 16
 		targetSdkVersion 22
-		versionCode rootProject.ext.versionCode
-		versionName rootProject.ext.versionName
+		versionCode 1
+		versionName '0.0.1'
 
-		buildConfigField "String", "SDK_VERSION", "\"$rootProject.ext.versionName\""
+		buildConfigField "String", "SDK_VERSION", "\"$rootProject.ext.libraryVersion\""
 	}
-
 	buildTypes {
 		release {
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 		}
-
-		debug {
-			debuggable true
-		}
 	}
-
+	packagingOptions {
+		exclude 'META-INF/DEPENDENCIES'
+		exclude 'META-INF/NOTICE'
+		exclude 'META-INF/LICENSE'
+		exclude 'libs/commons-math-2.2.jar'
+	}
 	lintOptions {
 		abortOnError false
-	}
-
-}
-
-android.libraryVariants.all { variant ->
-	if (variant.name == 'release') {
-		def javadocTaskName = "javadoc${variant.name.capitalize()}";
-		task(javadocTaskName, type: Javadoc) {
-			description "Generates Javadoc for ${variant.name}."
-			source = variant.javaCompile.source
-			destinationDir = reporting.file("${variant.name}-docs")
-			ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-			classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
-			exclude '**/BuildConfig.java'
-			exclude '**/R.java'
-		}
-		task("javadocsJar${variant.name.capitalize()}", type: Jar) {
-			classifier = "javadoc"
-			from tasks[javadocTaskName].destinationDir
-		}
-		task("sourcesJar${variant.name.capitalize()}", type: Jar) {
-			classifier = "sources"
-			from variant.javaCompile.source
-		}
-
-		task("copyLicenseFile${variant.name.capitalize()}", type: Copy) {
-			from("./LICENSE.txt")
-			into("$project.buildDir/$DIR_BUNDLES/$variant.dirName")
-		}
-		bundleRelease.dependsOn project.tasks["copyLicenseFile${variant.name.capitalize()}"]
-
-		/* artifacts management.
-		 * See: http://www.gradle.org/docs/current/userguide/artifact_management.html */
-		artifacts {
-			archives tasks["javadocsJar${variant.name.capitalize()}"]
-			archives tasks["sourcesJar${variant.name.capitalize()}"]
-		}
 	}
 }
 
@@ -116,7 +88,7 @@ configurations.all {
 }
 
 dependencies {
-	compile fileTree(dir: 'libs', include: ['*.jar'])
+	compile fileTree(include: ['*.jar'], dir: 'libs')
 	compile 'com.android.support:appcompat-v7:23.4.0'
 	compile 'com.fasterxml.jackson.core:jackson-databind:2.8.2'
 	compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.2'
@@ -134,7 +106,6 @@ dependencies {
 	compile 'com.android.support:support-v4:23.4.0'
 	compile 'com.opentok.android:opentok-android-sdk:2.9.1-REL-2636'
 	compile 'io.jsonwebtoken:jjwt:0.7.0'
-
 	testCompile 'junit:junit:4.12'
 	testCompile 'com.squareup.assertj:assertj-android:1.1.0'
 	testCompile 'com.squareup.okhttp3:mockwebserver:3.4.1'
@@ -147,65 +118,33 @@ dependencies {
 	provided 'javax.annotation:jsr250-api:1.0'
 }
 
-install {
-	repositories.mavenInstaller {
-		// This generates POM.xml with proper parameters
-		pom {
-			project {
-				packaging 'aar'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
 
-				// Add your description here
-				name 'ChatCenter iO SDK for Android'
-				description 'The ChatCenter iO SDK for Android. super-efficient business-customer communication platform'
-				url siteUrl
-
-				// Set your license
-				licenses {
-					license {
-						name 'The Apache Software License, Version 2.0'
-						url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-					}
-				}
-				developers {
-					developer {
-						id 'appsocially'
-						email 'yt@chatcenter.io'
-						organization 'AppSocially Inc.'
-						organizationUrl 'http://en.about.appsocial.ly/'
-					}
-				}
-				scm {
-					connection gitUrl
-					developerConnection gitUrl
-					url siteUrl
-				}
-			}
-		}
-	}
+task androidJavadocs(type: Javadoc) {
+	source = android.sourceSets.main.java.srcDirs
+	classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+	options {
+		links("http://docs.oracle.com/javase/7/docs/api/")
+		linksOffline "http://d.android.com/reference","${android.sdkDirectory}/docs/reference"
+		encoding = "utf-8"
+	};
+	exclude '**/BuildConfig.java'
+	exclude '**/R.java'
+	failOnError = false
 }
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+	classifier = 'javadoc'
+	from androidJavadocs.destinationDir
+}
 
-// https://github.com/bintray/gradle-bintray-plugin
-bintray {
-	user = properties.getProperty("bintray.user")
-	key = properties.getProperty("bintray.apikey")
+task androidSourcesJar(type: Jar) {
+	classifier = 'sources'
+	from android.sourceSets.main.java.sourceFiles
+}
 
-	configurations = ['archives']
-	pkg {
-		repo = "chatcenter"
-		// it is the name that appears in bintray when logged
-		name = "ly.appsocial:chatcenter-android-sdk"
-		websiteUrl = siteUrl
-		vcsUrl = gitUrl
-		licenses = ["Apache-2.0"]
-		publish = true
-		version {
-			gpg {
-				sign = true //Determines whether to GPG sign the files. The default is false
-				passphrase = properties.getProperty("bintray.gpg.password") //Optional. The passphrase for GPG signing'
-			}
-		}
-	}
+artifacts {
+	archives androidSourcesJar
+	archives androidJavadocsJar
 }

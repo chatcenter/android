@@ -267,7 +267,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 
 		// 担当者名
 		UserItem user = position > 0 ? getItem(position - 1).user : null;
-		if (position > 0 && user != null && user.id == item.user.id) {
+		if (position > 0 && user != null && user.id.equals(item.user.id)) {
 			holder.nameTextView.setVisibility(View.GONE);
 		} else {
 			holder.nameTextView.setVisibility(View.VISIBLE);

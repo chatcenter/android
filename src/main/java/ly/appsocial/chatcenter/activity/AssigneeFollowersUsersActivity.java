@@ -91,7 +91,7 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
                 for (UserItem user : orgItem.users) {
                     ItemListAssigneeFollower item = new ItemListAssigneeFollower();
                     item.setUser(user);
-                    if(!isAssigneeList && mCurrentChannel.assignee != null && user.id == mCurrentChannel.assignee.id) {
+                    if(!isAssigneeList && mCurrentChannel.assignee != null && user.id.equals(mCurrentChannel.assignee.id)) {
                         // If is Followers list, do not add assignee
                     } else {
                         items.add(item);
@@ -109,12 +109,12 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
 
                         if (isAssigneeList) {
                             if (mCurrentChannel.assignee != null
-                                    && user.id == mCurrentChannel.assignee.id) {
+                                    && user.id.equals(mCurrentChannel.assignee.id)) {
                                 item.setSelected(true);
                             }
                         } else {
                             if (user.admin) {
-                                if (mCurrentChannel.assignee != null && user.id == mCurrentChannel.assignee.id) {
+                                if (mCurrentChannel.assignee != null && user.id.equals(mCurrentChannel.assignee.id)) {
                                     // Do not show assignee on list of followers
                                     continue;
                                 }
@@ -141,7 +141,7 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
         if(items != null && items.size() > 0) {
             for (int i = 0; i < items.size(); i ++) {
                 UserItem userItem = items.get(i).getUser();
-                if (userItem.id.intValue() == user.id.intValue()) {
+                if (userItem.id.equals(user.id)) {
                     return i;
                 }
             }

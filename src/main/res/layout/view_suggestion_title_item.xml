@@ -18,15 +18,16 @@
             android:id="@+id/suggestion_icon"
             android:layout_width="18dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin8dp"
+            android:adjustViewBounds="true"
             android:src="@drawable/icon_widget_location"
-            android:tint="@color/color_chatcenter_widget_border"
-            android:layout_margin="@dimen/margin8dp"
-            android:adjustViewBounds="true"/>
+            android:tint="@color/color_chatcenter_widget_border"/>
 
         <TextView
             android:id="@+id/suggestion_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin8dp"
             android:layout_weight="1"
             android:ellipsize="end"
             android:maxLines="2"

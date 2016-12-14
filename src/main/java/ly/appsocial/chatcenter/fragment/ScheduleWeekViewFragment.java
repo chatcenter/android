@@ -19,6 +19,7 @@ import ly.appsocial.chatcenter.ui.ScheduleDateView;
 import ly.appsocial.chatcenter.util.DateUtils;
 
 /**
+ * ScheduleWeekViewFragment
  * Created by karasawa on 2016/11/29.
  */
 
