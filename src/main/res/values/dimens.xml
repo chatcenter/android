@@ -35,4 +35,10 @@
     <dimen name="assignee_ava_size">30dp</dimen>
     <dimen name="info_item_vertical_margin">20dp</dimen>
 
+    <dimen name="drawer_menu_avatar">50dp</dimen>
+    <dimen name="drawer_menu_width">320dp</dimen>
+    <dimen name="left_menu_item_height">60dp</dimen>
+    <dimen name="drawer_menu_height">150dp</dimen>
+    <dimen name="left_menu_org_icon_size">28dp</dimen>
+
 </resources>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/margin10dp"
+        android:text="@string/app_name"
+        android:textColor="@color/color_chatcenter_text"/>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:background="@color/color_chatcenter_widget_divider"/>
+
+    <Button
+        android:id="@+id/btn_logout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_header_height"
+        android:background="@android:color/transparent"
+        android:gravity="center"
+        android:text="@string/chatcenter_messages_signout"
+        android:textColor="@color/color_chatcenter_text_red"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:background="@color/color_chatcenter_widget_divider"/>
+
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_header_height"
+        android:background="@android:color/transparent"
+        android:gravity="center"
+        android:text="@string/cancel"
+        android:textColor="@color/color_chatcenter_text"/>
+</LinearLayout>

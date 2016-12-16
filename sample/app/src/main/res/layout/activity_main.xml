@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016.
+  -->
+
+<RelativeLayout
+	android:id="@+id/activity_main"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	tools:context="ly.appsocial.chatcenter.sdksample.MainActivity">
+
+	<Button
+		android:id="@+id/chat_button"
+		android:layout_width="150dp"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="100dp"
+		android:text="@string/start_chat"/>
+
+	<TextView
+		android:id="@+id/history"
+		android:layout_below="@+id/chat_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="30dp"
+		android:text="@string/open_history"	/>
+
+	<TextView
+		android:id="@+id/clear_history"
+		android:layout_below="@+id/history"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="30dp"
+		android:text="@string/clear_history"	/>
+
+</RelativeLayout>

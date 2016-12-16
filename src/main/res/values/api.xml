@@ -13,7 +13,7 @@
     <string name="apptoken_param">ly.appsocial.chatcenter.AppToken</string>
 
 	<!-- GCM Sender -->
-    <string name="product_gcm_notification_sender" translatable="false"></string>
+    <string name="product_gcm_notification_sender" translatable="false">99433242024</string>
 
     <!-- Google API Key-->
     <string name="google_api_key" translatable="false">AIzaSyBbEP1GaeYV-chH7nWrDJKFUV8EJd65vWM</string>

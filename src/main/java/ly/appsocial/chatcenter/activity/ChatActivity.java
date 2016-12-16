@@ -131,8 +131,7 @@ import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_
  * 「チャット」アクティビティ。
  */
 public class ChatActivity extends BaseActivity implements View.OnClickListener,
-		AlertDialogFragment.DialogListener, ProgressDialogFragment.DialogListener,
-		ConfirmDialogFragment.DialogListener, ViewUtil.OnSoftKeyBoardVisibleListener,
+		ProgressDialogFragment.DialogListener, ViewUtil.OnSoftKeyBoardVisibleListener,
 		WidgetView.StickerActionListener, WidgetMenuGridAdapter.WidgetMenuClickListener{
 
 	private static final String TAG = ChatActivity.class.getSimpleName();
@@ -213,8 +212,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private OkHttpApiRequest<PostMessagesResponseDto> mPostMessagesRequest;
 	/** POST /api/channels/:channel_uid/messages read */
 	private ApiRequest<PostMessagesReadResponseDto> mPostMessagesReadRequest;
-	/** GET /api/users/:id */
-	private ApiRequest<GetUsersResponseDto> mGetUsersRequest;
 	/** GET /api/apps */
 	private OkHttpApiRequest<GetAppsResponseDto> mGetAppsRequest;
 	/** TokBox */
@@ -256,9 +253,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	/** チャネルUID */
 	private String mChannelUid;
 	/** 最も新しいクライアントメッセージのユーザーID */
-	private int mClientUserId;
+//	private int mClientUserId;
 	/** ダイアル可能かどうか */
-	private boolean mCanDial;
+//	private boolean mCanDial;
 
 	private boolean mIsAgent;
 
@@ -375,7 +372,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		// ViewUtil.observeSoftKeyBoards(this, this);
 
 		// ダイアル可能かどうか
-		mCanDial = newDialIntent(getApplicationContext(), null) != null;
+//		mCanDial = newDialIntent(getApplicationContext(), null) != null;
 
 		// setupParentAutoHideSoftKeyboard(mRootLayout);
 
@@ -452,7 +449,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		mGetMessagesRequest = null;
 		mPostMessagesRequest = null;
 		mPostMessagesReadRequest = null;
-		mGetUsersRequest = null;
 	}
 
 	@Override
@@ -529,20 +525,20 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		}
 	}
 
-	@Override
-	public void onPositiveButtonClick(String tag) {
-		if (DialogUtil.Tag.ERROR_401.equals(tag)) { // 401エラー
-			finish();
-		} else if (DialogUtil.Tag.TEL.equals(tag)) { // 電話確認
-			// ダイアラーの起動
-			startActivity(newDialIntent(getApplicationContext(), mGetUsersResponseDto.mobileNumber));
-		}
-	}
-
-	@Override
-	public void onNegativeButtonClick(String tag) {
-		// empty
-	}
+//	@Override
+//	public void onPositiveButtonClick(String tag) {
+//		if (DialogUtil.Tag.ERROR_401.equals(tag)) { // 401エラー
+//			finish();
+//		} else if (DialogUtil.Tag.TEL.equals(tag)) { // 電話確認
+//			// ダイアラーの起動
+//			startActivity(newDialIntent(getApplicationContext(), mGetUsersResponseDto.mobileNumber));
+//		}
+//	}
+//
+//	@Override
+//	public void onNegativeButtonClick(String tag) {
+//		// empty
+//	}
 
 	@Override
 	public void onSoftKeyBoardVisible(boolean visible) {
@@ -899,28 +895,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	}
 
 	/**
-	 * GET /api/users/:id
-	 */
-	private void requestGetUsers() {
-		if (mGetUsersRequest != null) {
-			return;
-		}
-
-		String path = "users/" + mClientUserId;
-
-		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
-
-		mGetUsersRequest = new OkHttpApiRequest<>(getApplicationContext(), ApiRequest.Method.GET, path, null, headers, new GetUsersCallback(), new GetUsersParser());
-		if (mParamDto.appToken != null) {
-			mGetUsersRequest.setApiToken(mParamDto.appToken);
-		}
-		NetworkQueueHelper.enqueue(mGetUsersRequest, REQUEST_TAG);
-
-		DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
-	}
-
-	/**
 	 * GET /api/apps
 	 */
 	private void requestGetApps() {
@@ -1037,28 +1011,28 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		}
 	}
 
-	/**
-	 * 電話起動のインテントを生成します。
-	 * <p>
-	 * 電話機能がない、もしくは電話アプリがシステム内に存在しない場合は null を返します。
-	 * </p>
-	 *
-	 * @param context コンテキスト
-	 * @param phoneNumber 電話番号
-	 * @return 生成したインテント。電話発信できない状況では null
-	 */
-	public static Intent newDialIntent(final Context context, final String phoneNumber) {
-
-		final Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
-		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-		// 電話アプリがインストールされているか確認
-		final List<ResolveInfo> appInfo = context.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-		if (appInfo == null || appInfo.size() == 0) {
-			return null;
-		}
-		return intent;
-	}
+//	/**
+//	 * 電話起動のインテントを生成します。
+//	 * <p>
+//	 * 電話機能がない、もしくは電話アプリがシステム内に存在しない場合は null を返します。
+//	 * </p>
+//	 *
+//	 * @param context コンテキスト
+//	 * @param phoneNumber 電話番号
+//	 * @return 生成したインテント。電話発信できない状況では null
+//	 */
+//	public static Intent newDialIntent(final Context context, final String phoneNumber) {
+//
+//		final Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
+//		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//
+//		// 電話アプリがインストールされているか確認
+//		final List<ResolveInfo> appInfo = context.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+//		if (appInfo == null || appInfo.size() == 0) {
+//			return null;
+//		}
+//		return intent;
+//	}
 
 	@Override
 	public void onActionClick(BasicWidget.StickerAction.ActionData action, String msgId) {
@@ -1822,9 +1796,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				nAdd++;
 
 				// クライアントユーザーの更新
-				if (chatItem.user != null && userId != chatItem.user.id) {
-					mClientUserId = chatItem.user.id;
-				}
+//				if (chatItem.user != null && userId != chatItem.user.id) {
+//					mClientUserId = chatItem.user.id;
+//				}
 				readMessageIds.add(chatItem.id);
 			}
 
@@ -1905,37 +1879,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		public void onSuccess(PostMessagesReadResponseDto responseDto) {
 			mPostMessagesReadRequest = null;
 			// empty
-		}
-	}
-
-	/**
-	 * GET /api/users/:id のコールバック
-	 */
-	private class GetUsersCallback implements OkHttpApiRequest.Callback<GetUsersResponseDto> {
-		@Override
-		public void onError(OkHttpApiRequest.Error error) {
-			mGetUsersRequest = null;
-			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
-
-			if (!isAuthErrorWithAlert(error)) {
-				// 共通エラーダイアログの表示
-				DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ERROR, null, getString(R.string.dialog_error_body));
-			}
-		}
-
-		@Override
-		public void onSuccess(GetUsersResponseDto responseDto) {
-			mGetUsersRequest = null;
-			mGetUsersResponseDto = responseDto;
-			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
-
-			if (StringUtil.isBlank(responseDto.mobileNumber)) {
-				// 電話番号未登録エラーダイアログの表示
-				DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ALERT, null, getString(R.string.dialog_tel_number_not_register_body));
-			} else {
-				// ダイアル確認ダイアログの表示
-				DialogUtil.showConfirmDialog(getSupportFragmentManager(), DialogUtil.Tag.TEL, getString(R.string.dialog_tel_title, responseDto.mobileNumber), getString(R.string.dialog_tel_body));
-			}
 		}
 	}
 
@@ -2280,7 +2223,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 						if (AuthUtil.getUserId(ChatActivity.this) != item.user.id) {
 							// クライアントユーザーの更新
-							mClientUserId = item.user.id;
+//							mClientUserId = item.user.id;
 
 							// 表示したメッセージを既読化
 							List<Integer> unreadMessages = new ArrayList<>();

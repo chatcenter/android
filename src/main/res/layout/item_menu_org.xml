@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="45dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingLeft="30dp"
+    android:paddingRight="10dp">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical">
+
+        <!-- アイコンテキスト -->
+        <TextView
+            android:id="@+id/tv_org_icon"
+            android:layout_width="@dimen/left_menu_org_icon_size"
+            android:layout_height="@dimen/left_menu_org_icon_size"
+            android:background="@drawable/shape_chat_client_icon_textview"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"/>
+
+        <!-- アイコン画像 -->
+        <ImageView
+            android:id="@+id/imv_org_icon"
+            android:layout_width="@dimen/left_menu_org_icon_size"
+            android:layout_height="@dimen/left_menu_org_icon_size"/>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tv_org_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/color_chatcenter_text"
+        android:layout_margin="@dimen/margin8dp"
+        android:maxLines="1"
+        android:ellipsize="end"/>
+
+    <TextView
+        android:id="@+id/tv_org_unread_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/color_chatcenter_text"/>
+
+</LinearLayout>

@@ -1,17 +1,10 @@
 package ly.appsocial.chatcenter.dto.ws.response;
 
-import com.google.gson.annotations.SerializedName;
+import ly.appsocial.chatcenter.dto.UserItem;
 
 /**
  * [GET /api/users/:id] response.
  */
-public class GetUsersResponseDto {
+public class GetUsersResponseDto extends UserItem {
 
-	// //////////////////////////////////////////////////////////////////////////
-	// インスタンスフィールド
-	// //////////////////////////////////////////////////////////////////////////
-
-	/** モバイル番号 */
-	@SerializedName("mobile_number")
-	public String mobileNumber;
 }

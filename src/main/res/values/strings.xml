@@ -218,4 +218,6 @@
     <string name="segment_mine">Mine</string>
     <string name="segment_team">Team\'s</string>
     <string name="segment_everyone">Everyone\'s</string>
+    <string name="settings">設定</string>
+    <string name="change_app">アプリを変更する</string>
 </resources>

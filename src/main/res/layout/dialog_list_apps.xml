@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/margin10dp"
+        android:text="@string/change_app"
+        android:textColor="@color/color_chatcenter_text"/>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/text"
+        android:background="@color/color_chatcenter_widget_divider"/>
+
+    <ListView
+        android:id="@+id/lv_apps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btn_cancel"
+        android:layout_below="@id/divider"
+        android:divider="@color/color_chatcenter_background_very_light"
+        android:dividerHeight="@dimen/widget_line_width"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_above="@+id/btn_cancel"
+        android:background="@color/color_chatcenter_widget_divider"/>
+
+    <Button
+        android:id="@id/btn_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/left_menu_item_height"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/transparent"
+        android:text="@string/cancel"
+        android:textColor="@color/color_chatcenter_text_red"
+        android:textStyle="bold"/>
+
+</RelativeLayout>

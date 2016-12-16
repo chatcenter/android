@@ -211,4 +211,8 @@
     <string name="conversation_closed">Conversation Closed</string>
     <string name="conversation_opened">Conversation Opened</string>
     <string name="datetime_format_today">Today HH:mm</string>
+
+
+    <string name="settings">Settings</string>
+    <string name="change_app">Change App</string>
 </resources>

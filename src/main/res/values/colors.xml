@@ -43,5 +43,7 @@
 	<color name="color_orange">#FF9900</color>
 	<color name="color_green">#009900</color>
 	<color name="color_blue">#000099</color>
+    <color name="color_chatcenter_left_menu_background">#D6D6D6</color>
+    <color name="color_chatcenter_left_menu_divider">#ADADAD</color>
 
 </resources>
