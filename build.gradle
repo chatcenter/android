@@ -46,9 +46,9 @@ ext {
 	developerName = 'AppSocially Inc.'
 	developerEmail = 'yt@chatcenter.io'
 
-	licenseName = 'The Apache Software License, Version 2.0'
-	licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-	allLicenses = ["Apache-2.0"]
+	licenseName = 'GNU Lesser General Public License, Version 3.0'
+	licenseUrl = 'https://www.gnu.org/licenses/lgpl.txt'
+	allLicenses = ["LGPL-3.0"]
 }
 
 android {
