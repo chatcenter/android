@@ -2,18 +2,23 @@ package ly.appsocial.chatcenter.activity;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -33,6 +38,8 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -67,11 +74,13 @@ import java.util.Locale;
 import java.util.Map;
 
 import ly.appsocial.chatcenter.BuildConfig;
+import ly.appsocial.chatcenter.CSLocationService;
 import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.adapter.ChatAdapter;
 import ly.appsocial.chatcenter.activity.adapter.WidgetMenuGridAdapter;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
+import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.OrgItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
@@ -90,6 +99,7 @@ import ly.appsocial.chatcenter.dto.ws.request.WsConnectChannelRequest;
 import ly.appsocial.chatcenter.dto.ws.response.GetAppsResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetMessagesResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetUsersResponseDto;
+import ly.appsocial.chatcenter.dto.ws.response.LiveLocationResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostChannelsResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostMessagesReadResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostMessagesResponseDto;
@@ -97,8 +107,6 @@ import ly.appsocial.chatcenter.dto.ws.response.PostUsersResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.StartVideoChatResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsChannelJoinMessageDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
-import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
-import ly.appsocial.chatcenter.fragment.ConfirmDialogFragment;
 import ly.appsocial.chatcenter.fragment.ProgressDialogFragment;
 import ly.appsocial.chatcenter.util.ApiUtil;
 import ly.appsocial.chatcenter.util.AuthUtil;
@@ -116,7 +124,6 @@ import ly.appsocial.chatcenter.ws.CCWebSocketClientListener;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
 import ly.appsocial.chatcenter.ws.parser.GetAppsParser;
 import ly.appsocial.chatcenter.ws.parser.GetMessagesParser;
-import ly.appsocial.chatcenter.ws.parser.GetUsersParser;
 import ly.appsocial.chatcenter.ws.parser.PostChannelsParser;
 import ly.appsocial.chatcenter.ws.parser.PostMessagesParser;
 import ly.appsocial.chatcenter.ws.parser.PostMessagesReadParser;
@@ -128,7 +135,9 @@ import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_REJECT;
 
 /**
+ * Chat Activity
  * 「チャット」アクティビティ。
+ *
  */
 public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		ProgressDialogFragment.DialogListener, ViewUtil.OnSoftKeyBoardVisibleListener,
@@ -142,7 +151,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private static final int PERMISSIONS_REQUEST_CAMERA = 3001;
 	private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 3002;
 
-	public static final int REQUEST_FIXED_PHRASES = 1000;
+	private static final int REQUEST_FIXED_PHRASES = 1000;
 	private static final int REQUEST_CAMERA_ROLL = 10001;
 	private static final int REQUEST_CAMERA = 1002;
 	private static final int REQUEST_LOCATION_PICKER = 1003;
@@ -150,6 +159,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private static final int REQUEST_PREVIEW_WIDGET = 1005;
 	private static final int REQUEST_SCHEDULE_WIDGET = 1006;
 	private static final int REQUEST_QUESTION = 1007;
+	private static final int REQUEST_LIVE_LOCATION = 1008;
 
 	private static final int MAX_MESSAGE_TEXT_LENGTH = 2000;
 
@@ -199,6 +209,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private ArrayList<JSONObject> userVideoChat = new ArrayList<>();
 
 
+	private boolean mSharingLocation = false;
+	private String mSharingLocationId;
+
 	// タスク
 	/** POST /api/users */
 	private ApiRequest<PostUsersResponseDto> mPostUsersRequest;
@@ -216,6 +229,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private OkHttpApiRequest<GetAppsResponseDto> mGetAppsRequest;
 	/** TokBox */
 	private ApiRequest<StartVideoChatResponseDto> mStartVideoChatRequest;
+	/** Live Location **/
+	private ApiRequest<LiveLocationResponseDto> mLiveLocationRequest;
 
 	/** WebSocket */
 	private CCWebSocketClient mWebSocketClient;
@@ -295,6 +310,17 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private ImageButton mBtPhoneCall;
 	private String mSendingContent;
 
+	private static ChatActivity instance;
+	private ChannelItem mCurrentChannelItem;
+	private GuestsListDialogFragment mGuestListDialog;
+
+	private UpdateReceiver mReceiver;
+	private IntentFilter mIntentFilter;
+
+	public static ChatActivity getInstance() {
+		Log.i("ChatActivity", "getInstance");
+		return instance;
+	}
 	// //////////////////////////////////////////////////////////////////////////
 	// イベントメソッド
 	// //////////////////////////////////////////////////////////////////////////
@@ -303,6 +329,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.chat);
+		instance = this;
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
@@ -407,12 +434,29 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		} else if (mCurrentApp == null) {
 			requestGetApps();
 		}
+
+		mReceiver = new UpdateReceiver();
+		mIntentFilter = new IntentFilter();
+		mIntentFilter.addAction(ChatCenterConstants.BroadcastAction.UPDATE_CHAT);
+		mIntentFilter.addAction(ChatCenterConstants.BroadcastAction.RELOAD_CHAT);
+		registerReceiver(mReceiver, mIntentFilter);
+	}
+
+	@Override
+	public void onDestroy(){
+		unregisterReceiver(mReceiver);
+
+		super.onDestroy();
 	}
 
 	private void setupWidgetMenu(){
 		changeKeyboardHeight((int) getResources().getDimension(R.dimen.keyboard_height));
 		enablePopUpView();
 		checkKeyboardHeight(mRootLayout);
+	}
+
+	public String getChannelUid(){
+		return mChannelUid;
 	}
 
 	@Override
@@ -512,9 +556,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				mSuggestionPlaceHolder.setVisibility(View.GONE);
 			}
 		} else if (id == R.id.menu_phone_call) {
-			requestStartVideoChat(true);
+			startVideoChat(true);
 		} else if (id == R.id.menu_video_call) {
-			requestStartVideoChat(false);
+			startVideoChat(false);
 		}
 	}
 
@@ -524,21 +568,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			finish();
 		}
 	}
-
-//	@Override
-//	public void onPositiveButtonClick(String tag) {
-//		if (DialogUtil.Tag.ERROR_401.equals(tag)) { // 401エラー
-//			finish();
-//		} else if (DialogUtil.Tag.TEL.equals(tag)) { // 電話確認
-//			// ダイアラーの起動
-//			startActivity(newDialIntent(getApplicationContext(), mGetUsersResponseDto.mobileNumber));
-//		}
-//	}
-//
-//	@Override
-//	public void onNegativeButtonClick(String tag) {
-//		// empty
-//	}
 
 	@Override
 	public void onSoftKeyBoardVisible(boolean visible) {
@@ -559,6 +588,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	// //////////////////////////////////////////////////////////////////////////
 
 	/**
+	 * Send a request to the API
 	 * API にリクエストします。
 	 */
 	private void requestApis() {
@@ -772,8 +802,18 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 *
 	 * POST /api/channels/:channel_uid/call
 	 */
-	private void requestStartVideoChat(boolean audioOnly) {
-		if (mStartVideoChatRequest != null) {
+	private void startVideoChat(boolean audioOnly) {
+		if (mIsAgent && mCurrentChannelItem != null
+				&& mCurrentChannelItem.getGuests() != null
+				&& mCurrentChannelItem.getGuests().size() > 1) {
+			selectUserToCall(audioOnly, mCurrentChannelItem);
+		} else {
+			requestStartVideoChat(audioOnly, null);
+		}
+	}
+
+	private void requestStartVideoChat(boolean audioOnly, List<String> userIds) {
+		if (mPostMessagesRequest != null) {
 			return;
 		}
 
@@ -791,13 +831,101 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		}
 		StartVideoChatRequestDto startVideoChatRequestDto = new StartVideoChatRequestDto();
 		startVideoChatRequestDto.action = audioOnly ? ChatCenterConstants.CallType.VOICE : ChatCenterConstants.CallType.VIDEO;
+		if (userIds != null && userIds.size() > 0) {
+			List<StartVideoChatRequestDto.Receiver> receivers = new ArrayList<>();
+			for (String userId: userIds) {
+				if (StringUtil.isNotBlank(userId)) {
+					receivers.add(new StartVideoChatRequestDto.Receiver(userId));
+				}
+			}
+			startVideoChatRequestDto.receivers = receivers;
+		}
 
-		mStartVideoChatRequest.setJsonBody(startVideoChatRequestDto.toJson());
+		String jsonBody = startVideoChatRequestDto.toJson();
+		mStartVideoChatRequest.setJsonBody(jsonBody);
 		NetworkQueueHelper.enqueue(mStartVideoChatRequest, REQUEST_TAG);
 	}
 
 
+	/**
+	 * Live Locationの開始要求
+	 *
+	 */
+	private void requestStartLiveLocation(Location location, final int share_time) {
+		if (mLiveLocationRequest != null ) {
+			return;
+		}
 
+//		String progMsg = getResources().getString(R.string.processing);
+//		DialogUtil.showProgressDialog(getSupportFragmentManager(), progMsg, DialogUtil.Tag.PROGRESS);
+
+		String path = "channels/" + mChannelUid + "/messages";
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+
+		mLiveLocationRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
+			@Override
+			public void onSuccess(LiveLocationResponseDto responseDto) {
+				int interval = 10;
+				mSharingLocationId = "";
+
+				if ( responseDto != null ) {
+					if (responseDto.content != null
+							&& responseDto.content.stickerContent != null && responseDto.content.stickerContent.stickerData != null
+							&& responseDto.content.stickerContent.stickerData.preferredInterval != null) {
+						interval = Integer.valueOf(responseDto.content.stickerContent.stickerData.preferredInterval);
+					}
+
+					if (responseDto.id != null && !responseDto.id.isEmpty()) {
+						mSharingLocationId = responseDto.id;
+					}
+				}
+
+				startLiveLocationSharing(interval, mSharingLocationId, share_time);
+				mLiveLocationRequest = null;
+			}
+
+			@Override
+			public void onError(ApiRequest.Error error) {
+				mLiveLocationRequest = null;
+			}
+		}, new ApiRequest.Parser<LiveLocationResponseDto>() {
+			@Override
+			public int getErrorCode() {
+				return 0;
+			}
+
+			@Override
+			public LiveLocationResponseDto parser(String response) {
+				try {
+					return new Gson().fromJson(response, LiveLocationResponseDto.class);
+				} catch (Exception e) {
+				}
+				return null;
+			}
+		});
+
+		if (mParamDto.appToken != null) {
+			mLiveLocationRequest.setApiToken(mParamDto.appToken);
+		}
+
+		BasicWidget widget = new BasicWidget();
+		widget.stickerContent = new BasicWidget.StickerContent();
+		widget.stickerContent.stickerData = new BasicWidget.StickerContent.StickerData();
+		widget.stickerContent.stickerData.type = "start";
+		widget.stickerContent.stickerData.location = new BasicWidget.StickerContent.StickerData.Location();
+		widget.stickerContent.stickerData.location.longitude = location.getLongitude();
+		widget.stickerContent.stickerData.location.latitude = location.getLatitude();
+		widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION;
+
+		PostStickerRequestDto requestDto = new PostStickerRequestDto();
+		requestDto.content = new Gson().toJson(widget).toString();
+		requestDto.type = "sticker";
+
+		mLiveLocationRequest.setJsonBody(requestDto.toJson());
+		NetworkQueueHelper.enqueue(mLiveLocationRequest, REQUEST_TAG);
+	}
 
 	/**
 	 * POST /api/channels/:channel_uid/messages Reply sticker
@@ -1303,11 +1431,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				onQuestionClicked();
 				break;
 			case ChatCenterConstants.StickerName.STICKER_TYPE_VIDEO_CHAT:
-				requestStartVideoChat(false);
+				startVideoChat(false);
 				//videoChatCreateSession();
 				break;
 			case ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_PHONE_CALL:
-				requestStartVideoChat(true);
+				startVideoChat(true);
 				//requestGetUsers();
 				break;
 		}
@@ -1348,14 +1476,55 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	}
 
 	private void openPlacePicker() {
-		try {
-			PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-			startActivityForResult(builder.build(this), REQUEST_LOCATION_PICKER);
-		} catch (GooglePlayServicesRepairableException e) {
-			e.printStackTrace();
-		} catch (GooglePlayServicesNotAvailableException e) {
-			e.printStackTrace();
+		final String[] items = {getString(R.string.location_select_map), getString(R.string.location_select_live), getString(R.string.cancel)};
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.location_dialog_title)
+				.setItems(items, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if ( which == 0 ){
+							try {
+								PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+								startActivityForResult(builder.build(ChatActivity.this), REQUEST_LOCATION_PICKER);
+							} catch (GooglePlayServicesRepairableException e) {
+								e.printStackTrace();
+							} catch (GooglePlayServicesNotAvailableException e) {
+								e.printStackTrace();
+							}
+						} else if ( which == 1 ){
+							Intent intent = new Intent(ChatActivity.this, ShareLocationActivity.class);
+							intent.putExtra("show_preview", true);
+							startActivityForResult(intent, REQUEST_LIVE_LOCATION);
+						}
+					}
+				})
+				.show();
+	}
+
+	private void startLiveLocationSharing(int interval, String widgetId, int share_time){
+		if (!CSLocationService.isStarted()) {
+			Intent intent = new Intent(this, CSLocationService.class);
+			intent.putExtra("command", ChatCenterConstants.LocationService.START);
+			intent.putExtra("icon_id", ChatCenter.mAppIconId);
+			intent.putExtra("app_name", ChatCenter.mAppName);
+			intent.putExtra("app_token", ChatCenter.mAppToken);
+			intent.putExtra("channel_uid", mChannelUid);
+			intent.putExtra("interval", interval);
+			intent.putExtra("widget_id", widgetId);
+			intent.putExtra("share_time", share_time);
+
+			startService(intent);
+			mSharingLocation = true;
 		}
+	}
+
+	public void stopLiveLocationSharing(){
+		if (CSLocationService.isStarted()) {
+			Intent intent = new Intent(this, CSLocationService.class);
+			intent.putExtra("command", ChatCenterConstants.LocationService.STOP);
+			startService(intent);
+		}
+		mSharingLocation = false;
 	}
 
 	/*
@@ -1555,6 +1724,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				case REQUEST_QUESTION:
 					onQuestionSelected(data);
 					break;
+				case REQUEST_LIVE_LOCATION:
+					Location location = data.getParcelableExtra("location");
+					int share_time = data.getIntExtra("share_time", 15);
+					requestStartLiveLocation(location, share_time);
+					break;
 			}
 		}
 	}
@@ -1598,7 +1772,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		}
 	}
 
-	public void openWidgetPreview(String content){
+	private void openWidgetPreview(String content){
 		mSendingContent = content;
 		Log.e(TAG, "Content: " + mSendingContent);
 
@@ -1608,7 +1782,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		startActivityForResult(intent, REQUEST_PREVIEW_WIDGET);
 	}
 
-	public int getSuggestionIcon(String actionType) {
+	private int getSuggestionIcon(String actionType) {
 		int drawable = 0;
 		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)
 				|| actionType.equals(ResponseType.QUESTION)) {
@@ -1643,7 +1817,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 								bCallActiveAndNoOneAccepted = false;
 								break;
 							}
-						} else if (VIDEO_CALL_ACTION_ACCEPT.equals(event.content.action)) {
+						} else if (VIDEO_CALL_ACTION_ACCEPT.equals(event.content.action) ||
+								VIDEO_CALL_ACTION_REJECT.equals(event.content.action)) {
 							bCallActiveAndNoOneAccepted = false;
 							break;
 						}
@@ -1715,6 +1890,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		public void onSuccess(PostChannelsResponseDto responseDto) {
 			mPostChannelsRequest = null;
 			mGetChannelsRequest = null;
+
+			if (responseDto == null)
+				return;
+
+			mCurrentChannelItem = responseDto;
 			mChannelUid = responseDto.uid;
 
 			mChannelUsers.addAll(responseDto.users);
@@ -1724,8 +1904,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				mTitleTextView.setText(responseDto.orgName);
 				mTitleTextView.setVisibility(View.VISIBLE);
 			} else {
-				if (responseDto.getGuest() != null) {
-					mTitleTextView.setText(responseDto.getGuest().displayName);
+				if (responseDto.getGuests() != null && responseDto.getGuests().size() > 0) {
+					mTitleTextView.setText(responseDto.getGuests().get(0).displayName);
 					mTitleTextView.setVisibility(View.VISIBLE);
 				} else {
 					mTitleTextView.setText(responseDto.orgName);
@@ -2093,7 +2273,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	// ===================================================================================
 	// WebSocket support
 	// ===================================================================================
-	public void connectWS() {
+	private void connectWS() {
 		CCWebSocketClient.Listener listener;
 		if (mWebSocketClient != null && (listener = mWebSocketClient.getListener()) != null) {
 				/*
@@ -2110,7 +2290,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		mWebSocketClient.connect();
 	}
 
-	public void disconnectWS() {
+	private void disconnectWS() {
 		// WebSocket の切断
 		CCWebSocketClient.Listener listener;
 		if (mWebSocketClient != null && (listener = mWebSocketClient.getListener()) != null) {
@@ -2165,8 +2345,25 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			return found;
 		}
 
-		private void updateMessage(Integer uid, ChatItem item){
-			// TODO
+		private Boolean updateMessage(Integer id, ChatItem item){
+			if (item.id != null ) {
+				for (int i = 0; i < mAdapter.getCount(); i++) {
+					ChatItem oldItem = mAdapter.getItem(i);
+					if (oldItem.id == null) {
+						continue;
+					}
+
+					if (oldItem.id.equals(id)) {
+						if (oldItem.updateWithResponse(ChatActivity.this, item) ){
+							mAdapter.remove(mAdapter.getItem(i));
+							mAdapter.insert(oldItem, i);
+							mAdapter.notifyDataSetChanged();
+							return true;
+						}
+					}
+				}
+			}
+			return false;
 		}
 
 		private void updateMessageUsersReadMessage(String channelUid, Integer messageId, Integer userId, Boolean userAdmin){
@@ -2206,20 +2403,35 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 					} else {
 						// Add or update the item
 						boolean found = updateMessage(item);
+						boolean processed = false;
 						if (!found) {
-							mAdapter.add(item);
-
 							Boolean isResponse = messageType.equals(ResponseType.RESPONSE);
 							if (isResponse && item.widget != null) {
 								Integer replyTo = item.widget.getInt("reply_to");
 								if (replyTo != null) {
-									updateMessage(replyTo, item);
+									processed = updateMessage(replyTo, item);
+									if ( !processed ){
+										if ( "co-location".equals(item.widget.stickerType) ){
+											// something wrong
+											processed = true;
+											requestGetMessages(null);
+										}
+									}
+
+								} else {
+									item.updateWithResponse(ChatActivity.this, item);
 								}
+							}
+
+							if ( !processed ){
+								mAdapter.add(item);
 							}
 						}
 						mAdapter.notifyDataSetChanged();
 
-						scrollToLast(false);
+						if (!processed) {
+							scrollToLast(false);
+						}
 
 						if (AuthUtil.getUserId(ChatActivity.this) != item.user.id) {
 							// クライアントユーザーの更新
@@ -2394,7 +2606,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		}
 	}
 
-	public ArrayList<WidgetMenuGridAdapter.MenuButton> getWidgetMenuButtons(List<String> stickers) {
+	private ArrayList<WidgetMenuGridAdapter.MenuButton> getWidgetMenuButtons(List<String> stickers) {
 		if (stickers == null || stickers.size() == 0) {
 			return null;
 		}
@@ -2595,5 +2807,120 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		return metrics.widthPixels;
+	}
+
+	/** If there are many guests in channel, Show dialog to select one*/
+	private void selectUserToCall(boolean audioOnly, ChannelItem channelItem) {
+		if (mGuestListDialog == null) {
+			mGuestListDialog = new GuestsListDialogFragment();
+			mGuestListDialog.mActivity = this;
+			mGuestListDialog.mAudioOnly = audioOnly;
+			mGuestListDialog.mAdapter = new GuestsAdapter(this, 0, channelItem.getGuests());
+		}
+		mGuestListDialog.show(getSupportFragmentManager(), GuestsListDialogFragment.TAG);
+	}
+
+	public static class GuestsListDialogFragment extends DialogFragment {
+		public static final String TAG = "GuestsListDialogFragment";
+
+		public ChatActivity mActivity;
+		public GuestsAdapter mAdapter;
+		public boolean mAudioOnly;
+
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			// Use the Builder class for convenient dialog construction
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+			// Get the layout inflater
+			LayoutInflater inflater = getActivity().getLayoutInflater();
+
+			View dialogCustomView = inflater.inflate(R.layout.dialog_list_view, null);
+
+			TextView tvTitle = (TextView) dialogCustomView.findViewById(R.id.dialog_title);
+			ListView lvApps = (ListView) dialogCustomView.findViewById(R.id.lv_apps);
+
+			tvTitle.setText(R.string.select_user_to_call);
+			lvApps.setAdapter(mAdapter);
+			lvApps.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					mActivity.mGuestListDialog.dismiss();
+					UserItem user = (UserItem) view.getTag();
+					if (user != null) {
+						List<String> ids = new ArrayList<>();
+						ids.add(user.id + "");
+						mActivity.requestStartVideoChat(mAudioOnly, ids);
+					}
+				}
+			});
+
+			Button cancel = (Button) dialogCustomView.findViewById(R.id.btn_cancel);
+			cancel.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mActivity.mGuestListDialog.dismiss();
+				}
+			});
+
+			builder.setView(dialogCustomView);
+			Dialog dialog = builder.create();
+
+			return dialog;
+		}
+
+	}
+
+	private class GuestsAdapter extends ArrayAdapter<UserItem> {
+
+		private List<UserItem> mGuests;
+
+		public GuestsAdapter(Context context, int resource, List<UserItem> objects) {
+			super(context, resource, objects);
+
+			mGuests = objects;
+		}
+
+		@NonNull
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			TextView textView = new TextView(ChatActivity.this);
+			ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+					(int) convertDpToPixel(40, getContext()));
+
+			textView.setLayoutParams(layoutParams);
+
+			UserItem guest = getItem(position);
+
+			textView.setText(guest.displayName);
+			textView.setGravity(Gravity.CENTER);
+			textView.setTextColor(getContext().getResources().getColor(R.color.color_chatcenter_text));
+
+			textView.setTag(getItem(position));
+
+			return textView;
+		}
+
+		@Override
+		public int getCount() {
+			return mGuests.size();
+		}
+
+		@Override
+		public UserItem getItem(int position) {
+			return mGuests.get(position);
+		}
+	}
+
+	private class UpdateReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if ( ChatCenterConstants.BroadcastAction.UPDATE_CHAT.equals(action) ) {
+				mAdapter.notifyDataSetChanged();
+			} else if (ChatCenterConstants.BroadcastAction.RELOAD_CHAT.equals(action)){
+				requestGetMessages(null);
+			}
+		}
 	}
 }

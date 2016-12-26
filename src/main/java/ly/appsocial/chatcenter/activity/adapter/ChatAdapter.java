@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.ChatActivity;
+import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.UserItem;

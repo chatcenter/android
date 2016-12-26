@@ -26,9 +26,11 @@
     <!-- アプリケーション -->
     <!-- ========================================================================== -->
     <application>
+
         <!-- ========================================================================== -->
         <!-- アクティビティ -->
         <!-- ========================================================================== -->
+
 
         <!-- 履歴 -->
         <activity
@@ -109,6 +111,30 @@
             android:screenOrientation="portrait"
             android:theme="@style/ChatCenterTheme.Slide"
             android:windowSoftInputMode="stateAlwaysHidden"/>
+
+        <!-- ========================================================================== -->
+        <!-- サービス -->
+        <!-- ========================================================================== -->
+
+        <service
+            android:name=".CSLocationService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <activity
+            android:name=".activity.LiveLocationActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide">
+        </activity>
+
+        <activity
+            android:name=".activity.ShareLocationActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide">
+        </activity>
     </application>
 
 </manifest>

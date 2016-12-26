@@ -1,6 +1,7 @@
 package ly.appsocial.chatcenter.dto;
 
 import android.content.Context;
+import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.location.places.Place;
@@ -17,6 +18,7 @@ import java.util.List;
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
+import ly.appsocial.chatcenter.widgets.LiveLocationUser;
 
 /**
  * チャット画面の１項目
@@ -117,6 +119,9 @@ public class ChatItem {
 	public List<UserItem> usersReadMessage;
 
 
+	public transient ArrayList<LiveLocationUser> mLiveLocationUsers = new ArrayList<>();
+	private transient boolean mIsInitLocation = false;
+
 	/**
 	 * コンテンツ
 	 */
@@ -212,6 +217,27 @@ public class ChatItem {
 		return new Gson().toJson(widget).toString();
 	}
 
+	public static String createLiveLocationStickerContent(Location location, Context context) {
+		BasicWidget widget = new BasicWidget();
+
+		widget.stickerContent = new BasicWidget.StickerContent();
+
+		widget.stickerContent.stickerData = new BasicWidget.StickerContent.StickerData();
+		widget.stickerContent.stickerData.location = new BasicWidget.StickerContent.StickerData.Location();
+		widget.stickerContent.stickerData.location.longitude = location.getLongitude();
+		widget.stickerContent.stickerData.location.latitude = location.getLatitude();
+		widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION;
+
+		String mapUrl = "http://maps.google.com/maps/api/staticmap?center=" + location.getLatitude() + "," + location.getLongitude() + "&zoom=12&size=400x400&sensor=false";
+		widget.stickerContent.thumbnailUrl = mapUrl;
+
+		// ChatItem Message
+		widget.message = new BasicWidget.Message();
+		widget.message.text = context.getString(R.string.location_title);
+
+		return new Gson().toJson(widget).toString();
+	}
+
 	public static String createScheduleWidgetContent(ArrayList<BasicWidget.StickerAction.ActionData> listActionData, Context context) {
 		if (listActionData == null || listActionData.size() == 0) {
 			return null;
@@ -234,6 +260,75 @@ public class ChatItem {
 		widget.stickerAction.actionData.add(actionData);
 
 		return  new Gson().toJson(widget).toString();
+	}
+
+	public boolean updateWithResponse(Context context, ChatItem newItem){
+		if (newItem.widget != null && newItem.widget.stickerType != null ){
+			switch(newItem.widget.stickerType){
+				case ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION:
+					return updateLiveLocationUser(context, newItem);
+			}
+		}
+		return false;
+	}
+
+
+	public boolean initLiveLocationUser(Context context){
+		if ( this.widget == null || this.widget.stickerContent == null ||
+				this.widget.stickerContent.stickerData == null ||
+				this.widget.stickerContent.stickerData.users == null ||
+				this.widget.stickerContent.stickerData.users.isEmpty() )
+			return false;
+
+		if ( mIsInitLocation ){
+			return true;
+		}
+		mIsInitLocation = true;
+
+		for ( LiveLocationUser user : mLiveLocationUsers ){
+			user.stopTimer();
+		}
+		mLiveLocationUsers.clear();
+
+		for ( BasicWidget.StickerContent.StickerData.User user : this.widget.stickerContent.stickerData.users ){
+			LiveLocationUser liveUser = new LiveLocationUser(context, user.id, user.displayName, user.iconUrl);
+			liveUser.updateTimer();
+			mLiveLocationUsers.add(liveUser);
+		}
+		return true;
+	}
+
+	private boolean updateLiveLocationUser(Context context, ChatItem newItem){
+		if ( newItem.user == null || newItem.user.id == null )
+			return false;
+
+		boolean bFound = false;
+		for ( LiveLocationUser user : mLiveLocationUsers ){
+			if ( user.mId.equals(newItem.user.id) ){
+				bFound = true;
+				if ( newItem.widget.stickerContent != null && newItem.widget.stickerContent.stickerData != null
+						&& newItem.widget.stickerContent.stickerData.type != null && "stop".equals(newItem.widget.stickerContent.stickerData.type) ){
+					user.stopTimer();
+				} else {
+					user.updateTimer();
+				}
+			}
+		}
+
+		if ( !bFound ){
+			LiveLocationUser user = new LiveLocationUser(context, newItem.user);
+			mLiveLocationUsers.add(user);
+		}
+		return true;
+	}
+
+	public int getActiveLiveLocationUsersCount(){
+		int count = 0;
+		for ( LiveLocationUser user : mLiveLocationUsers ){
+			if ( user.isActive() )
+				count++;
+		}
+		return count;
 	}
 
 }

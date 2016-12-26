@@ -25,6 +25,8 @@ public class ChatCenterConstants {
 		 * </p>
 		 */
 		public static final String BROWSED_CHATS = "chatcenter_browsed_chats";
+
+		public static final String LAST_LOCATION = "chatcenter_last_location";
 	}
 
 	public static class Extra {
@@ -41,6 +43,7 @@ public class ChatCenterConstants {
 		public static final String STICKER_TYPE_DATE_TIME_AVAILABILITY = "datetime";
 		public static final String STICKER_TYPE_TYPE_FILE = "file_upload";
 		public static final String STICKER_TYPE_LOCATION = "location";
+		public static final String STICKER_TYPE_CO_LOCATION = "co-location";
 		public static final String STICKER_TYPE_QUESTION = "yes_no";
 		public static final String STICKER_TYPE_FIXED_PHRASE = "fixed_phrase";
 		public static final String STICKER_TYPE_VIDEO_CHAT = "video_chat";
@@ -66,6 +69,17 @@ public class ChatCenterConstants {
 	public static class CallType {
 		public static final String VOICE = "voice_call";
 		public static final String VIDEO = "video_call";
+	}
+
+	public static class LocationService {
+		public static final String START = "location_start";
+		public static final String STOP = "location_stop";
+	}
+
+	public static class BroadcastAction {
+		public static final String UPDATE_STATUS = "ly.appsocial.chatcenter.update_status";
+		public static final String UPDATE_CHAT = "ly.appsocial.chatcenter.update_chat";
+		public static final String RELOAD_CHAT = "ly.appsocial.chatcenter.reload_chat";
 	}
 
 	public static final String PUSH_CATEGORY = "chat message";

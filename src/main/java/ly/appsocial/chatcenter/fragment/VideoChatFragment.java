@@ -52,7 +52,7 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 	/* 通話が開始されたかどうか */
 	private boolean mIsStartChatting;
 
-	private RelativeLayout mPublisherViewContainer;
+	private LinearLayout mPublisherViewContainer;
 	private LinearLayout mSubscriberViewContainer;
 
 	private View mRingingLabel;
@@ -61,11 +61,11 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 	private ImageView mAudioButton;
 
 	private View mOtherMicOffImage;
-	private View mOtherVideoOffImage;
 	private View mOtherVideoOffLabel;
 
 	public boolean mMuteVideo = false;
 	public boolean mMuteAudio = false;
+	private View mCameraSwitch;
 
 	public VideoChatFragment() {
 	}
@@ -78,15 +78,13 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 		// Inflate the layout for this fragment
 		View layout = inflater.inflate(R.layout.fragment_video_chat, container, false);
 
-		mPublisherViewContainer = (RelativeLayout) layout.findViewById(R.id.publisherview);
+		mPublisherViewContainer = (LinearLayout) layout.findViewById(R.id.publisherview);
 		mSubscriberViewContainer = (LinearLayout) layout.findViewById(R.id.subscriberview);
 
 		mOtherMicOffImage = layout.findViewById(R.id.other_mic_off);
-		mOtherVideoOffImage = layout.findViewById(R.id.other_video_off);
 		mOtherVideoOffLabel = layout.findViewById(R.id.video_off_label);
 
 		mOtherMicOffImage.setVisibility(View.INVISIBLE);
-		mOtherVideoOffImage.setVisibility(View.INVISIBLE);
 		mOtherVideoOffLabel.setVisibility(View.INVISIBLE);
 
 		Intent intent = getActivity().getIntent();
@@ -102,8 +100,12 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 			mRingingLabel.setVisibility(View.INVISIBLE);
 		}
 
-		View cameraSwitch = layout.findViewById(R.id.switch_camera);
-		cameraSwitch.setOnClickListener(new View.OnClickListener() {
+		mCameraSwitch = layout.findViewById(R.id.switch_camera);
+		if (mIsAudioOnly) {
+			mCameraSwitch.setVisibility(View.INVISIBLE);
+			mPublisherViewContainer.setVisibility(View.INVISIBLE);
+		}
+		mCameraSwitch.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				toggleCamera();
@@ -170,10 +172,16 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 	private void updateButtonState(){
 		if ( !mMuteVideo ){
 			mVideoButton.setImageResource(R.drawable.camera_on_btn);
-			mPublisherViewContainer.setVisibility(View.VISIBLE);
+			if (mPublisher != null && mPublisher.getView() != null) {
+				mPublisher.getView().setVisibility(View.VISIBLE);
+			}
+			mCameraSwitch.setVisibility(View.VISIBLE);
 		} else {
 			mVideoButton.setImageResource(R.drawable.camera_off_btn);
-			mPublisherViewContainer.setVisibility(View.INVISIBLE);
+			mCameraSwitch.setVisibility(View.INVISIBLE);
+			if (mPublisher != null && mPublisher.getView() != null) {
+				mPublisher.getView().setVisibility(View.INVISIBLE);
+			}
 		}
 
 		if ( !mMuteAudio ){
@@ -258,10 +266,15 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 	@Override
 	public void onStreamCreated(PublisherKit publisherKit, Stream stream) {
 		//subscribeToStream(stream);
+		mRingingLabel.setVisibility(View.INVISIBLE);
+		if (mIsAudioOnly) {
+			mOtherVideoOffLabel.setVisibility(View.VISIBLE);
+		}
 	}
 
 	@Override
 	public void onStreamDestroyed(PublisherKit publisherKit, Stream stream) {
+
 	}
 
 	@Override
@@ -273,21 +286,24 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 	@Override
 	public void onVideoDataReceived(SubscriberKit subscriberKit) {
 		mIsStartChatting = true;
-		mRingingLabel.setVisibility(View.INVISIBLE);
 		mSubscriber.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);
 		mSubscriberViewContainer.addView(mSubscriber.getView());
 	}
 
 	@Override
 	public void onVideoDisabled(SubscriberKit subscriberKit, String s) {
-		mOtherVideoOffImage.setVisibility(View.VISIBLE);
 		mOtherVideoOffLabel.setVisibility(View.VISIBLE);
+		if (mSubscriber != null && mSubscriber.getView() != null) {
+			mSubscriber.getView().setVisibility(View.INVISIBLE);
+		}
 	}
 
 	@Override
 	public void onVideoEnabled(SubscriberKit subscriberKit, String s) {
-		mOtherVideoOffImage.setVisibility(View.INVISIBLE);
 		mOtherVideoOffLabel.setVisibility(View.INVISIBLE);
+		if (mSubscriber != null && mSubscriber.getView() != null) {
+			mSubscriber.getView().setVisibility(View.VISIBLE);
+		}
 	}
 
 	@Override

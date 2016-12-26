@@ -108,7 +108,7 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 		// メッセージ
 		StringBuilder latestMessageBuilder = new StringBuilder();
 		if (item.latestMessage != null && item.latestMessage.user != null) {
-			if (item.latestMessage.user.id == mUserId) {
+			if (item.latestMessage.user.id != null && item.latestMessage.user.id == mUserId) {
 				latestMessageBuilder.append(getContext().getString(R.string.you));
 			} else {
 				latestMessageBuilder.append(item.latestMessage.user.displayName);

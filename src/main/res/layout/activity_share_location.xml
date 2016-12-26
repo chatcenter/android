@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016.
+  -->
+
+<RelativeLayout
+	android:id="@+id/activity_share_location"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	tools:context="ly.appsocial.chatcenter.activity.ShareLocationActivity"
+	xmlns:map="http://schemas.android.com/apk/res-auto">
+
+	<android.support.v7.widget.Toolbar
+		android:id="@+id/toolbar"
+		android:layout_width="match_parent"
+		android:layout_height="?actionBarSize"
+		android:theme="@style/ToolbarStyle">
+
+	</android.support.v7.widget.Toolbar>
+
+	<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+			  android:name="com.google.android.gms.maps.MapFragment"
+			  android:id="@+id/map"
+			  map:cameraZoom="13"
+			  map:mapType="normal"
+			  android:layout_below="@+id/toolbar"
+			  android:layout_above="@+id/button_bar"
+			  android:layout_width="match_parent"
+			  android:layout_height="match_parent"/>
+
+	<RelativeLayout
+		android:id="@+id/button_bar"
+		android:layout_alignParentBottom="true"
+		android:gravity="center_vertical"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<Button
+			android:id="@+id/minus_btn"
+			android:layout_width="54dp"
+			android:layout_height="54dp"
+			android:layout_alignParentLeft="true"
+			android:layout_marginLeft="10dp"
+			android:background="@drawable/minus_btn"/>
+
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerHorizontal="true"
+			android:layout_centerVertical="true"
+			android:orientation="vertical">
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/location_share_time"
+				android:layout_gravity="center_horizontal"
+				android:textSize="12sp"
+				/>
+
+			<TextView
+				android:id="@+id/share_time"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_horizontal"
+				android:layout_marginTop="8dp"
+				android:text="15 min"
+				android:textSize="18sp"
+				android:textStyle="bold"
+				/>
+
+		</LinearLayout>
+
+
+		<Button
+			android:id="@+id/plus_btn"
+			android:layout_width="54dp"
+			android:layout_height="54dp"
+			android:layout_alignParentRight="true"
+			android:layout_marginRight="10dp"
+			android:background="@drawable/plus_btn"/>
+
+	</RelativeLayout>
+
+
+</RelativeLayout>

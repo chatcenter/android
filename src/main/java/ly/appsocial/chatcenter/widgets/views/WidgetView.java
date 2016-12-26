@@ -6,8 +6,11 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,8 +37,10 @@ import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.ui.RoundImageView;
+import ly.appsocial.chatcenter.util.ViewUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.util.StringUtil;
+import ly.appsocial.chatcenter.widgets.LiveLocationUser;
 
 
 public class WidgetView extends FrameLayout {
@@ -48,6 +53,11 @@ public class WidgetView extends FrameLayout {
 	private RelativeLayout mActionLinearContainer;
 	private Button mActionConfirmPositive;
 	private Button mActionConfirmNegative;
+
+	private RecyclerView mLiveThumbnailView;
+	private TextView mLiveLabel;
+	private RecyclerView.LayoutManager mLayoutManager;
+	private RecyclerView.Adapter mAdapter;
 
 	private int mSelectActionBackgroundId;
 	private int mSelectActionLastBackgroundId;
@@ -123,6 +133,9 @@ public class WidgetView extends FrameLayout {
 		mBackgroundMain = a.getResourceId(R.styleable.WidgetView_backgroundMain, 1);
 		this.setBackgroundResource(mBackgroundMain);
 
+		mLiveThumbnailView.setVisibility(View.GONE);
+		mLiveLabel.setVisibility(View.GONE);
+
 		a.recycle();
 	}
 
@@ -191,6 +204,14 @@ public class WidgetView extends FrameLayout {
 		mActionConfirmPositive = (Button) v.findViewById(R.id.sticker_action_confirm_positive);
 		mActionConfirmNegative = (Button) v.findViewById(R.id.sticker_action_confirm_negative);
 
+		mLiveThumbnailView = (RecyclerView) v.findViewById(R.id.live_thumbnail);
+		mLayoutManager = new LinearLayoutManager(getContext(), LinearLayout.HORIZONTAL, false);
+		mLiveThumbnailView.setLayoutManager(mLayoutManager);
+		mAdapter = new LiveThumbnailAdapter();
+		mLiveThumbnailView.setAdapter(mAdapter);
+
+		mLiveLabel = (TextView) v.findViewById(R.id.bt_live);
+
 		mImageView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -251,6 +272,8 @@ public class WidgetView extends FrameLayout {
 			drawable = R.drawable.icon_widget_schedule;
 		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_LOCATION)) {
 			drawable = R.drawable.icon_widget_location;
+		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_COLOCATION)) {
+			drawable = R.drawable.icon_widget_colocation;
 		}
 
 		ImageView widgetIcon = (ImageView) findViewById(R.id.widget_icon);
@@ -316,6 +339,22 @@ public class WidgetView extends FrameLayout {
 		mChatItem = chatItem;
 		if ( mChatItem.widget != null ){
 			mChatItem.widget.setupWidgetView(this, this.getContext());
+
+			if ( mChatItem.widget.stickerType != null &&
+					ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION.equals(mChatItem.widget.stickerType)) {
+				mChatItem.initLiveLocationUser(this.getContext());
+				setupLiveLocationView();
+			}
+		}
+	}
+
+	private void setupLiveLocationView(){
+		if ( mChatItem.getActiveLiveLocationUsersCount() == 0 ){
+			mLiveThumbnailView.setVisibility(View.GONE);
+			mLiveLabel.setVisibility(View.GONE);
+		} else {
+			mLiveThumbnailView.setVisibility(View.VISIBLE);
+			mLiveLabel.setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -695,6 +734,80 @@ public class WidgetView extends FrameLayout {
 				mStickerActionListener.onActionClick(mAction, String.valueOf(mChatItem.id));
 			}
 		}
+	}
+
+	public class LiveThumbnailAdapter extends RecyclerView.Adapter<LiveThumbnailAdapter.ItemViewHolder> {
+
+		public class ItemViewHolder extends RecyclerView.ViewHolder {
+			public ImageView mImageView;
+			public TextView mTextView;
+
+			public ItemViewHolder(View v){
+				super(v);
+				mImageView = (ImageView)v.findViewById(R.id.icon_imageview);
+				mTextView = (TextView)v.findViewById(R.id.icon_textview);
+			}
+		}
+
+		public LiveThumbnailAdapter(){
+		}
+
+		@Override public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType){
+			View v = LayoutInflater.from(parent.getContext())
+					.inflate(R.layout.live_location_thumb, parent, false);
+			return new ItemViewHolder(v);
+		}
+		@Override public void onBindViewHolder(final ItemViewHolder holder, int position) {
+			LiveLocationUser user = mChatItem.mLiveLocationUsers.get(position);
+			String url = user.mIconUrl;
+
+			int iconColor = ViewUtil.getIconColor(mChatItem.channelUid);
+			if( StringUtil.isNotBlank(url) ) {
+				setIconImage(holder, url);
+			} else {
+				setIconText(holder, user.mDisplayName, iconColor);
+			}
+
+			if ( !user.isActive() ){
+				holder.itemView.setVisibility(View.GONE);
+			} else {
+				holder.itemView.setVisibility(View.VISIBLE);
+			}
+		}
+		@Override public int getItemCount() {
+			return mChatItem.mLiveLocationUsers.size();
+		}
+
+		/**
+		 * アイコンテキストを設定します。
+		 *
+		 * @param userName ユーザー名
+		 * @param color アイコンのRGBカラー
+		 */
+		private void setIconText(ItemViewHolder holder, String userName, int color) {
+			holder.mTextView.setVisibility(View.VISIBLE);
+			holder.mImageView.setVisibility(View.GONE);
+
+			if (StringUtil.isNotBlank(userName)) {
+				holder.mTextView.setText(userName.toUpperCase().substring(0, 1));
+			}
+
+			GradientDrawable gradientDrawable = (GradientDrawable) holder.mTextView.getBackground();
+			gradientDrawable.setColor(color);
+		}
+
+		/**
+		 * アイコン画像を設定します。
+		 *
+		 * @param iconUrl アイコン画像URL
+		 */
+		private void setIconImage(ItemViewHolder holder, String iconUrl) {
+			holder.mTextView.setVisibility(View.GONE);
+			holder.mImageView.setVisibility(View.VISIBLE);
+
+			ViewUtil.loadImageCircle(holder.mImageView, iconUrl);
+		}
+
 	}
 
 }

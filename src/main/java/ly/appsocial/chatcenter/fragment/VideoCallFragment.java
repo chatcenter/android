@@ -7,6 +7,7 @@ package ly.appsocial.chatcenter.fragment;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.GradientDrawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -18,13 +19,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.VideoChatActivity;
-import ly.appsocial.chatcenter.util.CircleTransformation;
-
-import static com.opentok.client.DeviceInfo.getApplicationContext;
+import ly.appsocial.chatcenter.util.StringUtil;
+import ly.appsocial.chatcenter.util.ViewUtil;
 
 /**
  * VideoCallFragment.
@@ -33,7 +31,6 @@ public class VideoCallFragment extends Fragment {
 
 	private VideoChatActivity mVideoChatActivity;
 
-	private ImageView mThumbImage;
 	private TextView mNameLabel;
 
 	private Ringtone mRingtone;
@@ -47,9 +44,9 @@ public class VideoCallFragment extends Fragment {
 		mVideoChatActivity = (VideoChatActivity)getActivity();
 
 		View layout = inflater.inflate(R.layout.fragment_video_call, container, false);
-
-		mThumbImage = (ImageView)layout.findViewById(R.id.thumb);
 		mNameLabel = (TextView)layout.findViewById(R.id.name);
+		ImageView imvUserAva = (ImageView) layout.findViewById(R.id.imv_left_menu_user_ava);
+		TextView tvUserAva = (TextView) layout.findViewById(R.id.tv_left_menu_user_ava);
 
 		Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 		mRingtone = RingtoneManager.getRingtone(mVideoChatActivity, uri);
@@ -69,14 +66,24 @@ public class VideoCallFragment extends Fragment {
 		Intent intent = getActivity().getIntent();
 
 		String thumbUrl = intent.getStringExtra("thumbnail");
-		if ( thumbUrl != null && !thumbUrl.isEmpty() ) {
-			Picasso.with(getActivity()).load(thumbUrl).transform(new CircleTransformation()).into(mThumbImage, null);
+		String userName = intent.getStringExtra("name");
+
+		// Avatar setup
+		if (StringUtil.isNotBlank(thumbUrl)) {
+			tvUserAva.setVisibility(View.GONE);
+			imvUserAva.setVisibility(View.VISIBLE);
+			ViewUtil.loadImageCircle(imvUserAva, thumbUrl);
 		} else {
-			// TODO place holder
+			tvUserAva.setVisibility(View.VISIBLE);
+			imvUserAva.setVisibility(View.GONE);
+
+			tvUserAva.setText(userName.toUpperCase().substring(0, 1));
+
+			GradientDrawable gradientDrawable = (GradientDrawable) tvUserAva.getBackground();
+			gradientDrawable.setColor(ViewUtil.getIconColor(userName));
 		}
 
-		String userName = intent.getStringExtra("name");
-		if ( userName != null && !userName.isEmpty() ){
+		if ( StringUtil.isNotBlank(userName)){
 			mNameLabel.setText(userName);
 		} else {
 			// TODO place holder

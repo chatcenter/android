@@ -3,6 +3,7 @@ package ly.appsocial.chatcenter.dto;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChannelItem implements Serializable {
@@ -75,13 +76,14 @@ public class ChannelItem implements Serializable {
         return null;
     }
 
-    public UserItem getGuest() {
+    public List<UserItem> getGuests() {
+        List<UserItem> guests = new ArrayList<>();
         for (UserItem user : users) {
             if (!user.admin) {
-                return user;
+                guests.add(user);
             }
         }
-        return null;
+        return guests;
     }
 
     public boolean isAssigneeOnline() {

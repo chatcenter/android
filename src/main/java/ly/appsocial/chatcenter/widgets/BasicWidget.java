@@ -10,10 +10,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,6 +17,7 @@ import java.util.List;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.ChatActivity;
+import ly.appsocial.chatcenter.activity.LiveLocationActivity;
 import ly.appsocial.chatcenter.activity.PhotoActivity;
 import ly.appsocial.chatcenter.activity.WebViewActivity;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
@@ -42,6 +39,7 @@ public class BasicWidget extends Widget {
 	private static final String TAG = BasicWidget.class.getSimpleName();
 
 	public static final String WIDGET_TYPE_LOCATION = "location";
+	public static final String WIDGET_TYPE_COLOCATION = "co-location";
 	public static final String WIDGET_TYPE_CONFIRM = "confirm";
 	public static final String WIDGET_TYPE_SELECT = "select";
 
@@ -61,6 +59,12 @@ public class BasicWidget extends Widget {
 
 	@SerializedName("sticker-action")
 	public StickerAction stickerAction;
+
+	@SerializedName("sticker-type")
+	public String stickerType;
+
+	@SerializedName("reply_to")
+	public String replyTo;
 
 	public void setupWithUsers(List<UserItem> users){}
 
@@ -91,20 +95,25 @@ public class BasicWidget extends Widget {
 	public void onTappedImage(Context context){
 		if ( stickerContent != null && stickerContent.action != null && stickerContent.action.size() > 0 ){
 			String action = stickerContent.action.get(0);
-			if ( action.contains(WidgetAction.OPEN_IMAGE) ) {
-				if (stickerContent.action.size() > 1) {
-					openImage(stickerContent.action.get(1), context);
-				}
-			} else if (action.contains(WidgetAction.OPEN_LOCATION)) {
-				if (stickerContent.action.size() > 1) {
-					openLocation(stickerContent.action.get(1), context);
-				}
-			} else if (action.contains(WidgetAction.OPEN_CALENDAR)) {
-				if (stickerContent.action.size() > 1) {
-					openCalender(stickerContent.action.get(1), context);
-				}
+
+			if ( ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION.equals(stickerType) ){
+				openLiveLocation(action, context);
 			} else {
-				openUrl(stickerContent.action.get(0), context);
+				if (action.contains(WidgetAction.OPEN_IMAGE)) {
+					if (stickerContent.action.size() > 1) {
+						openImage(stickerContent.action.get(1), context);
+					}
+				} else if (action.contains(WidgetAction.OPEN_LOCATION)) {
+					if (stickerContent.action.size() > 1) {
+						openLocation(stickerContent.action.get(1), context);
+					}
+				} else if (action.contains(WidgetAction.OPEN_CALENDAR)) {
+					if (stickerContent.action.size() > 1) {
+						openCalender(stickerContent.action.get(1), context);
+					}
+				} else {
+					openUrl(action, context);
+				}
 			}
 		}
 	}
@@ -131,6 +140,14 @@ public class BasicWidget extends Widget {
 		return null;
 	}
 
+	protected String getChannelUid(Context context){
+		if ( context.getClass().equals(ChatActivity.class) ){
+			ChatActivity chatActivity = (ChatActivity)context;
+			return chatActivity.getChannelUid();
+		}
+		return null;
+	}
+
 	public void setupWidgetView(WidgetView widgetView, Context context){
 		if (StringUtil.isNotBlank(this.text)) {
 			widgetView.setText(this.text);
@@ -143,7 +160,11 @@ public class BasicWidget extends Widget {
 		} else {
 			widgetView.setImageUrl(this.stickerContent.thumbnailUrl);
 			if (this.stickerContent.stickerData != null && this.stickerContent.stickerData.location != null) {
-				widgetView.setWidgetIcon(WIDGET_TYPE_LOCATION);
+				if (StringUtil.isNotBlank(this.stickerType) && WIDGET_TYPE_COLOCATION.equals(this.stickerType)) {
+					widgetView.setWidgetIcon(WIDGET_TYPE_COLOCATION);
+				} else {
+					widgetView.setWidgetIcon(WIDGET_TYPE_LOCATION);
+				}
 			}
 		}
 
@@ -217,7 +238,6 @@ public class BasicWidget extends Widget {
 		return  false;
 	}
 
-
 	private void openCalender(String data, Context context){
 	}
 
@@ -247,6 +267,13 @@ public class BasicWidget extends Widget {
 		context.startActivity(intent);
 	}
 
+	protected void openLiveLocation(String url, Context context){
+		Intent intent = new Intent(context, LiveLocationActivity.class);
+		intent.putExtra("app_token", getAppToken(context));
+		intent.putExtra("channel_uid", getChannelUid(context));
+		intent.putExtra(ChatCenterConstants.Extra.URL, url);
+		context.startActivity(intent);
+	}
 
 	/**
 	 *
@@ -265,6 +292,18 @@ public class BasicWidget extends Widget {
 		public List<String> action;
 
 		public static class StickerData {
+			/** Data type **/
+			@SerializedName("type")
+			public String type;
+
+			/** Interval for update live location **/
+			@SerializedName("preferred_interval")
+			public String preferredInterval;
+
+			/** Active users on live co-location */
+			@SerializedName("users")
+			public List<User> users;
+
 			/** Location data */
 			@SerializedName("location")
 			public Location location;
@@ -278,6 +317,18 @@ public class BasicWidget extends Widget {
 				@SerializedName("lng")
 				public double longitude;
 			}
+
+			public static class User {
+				@SerializedName("id")
+				public Integer id;
+
+				@SerializedName("display_name")
+				public String displayName;
+
+				@SerializedName("icon_url")
+				public String iconUrl;
+			}
+
 		}
 	}
 

@@ -48,6 +48,7 @@ import ly.appsocial.chatcenter.ws.CCWebSocketClientListener;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
 
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_ACCEPT;
+import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_HANGUP;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_REJECT;
 
 
@@ -407,14 +408,14 @@ public class VideoChatActivity extends BaseActivity {
 
 						for ( VideoCallWidget.VideoCallEvent event : widget.events){
 							if ( event.content != null ){
-								if ( event.content.action.equals(VIDEO_CALL_ACTION_REJECT) &&
-										event.content.user.userId == caller.userId ){
+								if ( (event.content.action.equals(VIDEO_CALL_ACTION_REJECT)
+										|| event.content.action.equals(VIDEO_CALL_ACTION_HANGUP))){
 									// Caller canceled call
 									closeActivity();
 									break;
-								} else if ( caller.userId != currentUserId &&
-											event.content.action.equals(VIDEO_CALL_ACTION_ACCEPT) &&
-											event.content.user.userId != currentUserId ){
+								} else if ( caller.userId != currentUserId
+										&& event.content.action.equals(VIDEO_CALL_ACTION_ACCEPT)
+										&& event.content.user.userId != currentUserId ){
 									// Other people accepted
 									closeActivity();
 									break;

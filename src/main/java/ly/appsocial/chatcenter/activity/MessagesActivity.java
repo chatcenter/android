@@ -7,6 +7,7 @@ package ly.appsocial.chatcenter.activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -74,7 +75,6 @@ import ly.appsocial.chatcenter.dto.ws.response.PostUsersAuthResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsChannelJoinMessageDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
 import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
-import ly.appsocial.chatcenter.gcm.ChatCenterDeviceTokenRequest;
 import ly.appsocial.chatcenter.ui.ChannelFilterView;
 import ly.appsocial.chatcenter.util.ApiUtil;
 import ly.appsocial.chatcenter.util.AuthUtil;
@@ -253,7 +253,13 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	/**
 	 * GET /api/funnels
 	 */
-	private ApiRequest<GetFunnelResponseDto> mGetFunnelsRequest;;
+	private ApiRequest<GetFunnelResponseDto> mGetFunnelsRequest;
+
+	/** Left menu Footer */
+	private View mMenuFooter;
+
+	/** Left menu Header*/
+	private View mMenuHeader;
 
 	// //////////////////////////////////////////////////////////////////////////
 	// イベントメソッド
@@ -307,7 +313,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		mTvOrgName = (TextView) findViewById(R.id.tv_org_name);
 		mTvFunnel.setEnabled(false);
 
-		ChatCenter.initChatCenter(this);
+		ChatCenter.initChatCenter(this, null, null);
 
 		if (mIsAgent) {
 			prepareAgentMenu();
@@ -914,8 +920,15 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 		mMenu = (DrawerLayout) findViewById(R.id.messages_drawer);
 
-		TextView tvCurrentAppName = (TextView) findViewById(R.id.tv_current_app);
-		tvCurrentAppName.setOnClickListener(new View.OnClickListener() {
+		LayoutInflater inflater = getLayoutInflater();
+		mMenuHeader = inflater.inflate(R.layout.menu_header, mMenuListView, false);
+		mMenuFooter = inflater.inflate(R.layout.menu_footer, mMenuListView, false);
+
+		mMenuListView.addFooterView(mMenuFooter);
+		mMenuListView.addHeaderView(mMenuHeader);
+
+		Button btSwitchApp = (Button) mMenuHeader.findViewById(R.id.btn_switch_app);
+		btSwitchApp.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				mMenu.closeDrawers();
@@ -923,7 +936,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			}
 		});
 
-		TextView tvSettings = (TextView) findViewById(R.id.tv_setting);
+		TextView tvSettings = (TextView) mMenuFooter.findViewById(R.id.tv_setting);
 		tvSettings.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -942,6 +955,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	private void showSettingsDialog () {
 		if (mSettingDialog == null) {
 			mSettingDialog = new SettingsDialogFragment();
+			mSettingDialog.mActivity = MessagesActivity.this;
 		}
 
 		mSettingDialog.show(getSupportFragmentManager(), SettingsDialogFragment.TAG);
@@ -953,10 +967,10 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
      */
 	private void updateAgentMenu(UserItem userItem) {
 		if (userItem != null) {
-			TextView tvUserDisplayName = (TextView) findViewById(R.id.menu_header_user_name);
-			TextView tvUserDisplayEmail = (TextView) findViewById(R.id.menu_header_user_email);
-			ImageView imvUserAva = (ImageView) findViewById(R.id.imv_left_menu_user_ava);
-			TextView tvUserAva = (TextView) findViewById(R.id.tv_left_menu_user_ava);
+			TextView tvUserDisplayName = (TextView) mMenuHeader.findViewById(R.id.menu_header_user_name);
+			TextView tvUserDisplayEmail = (TextView) mMenuHeader.findViewById(R.id.menu_header_user_email);
+			ImageView imvUserAva = (ImageView) mMenuHeader.findViewById(R.id.imv_left_menu_user_ava);
+			TextView tvUserAva = (TextView) mMenuHeader.findViewById(R.id.tv_left_menu_user_ava);
 
 			tvUserDisplayName.setText(userItem.displayName);
 			tvUserDisplayEmail.setText(userItem.email);
@@ -982,8 +996,26 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		if (mCurrentApp == null)
 			return;
 
-		TextView tvCurrentAppName = (TextView) findViewById(R.id.tv_current_app);
+		TextView tvCurrentAppName = (TextView) mMenuHeader.findViewById(R.id.tv_current_app);
+		ImageView imvAppAva = (ImageView) mMenuHeader.findViewById(R.id.imv_left_menu_app_icon);
+		TextView tvAppAva = (TextView) mMenuHeader.findViewById(R.id.tv_left_menu_app_icon);
+
 		tvCurrentAppName.setText(mCurrentApp.name);
+
+		if (StringUtil.isNotBlank(mCurrentApp.iconUrl)) {
+			tvAppAva.setVisibility(View.GONE);
+			imvAppAva.setVisibility(View.VISIBLE);
+			ViewUtil.loadRoundedCornersImage(imvAppAva, mCurrentApp.iconUrl,
+					getResources().getDimensionPixelSize(R.dimen.left_menu_app_icon_radius));
+		} else {
+			tvAppAva.setVisibility(View.VISIBLE);
+			imvAppAva.setVisibility(View.GONE);
+
+			tvAppAva.setText(mCurrentApp.name.toUpperCase().substring(0, 1));
+
+			GradientDrawable gradientDrawable = (GradientDrawable) tvAppAva.getBackground();
+			gradientDrawable.setColor(ViewUtil.getIconColor(mCurrentApp.uid));
+		}
 	}
 
 	/**
@@ -1311,7 +1343,10 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			// Update current App Name
 			updateCurrentAppName();
 			if (mAppsListDialog == null) {
-				mAppsListDialog = new AppsListDialogFragment(mMenuAppItems);
+				mAppsListDialog = new AppsListDialogFragment();
+				mAppsListDialog.mItems = mMenuAppItems;
+				mAppsListDialog.mActivity = MessagesActivity.this;
+				mAppsListDialog.mAdapter = new MenuAppsAdapter(MessagesActivity.this, 0, mMenuAppItems);
 			}
 		}
 
@@ -1537,8 +1572,10 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		}
 	}
 
-	private class SettingsDialogFragment extends DialogFragment {
+	public static class SettingsDialogFragment extends DialogFragment {
 		public static final String TAG = "SettingsDialogFragment";
+		public MessagesActivity mActivity;
+
 
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -1551,19 +1588,22 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			View dialogCustomView = inflater.inflate(R.layout.dialog_settings, null);
 			Button logout = (Button) dialogCustomView.findViewById(R.id.btn_logout);
 			Button cancel = (Button) dialogCustomView.findViewById(R.id.btn_cancel);
+			TextView title = (TextView) dialogCustomView.findViewById(R.id.tv_title);
+
+			title.setText(String.format(title.getText().toString(), mActivity.getLibVersion()));
 
 			logout.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mSettingDialog.dismiss();
-					logout();
+					mActivity.mSettingDialog.dismiss();
+					mActivity.logout();
 				}
 			});
 
 			cancel.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mSettingDialog.dismiss();
+					mActivity.mSettingDialog.dismiss();
 				}
 			});
 
@@ -1575,14 +1615,12 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		}
 	}
 
-	private class AppsListDialogFragment extends DialogFragment {
+	public static class AppsListDialogFragment extends DialogFragment {
 		public static final String TAG = "AppsListDialogFragment";
 
-		private List<MessagesAgentMenuItem> mItems;
-
-		public AppsListDialogFragment(List<MessagesAgentMenuItem> items) {
-			mItems = items;
-		}
+		public List<MessagesAgentMenuItem> mItems;
+		public MessagesActivity mActivity;
+		public MenuAppsAdapter mAdapter;
 
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -1592,25 +1630,25 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			// Get the layout inflater
 			LayoutInflater inflater = getActivity().getLayoutInflater();
 
-			View dialogCustomView = inflater.inflate(R.layout.dialog_list_apps, null);
+			View dialogCustomView = inflater.inflate(R.layout.dialog_list_view, null);
+
+			TextView tvTitle = (TextView) dialogCustomView.findViewById(R.id.dialog_title);
+			tvTitle.setText(R.string.change_app);
 			ListView lvApps = (ListView) dialogCustomView.findViewById(R.id.lv_apps);
-			Button cancel = (Button) dialogCustomView.findViewById(R.id.btn_cancel);
-
-			MenuAppsAdapter adapter = new MenuAppsAdapter(getContext(), 0, mItems);
-			lvApps.setAdapter(adapter);
-
+			lvApps.setAdapter(mAdapter);
 			lvApps.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					mAppsListDialog.dismiss();
-					changeApp(mItems.get(position));
+					mActivity.mAppsListDialog.dismiss();
+					mActivity.changeApp(mItems.get(position));
 				}
 			});
 
+			Button cancel = (Button) dialogCustomView.findViewById(R.id.btn_cancel);
 			cancel.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mAppsListDialog.dismiss();
+					mActivity.mAppsListDialog.dismiss();
 				}
 			});
 
@@ -1713,5 +1751,15 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		}
 
 		return -1;
+	}
+
+	public String getLibVersion () {
+		try {
+			return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		return "";
 	}
 }

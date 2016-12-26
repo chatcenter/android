@@ -174,10 +174,15 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     }
 
     private void updateHeaderView() {
-        final UserItem headerUserItem;
+        if (mCurrentChannel == null) {
+            return;
+        }
+        UserItem headerUserItem = null;
         if (mIsAgent) {
             // InBox app
-            headerUserItem = mCurrentChannel.getGuest();
+            if (mCurrentChannel.getGuests() != null && mCurrentChannel.getGuests().size() > 0) {
+                headerUserItem = mCurrentChannel.getGuests().get(0);
+            }
         } else {
             // Agent App
             headerUserItem = mCurrentChannel.getAssignee();

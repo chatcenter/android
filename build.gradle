@@ -40,7 +40,7 @@ ext {
 	siteUrl = 'https://github.com/chatcenter/android'
 	gitUrl = 'https://github.com/chatcenter/android.git'
 
-	libraryVersion = '1.0.2'
+	libraryVersion = '1.0.3'
 
 	developerId = 'appsocially'
 	developerName = 'AppSocially Inc.'
@@ -91,6 +91,7 @@ dependencies {
 	compile fileTree(include: ['*.jar'], dir: 'libs')
 	compile 'com.android.support:appcompat-v7:25.1.0'
 	compile 'com.android.support:support-v4:25.1.0'
+	compile 'com.android.support:recyclerview-v7:25.1.0'
 	compile 'com.google.code.gson:gson:2.4'
 	compile 'javax.inject:javax.inject:1'
 	compile 'com.squareup.picasso:picasso:2.5.2'
@@ -99,6 +100,7 @@ dependencies {
 	compile 'com.google.android.gms:play-services-gcm:10.0.1'
 	compile 'com.google.android.gms:play-services-maps:10.0.1'
 	compile 'com.google.android.gms:play-services-places:10.0.1'
+	compile 'com.google.android.gms:play-services-location:10.0.1'
 	compile 'com.opentok.android:opentok-android-sdk:2.9.1-REL-2636'
 
 	compile 'com.google.dagger:dagger:2.2'

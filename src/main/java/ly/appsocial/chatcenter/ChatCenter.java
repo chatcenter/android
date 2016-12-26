@@ -24,6 +24,7 @@ import ly.appsocial.chatcenter.dto.ws.response.PostDevicesSignInResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostDevicesSignOutResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostUsersAuthResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.PostUsersResponseDto;
+import ly.appsocial.chatcenter.util.ApiUtil;
 import ly.appsocial.chatcenter.util.AuthUtil;
 import ly.appsocial.chatcenter.util.NetworkQueueHelper;
 import ly.appsocial.chatcenter.util.PreferenceUtil;
@@ -33,6 +34,7 @@ import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
 import ly.appsocial.chatcenter.ws.parser.GetChannelsMineParser;
 
 /**
+ * ChatCenter SDK main class
  *
  */
 public class ChatCenter {
@@ -48,13 +50,29 @@ public class ChatCenter {
 		return mClient;
 	}
 
+	public static String mAppToken;
+	public static String mAppName;
+	public static int mAppIconId;
+
+	/*
+	 * Initialize SDK with App information
+	 *
+	 */
+	public static void initChatCenter(Context context, String appName, Integer appIconId ) {
+		client(context);
+
+		mAppToken = ApiUtil.getAppToken(context);
+		if ( appName != null ) {
+			mAppName = appName;
+		}
+		if ( appIconId != null ) {
+			mAppIconId = appIconId.intValue();
+		}
+	}
+
 	// //////////////////////////////////////////////////////////////////////////
 	// Push notifications
 	// //////////////////////////////////////////////////////////////////////////
-	public static void initChatCenter(Context context) {
-		client(context);
-	}
-
 	public static void getDeviceToken(Context context, ChatCenterClient.GetDeviceTokenCallback callback){
 		client(context).getDeviceToken(callback);
 	}
@@ -231,6 +249,8 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Open Messages List (History) Activity
+	 * 履歴画面を表示します。
 	 *
 	 * @param context
 	 */
@@ -246,6 +266,8 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Open Messages List (History) Activity
+	 * 履歴画面を表示します。
 	 *
 	 * @param context
 	 * @param channelType
@@ -275,6 +297,7 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Open Messages List (History) Activity
 	 * 履歴画面を表示します。
 	 *
 	 * @param context コンテキスト
@@ -296,6 +319,7 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Get Unread Messages Count
 	 * 未読メッセージ件数を取得します。
 	 *
 	 * @param context コンテキスト
@@ -321,18 +345,8 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Open Chat Activity
 	 * チャット画面を表示します。
-	 *
-	 * @param context
-	 * @param orgUid
-	 * @param provider
-	 * @param providerToken
-	 * @param providerTokenCreatedAt
-	 * @param providerTokenExpiresDate
-	 * @param channelInformations
-	 * @param deviceToken
-	 */
-	/**
 	 *
 	 * @param context
 	 * @param chatParamDto
@@ -357,6 +371,8 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Open Chat Activity
+	 * チャット画面を表示します。
 	 *
 	 * @param context
 	 * @param orgUid
@@ -391,6 +407,7 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Open Chat Activity
 	 * チャット画面を表示します。
 	 *
 	 * @param context
@@ -462,7 +479,9 @@ public class ChatCenter {
 										   final Map<String, String> channelInformations) {
 		return getShowChatIntent(context, orgUid, null, channelInformations, null, 0, 0);
 	}
+
 	/**
+	 * Open Chat Activity
 	 * チャット画面を表示します。
 	 *
 	 * @param context コンテキスト
@@ -498,6 +517,7 @@ public class ChatCenter {
 	}
 
 	/**
+	 * Is this chat is already browsed
 	 * 表示済みチャットかを判定します。
 	 *
 	 * @param context コンテキスト
@@ -512,7 +532,8 @@ public class ChatCenter {
 	}
 
 	/**
-	 * 同意済みチャットをクリアします。
+	 * Clear browsed chat
+	 * 表示済みチャットをクリアします。
 	 *
 	 * @param context コンテキスト
 	 */

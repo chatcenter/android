@@ -20,7 +20,6 @@ import ly.appsocial.chatcenter.util.StringUtil;
 public class WebViewActivity extends BaseActivity {
 
     private WebView mWebView;
-    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +31,6 @@ public class WebViewActivity extends BaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mWebView = (WebView) findViewById(R.id.webview);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress);
 
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setAllowFileAccess(true);
@@ -78,6 +76,10 @@ public class WebViewActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+	private ProgressBar getProgressBar(){
+		return (ProgressBar)findViewById(R.id.progress);
+	}
+
     // //////////////////////////////////////////////////////////
     // Inner class
     // //////////////////////////////////////////////////////////
@@ -85,7 +87,7 @@ public class WebViewActivity extends BaseActivity {
     private class MyWebChromeClient extends WebChromeClient {
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-            mProgressBar.setProgress(newProgress);
+			getProgressBar().setProgress(newProgress);
             super.onProgressChanged(view, newProgress);
         }
 
@@ -111,15 +113,15 @@ public class WebViewActivity extends BaseActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            mProgressBar.setProgress(0);
-            mProgressBar.setVisibility(View.VISIBLE);
+			getProgressBar().setProgress(0);
+			getProgressBar().setVisibility(View.VISIBLE);
             super.onPageStarted(view, url, favicon);
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            mProgressBar.setProgress(100);
-            mProgressBar.setVisibility(View.INVISIBLE);
+			getProgressBar().setProgress(100);
+			getProgressBar().setVisibility(View.INVISIBLE);
             super.onPageFinished(view, url);
         }
     }

@@ -15,6 +15,7 @@
 		<item name="colorPrimary">@color/color_chatcenter_title_background</item>
 		<item name="colorAccent">@color/color_chatcenter_text_light</item>
 		<item name="android:colorBackground">@color/color_chatcenter_background</item>
+        <item name="actionBarSize">50dp</item>
 	</style>
 
     <!-- テーマ(アクションバー無し) -->

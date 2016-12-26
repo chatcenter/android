@@ -5,12 +5,31 @@
 	android:layout_height="match_parent"
 	android:background="@color/color_chatcenter_background">
 
-	<ImageView
+	<RelativeLayout
 		android:id="@+id/thumb"
-		android:layout_width="110dp"
-		android:layout_height="110dp"
+		android:layout_width="80dp"
+		android:layout_height="80dp"
 		android:layout_centerHorizontal="true"
-		android:layout_marginTop="72dp"/>
+		android:layout_marginTop="50dp">
+		<!-- アイコンテキスト -->
+		<TextView
+			android:id="@+id/tv_left_menu_user_ava"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:background="@drawable/shape_chat_client_icon_textview"
+			android:gravity="center"
+			android:includeFontPadding="false"
+			android:textColor="@android:color/white"
+			android:textStyle="bold"
+			android:textSize="48sp"/>
+
+		<!-- アイコン画像 -->
+		<ImageView
+			android:id="@+id/imv_left_menu_user_ava"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:contentDescription="@null"/>
+	</RelativeLayout>
 
 	<TextView
 		android:id="@+id/name"
@@ -41,28 +60,28 @@
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
 		android:layout_marginBottom="26dp"
-		android:orientation="horizontal">
+		android:orientation="horizontal"
+		android:gravity="center">
 
 		<ImageView
 			android:id="@+id/hangup"
-			android:layout_width="64dp"
-			android:layout_height="64dp"
-			android:layout_weight="2"
+			android:layout_width="@dimen/video_activity_btn_call_size"
+			android:layout_height="@dimen/video_activity_btn_call_size"
 			android:src="@drawable/hangup_btn" />
 
 		<ImageView
 			android:id="@+id/answer_video"
-			android:layout_width="64dp"
-			android:layout_height="64dp"
-			android:layout_weight="2"
+			android:layout_width="@dimen/video_activity_btn_call_size"
+			android:layout_height="@dimen/video_activity_btn_call_size"
+			android:layout_marginLeft="40dp"
+			android:layout_marginRight="40dp"
 			android:src="@drawable/answer_camera_btn" />
 
 
 		<ImageView
 			android:id="@+id/answer_audio"
-			android:layout_width="64dp"
-			android:layout_height="64dp"
-			android:layout_weight="2"
+			android:layout_width="@dimen/video_activity_btn_call_size"
+			android:layout_height="@dimen/video_activity_btn_call_size"
 			android:src="@drawable/answer_btn" />
 	</LinearLayout>
 

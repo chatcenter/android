@@ -107,6 +107,20 @@ public class ViewUtil {
 		}
 	}
 
+	public static void loadRoundedCornersImage(final ImageView imageView, final String uri, final float radius) {
+		int imageWidth = imageView.getWidth();
+		float radiusRatio = radius / imageWidth;
+		if (StringUtil.isBlank(uri)) {
+			/*
+			 * 画像URLにnullを渡すとエラー画像が表示されないし、空文字だと例外が発生するのでそれらの場合には NoImage
+			 * を明示的に設定します。
+			 */
+			Picasso.with(imageView.getContext()).load("blank").transform(new RoundedCornerTransformation(radiusRatio)).into(imageView);
+		} else {
+			Picasso.with(imageView.getContext()).load(uri).transform(new RoundedCornerTransformation(radiusRatio)).into(imageView);
+		}
+	}
+
 	/**
 	 * リストビューでチェックされている項目データを取得します。
 	 * <p>

@@ -44,6 +44,18 @@
 
     <string name="chatcenter_messages_signout">ログアウト</string>
 
+    <string name="location_dialog_title">どの位置情報を共有しますか？</string>
+    <string name="location_title">位置情報</string>
+    <string name="location_live_title">ライブ位置情報を共有</string>
+    <string name="location_select_map">地図から選択</string>
+    <string name="location_select_live">ライブ位置情報</string>
+    <string name="sending_location">位置情報共有中</string>
+    <string name="location_live">Live</string>
+    <string name="location_stop">ストップ</string>
+    <string name="location_share_mylive">自分の位置情報を共有</string>
+    <string name="location_share_time">シェアする時間を設定してください</string>
+    <string name="share_time_format">%d分</string>
+
     <!-- ========================================================================== -->
     <!-- DateTime format -->
     <!-- ========================================================================== -->
@@ -204,7 +216,7 @@
     <string name="schedule_date_format">yyyy年M月d日 EEEE</string>
     <string name="date_format_short">ah:mm</string>
     <string name="date_format_date">M月d日(EEE)</string>
-    <string name="schedule_hour" >%2$s%1$d時</string>
+    <string name="schedule_hour">%2$s%1$d時</string>
 
     <string name="note_hint">内容</string>
     <string name="business_funnel">ファネル</string>
@@ -219,5 +231,9 @@
     <string name="segment_team">Team\'s</string>
     <string name="segment_everyone">Everyone\'s</string>
     <string name="settings">設定</string>
-    <string name="change_app">アプリを変更する</string>
+    <string name="change_app">アプリを選択してください</string>
+    <string name="btn_switch">スイッチ</string>
+    <string name="inbox">受信トレイ</string>
+    <string name="select_user_to_call">ユーザーを選択してください</string>
+    <string name="settings_title">ChatCenter iO %s</string>
 </resources>

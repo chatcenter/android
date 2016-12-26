@@ -36,6 +36,27 @@
 			android:textSize="@dimen/message_text_size"
 			android:visibility="visible"/>
 
+		<android.support.v7.widget.RecyclerView
+			android:id="@+id/live_thumbnail"
+			android:layout_toLeftOf="@+id/bt_live"
+			android:layout_centerVertical="true"
+			android:layout_width="wrap_content"
+			android:layout_height="25dp"
+			android:visibility="gone"/>
+
+		<TextView
+			android:id="@+id/bt_live"
+			android:layout_width="38dp"
+			android:layout_height="25dp"
+			android:gravity="center"
+			android:layout_alignParentRight="true"
+			android:layout_centerVertical="true"
+			android:layout_marginRight="5dp"
+			android:background="@drawable/live_button"
+			android:text="@string/location_live"
+			android:textColor="#fff"
+			android:visibility="gone"/>
+
 	</RelativeLayout>
 
 	<ly.appsocial.chatcenter.ui.RoundImageView
