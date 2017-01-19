@@ -10,9 +10,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.ws.ApiRequest;
 
@@ -31,17 +28,10 @@ public class MainActivity extends Activity {
 		button.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				openChat();
+				startConversation();
 			}
 		});
 
-		View history = findViewById(R.id.history);
-		history.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				openHistory();
-			}
-		});
 
 		View clearHistory = findViewById(R.id.clear_history);
 		clearHistory.setOnClickListener(new View.OnClickListener() {
@@ -53,10 +43,9 @@ public class MainActivity extends Activity {
 
 	}
 
-	private void openChat(){
+	private void startConversation(){
 		if (ChatCenter.hasChatUser(this)) {
-			Map<String, String> info = new HashMap<>();
-			ChatCenter.showChat(this, TEAM_ID, null, null, 0, 0, info);
+			openHistory();
 		} else {
 			Intent intent = new Intent(this, LoginActivity.class);
 			intent.putExtra("team_id", TEAM_ID);
