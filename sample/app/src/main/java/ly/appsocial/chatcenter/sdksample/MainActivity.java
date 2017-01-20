@@ -10,7 +10,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.common.GoogleApiAvailability;
+
 import ly.appsocial.chatcenter.ChatCenter;
+import ly.appsocial.chatcenter.ChatCenterClient;
 import ly.appsocial.chatcenter.ws.ApiRequest;
 
 public class MainActivity extends Activity {
@@ -41,6 +44,25 @@ public class MainActivity extends Activity {
 			}
 		});
 
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		// Your app can not start if device not support google play services
+		ChatCenter.getDeviceToken(this, new ChatCenterClient.GetDeviceTokenCallback() {
+			@Override
+			public void onSuccess(String deviceToken) {
+
+			}
+
+			@Override
+			public void onError() {
+				int errorCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(MainActivity.this);
+				GoogleApiAvailability.getInstance().showErrorDialogFragment(MainActivity.this, errorCode, 0);
+			}
+		});
 	}
 
 	private void startConversation(){
