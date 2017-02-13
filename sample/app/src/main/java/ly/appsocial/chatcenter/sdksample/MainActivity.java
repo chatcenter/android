@@ -18,7 +18,7 @@ import ly.appsocial.chatcenter.ws.ApiRequest;
 
 public class MainActivity extends Activity {
 
-	final String TEAM_ID = "[YOUR_TEAM_ID_HERE]";
+	final String TEAM_ID = "developer_success";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
