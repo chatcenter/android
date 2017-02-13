@@ -26,7 +26,7 @@
 
 		<meta-data
 			android:name="ly.appsocial.chatcenter.AppToken"
-			android:value="[YOUR_APP_TOKEN_HERE]"/>
+			android:value="j4KmracFAqvaMpALRuSz"/>
 
 		<activity android:name=".MainActivity">
 			<intent-filter>
