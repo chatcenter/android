@@ -28,17 +28,14 @@
 			android:name="ly.appsocial.chatcenter.AppToken"
 			android:value="j4KmracFAqvaMpALRuSz"/>
 
-		<activity android:name=".MainActivity">
+		<activity android:name=".MainActivity"
+			android:windowSoftInputMode="stateHidden">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
-
-		<activity android:name=".LoginActivity">
-		</activity>
-
 
 		<receiver
 			android:name="com.google.android.gms.gcm.GcmReceiver"
@@ -62,6 +59,9 @@
 			android:name="com.google.android.gms.version"
 			android:value="@integer/google_play_services_version" />
 
-	</application>
+	    <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="ddefb99273770e06d2ddadf9a66ec42c0de3ccf8" />
+    </application>
 
 </manifest>

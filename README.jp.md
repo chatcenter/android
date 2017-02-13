@@ -114,7 +114,7 @@ ChatCenter SDKでは各ウィジェットの送信時に、ユーザーの情報
 <a id="DispalyChatView"></a>
 ## 2. チャットビューの呼び出し
 チャットを表示するチャットビューを呼び出します。
-<p align="center"><img src="InstallationImages/chatview.png" width="375" height="667"><br>※画像はiOS版です</p>
+<p align="center"><img src="InstallationImages/chatview.png" width="375" height="667"><br>*画像はiOS版です</p>
 
 ### 2-1. 認証ありの場合
 以下のコードをActivityの任意の場所に挿入してください。
@@ -188,7 +188,7 @@ ChatCenter.showChat(this, orgUid, firstName, familyName, email, info);
 	</tr>
 	<tr>
 		<td>orgUid(String)</td>
-		<td><b>Chatに紐づく、チームIDを指定してください ※Organization Uid(法人/店舗ID)Iについて</b></td>
+		<td><b>Chatに紐づく、チームIDを指定してください Organization Uid(法人/店舗ID)Iについて</b></td>
 	</tr>
 	<tr>
 		<td>firstName(String)</td>
@@ -219,7 +219,7 @@ ChatCenter.showChat(this, orgUid, firstName, familyName, email, info);
 ## 3. ヒストリービューの呼び出し
 チャットの履歴一覧を表示するヒストリービューを呼び出します。  
 <p align="center"><img src="InstallationImages/historyview.png" width="375" height="667">
-<br>※画像はiOS版です</p>
+<br>*画像はiOS版です</p>
 
 ### 3-1. 認証ありの場合
 以下のコードを任意の場所に挿入してください。

@@ -116,7 +116,7 @@ Next, add necessary items including the Service you just copied into `<applicati
 <a id="DispalyChatView"></a>
 ## 2. Display ChatView
 Call ChatView to display chat.
-<p align="center"><img src="InstallationImages/chatview.png" width="375" height="667"><br>* ※Image is iOS version</p>
+<p align="center"><img src="InstallationImages/chatview.png" width="375" height="667"><br>*Image is iOS version</p>
 
 ### 2-1. When requiring authentication
 Please insert the following code anywhere in Activity.
@@ -190,7 +190,7 @@ The following are the parameters. Bold is mandatory. If other parameters are not
     </tr>
     <tr>
         <td>orgUid(String)</td>
-        <td><b>Please specify team ID based on Chat * About※Organization Uid(Company/Store ID)</b></td>
+        <td><b>Please specify team ID based on Chat * About Organization Uid(Company/Store ID)</b></td>
     </tr>
     <tr>
         <td>firstName(String)</td>
@@ -221,7 +221,7 @@ The following are the parameters. Bold is mandatory. If other parameters are not
 ## 3. Display HistoryView
 Call history view to display chat history list.  
 <p align="center"><img src="InstallationImages/historyview.png" width="375" height="667">
-<br>* ※Image is iOS version</p>
+<br>* Image is iOS version</p>
 
 ### 3-1. When requiring authentication
 Please insert the following code in a convenient place.

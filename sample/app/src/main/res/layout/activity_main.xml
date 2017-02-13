@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright (c) 2016.
-  -->
-
 <LinearLayout
-    android:id="@+id/activity_main"
+    android:id="@+id/mainLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -24,50 +20,80 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/login"
+            android:text="@string/app_name"
             android:textColor="@color/color_chatcenter_title_text"
             android:textSize="@dimen/title_text_size"
             android:textStyle="bold"/>
     </android.support.v7.widget.Toolbar>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:layout_height="wrap_content">
 
-        <ImageView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
             android:paddingBottom="20dp"
-            android:paddingTop="20dp"
-            android:scaleType="centerInside"
-            android:src="@mipmap/logo"/>
+            android:paddingTop="20dp">
 
-        <Button
-            android:id="@+id/chat_button"
-            style="@style/LoginButton"
-            android:background="@drawable/btn_login_email"
-            android:text="@string/start_chat"
-            android:textColor="#ffffff"/>
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                android:src="@mipmap/logo"/>
 
-        <!--<Button-->
-        <!--android:id="@+id/history"-->
-        <!--android:layout_below="@+id/chat_button"-->
-        <!--android:layout_width="150dp"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:layout_marginTop="30dp"-->
-        <!--android:text="@string/open_history"	/>-->
+            <EditText
+                android:id="@+id/edt_first_name"
+                style="@style/LoginEditText"
+                android:hint="@string/login_hint_first_name"
+                android:inputType="text"/>
 
-        <Button
-            android:id="@+id/clear_history"
-            style="@style/LoginButton"
-            android:background="@drawable/btn_login_email"
-            android:text="@string/clear_history"
-            android:textColor="#ffffff"/>
-    </LinearLayout>
+            <EditText
+                android:id="@+id/edt_last_name"
+                style="@style/LoginEditText"
+                android:hint="@string/login_hint_last_name"
+                android:inputType="text"/>
 
+            <EditText
+                android:id="@+id/edt_email"
+                style="@style/LoginEditText"
+                android:hint="@string/login_hint_email"
+                android:inputType="textEmailAddress"/>
+
+            <Button
+                android:id="@+id/btn_login"
+                style="@style/LoginButton"
+                android:background="@drawable/btn_login_email"
+                android:onClick="onClickLoginButton"
+                android:text="@string/start_chat"
+                android:textColor="#fff"/>
+
+            <Button
+                android:id="@+id/open_history"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="0dp"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:background="@android:color/transparent"
+                android:textAllCaps="false"
+                android:text="@string/open_history"
+                android:textSize="@dimen/title_text_size"
+                android:textColor="@color/color_chatcenter_text"/>
+
+            <Button
+                android:id="@+id/clear_history"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="0dp"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:background="@android:color/transparent"
+                android:textAllCaps="false"
+                android:textSize="@dimen/title_text_size"
+                android:text="@string/clear_history"
+                android:textColor="@color/color_chatcenter_text"/>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
