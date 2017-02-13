@@ -5,11 +5,36 @@
 <resources>
 
 	<!-- Base application theme. -->
-	<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+	<style name="ChatCenterDemo" parent="Theme.AppCompat.Light.NoActionBar">
 		<!-- Customize your theme here. -->
-		<item name="colorPrimary">@color/colorPrimary</item>
-		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-		<item name="colorAccent">@color/colorAccent</item>
+		<item name="colorPrimary">@color/color_chatcenter_title_background</item>
+		<item name="colorPrimaryDark">@color/color_chatcenter_title_background_dark</item>
+		<item name="android:colorBackground">@color/color_chatcenter_background</item>
+	</style>
+
+	<style name="ChatCenterDemo.Slide">
+		<item name="android:windowAnimationStyle">@style/SlideAnimation</item>
+		<item name="windowActionModeOverlay">true</item>
+	</style>
+
+	<style name="LoginButton">
+		<item name="android:layout_width">@dimen/login_button_width</item>
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:layout_marginTop">20dp</item>
+		<item name="android:gravity">center</item>
+		<item name="android:padding">@dimen/margin10dp</item>
+		<item name="android:textSize">@dimen/btn_login_text_size</item>
+		<item name="android:textStyle">bold</item>
+	</style>
+
+	<style name="LoginEditText">
+		<item name="android:layout_width">@dimen/login_button_width</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:background">@drawable/edt_background</item>
+		<item name="android:textColor">@color/color_chatcenter_text</item>
+		<item name="android:textColorHint">@color/color_chatcenter_separator_light</item>
+		<item name="android:padding">@dimen/margin10dp</item>
+		<item name="android:layout_marginTop">@dimen/margin10dp</item>
 	</style>
 
 </resources>

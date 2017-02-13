@@ -9,5 +9,10 @@
 	<string name="open_history">トーク履歴</string>
 	<string name="clear_history">履歴を消去</string>
 	<string name="history_cleared">履歴を消去しました</string>
+	<string name="login">ログイン</string>
+	<string name="btn_login_email">メールでログイン</string>
+	<string name="login_hint_first_name">First Name</string>
+	<string name="login_hint_last_name">Last Name</string>
+	<string name="login_hint_email">Email</string>
 
 </resources>

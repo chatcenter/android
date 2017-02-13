@@ -5,6 +5,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -16,7 +19,7 @@ import java.util.Map;
 import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.ws.ApiRequest;
 
-public class LoginActivity extends FragmentActivity {
+public class LoginActivity extends AppCompatActivity {
 
 	// Views
 	private EditText mEdtFirstName;
@@ -34,6 +37,11 @@ public class LoginActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		getSupportActionBar().setTitle("");
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 		mTeamID = getIntent().getStringExtra("team_id");
 		if (mTeamID == null) {
@@ -92,5 +100,13 @@ public class LoginActivity extends FragmentActivity {
 				closeProgressDialog();
 			}
 		});
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			finish();
+		}
+		return super.onOptionsItemSelected(item);
 	}
 }

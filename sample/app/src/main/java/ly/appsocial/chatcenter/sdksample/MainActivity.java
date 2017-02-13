@@ -4,9 +4,10 @@
 
 package ly.appsocial.chatcenter.sdksample;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Toast;
 
@@ -16,7 +17,7 @@ import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.ChatCenterClient;
 import ly.appsocial.chatcenter.ws.ApiRequest;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
 	final String TEAM_ID = "developer_success";
 
@@ -24,6 +25,9 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		getSupportActionBar().setTitle("");
 
 		ChatCenter.initChatCenter(this);
 

@@ -4,7 +4,16 @@
   -->
 
 <resources>
-	<color name="colorPrimary">#3F51B5</color>
-	<color name="colorPrimaryDark">#303F9F</color>
-	<color name="colorAccent">#FF4081</color>
+	<!-- ウィンドウ内の表示 -->
+	<color name="color_chatcenter_text">#293b54</color>
+	<color name="color_chatcenter_text_light">#0067ff</color>
+	<color name="color_chatcenter_background">#f0f0f0</color>
+	<color name="color_chatcenter_separator">#80000000</color>
+
+	<!-- ウィンドウ タイトルバー -->
+	<color name="color_chatcenter_title_text">#293b54</color>
+	<color name="color_chatcenter_title_background">#ffffff</color>
+	<color name="color_chatcenter_title_background_dark">#cacaca</color>
+	<color name="color_chatcenter_title_button">#0067ff</color>
+	<color name="color_chatcenter_title_button_text">#ffffff</color>
 </resources>
