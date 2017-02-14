@@ -3,8 +3,7 @@
 ## Table of contents
 * [Getting Started](#GettingStarted)
     * [1. Download sample project](#DLSample)
-    * [2. Set app org](#SetAppOrg)
-    * [3. Launch app](#LaunchApp)
+    * [2. Launch app](#LaunchApp)
 * [Installing SDK on app](#InstallYourApp)
     * [1. Setting of Android Studio](#SettingOfAndroidStudio)
     * [2. Set AppToken](#SetAppToken)
@@ -20,16 +19,8 @@
 You can download ChatCenter SDK from [here](https://github.com/chatcenter/android)
 Example project is included.
 
-
-<a id="SetAppOrg"></a>
-#### 2. Set app org
-Open the sample project, set the application token in AndroidManifest.xml, and the team ID in MainActivity.java.
-You can check the application token and team ID from the dashboard.
-<p align="center"><img src="InstallationImages/sample1.png"></p>
-<p align="center"><img src="InstallationImages/sample1_2.png"></p>
-
 <a id="LaunchApp"></a>
-#### 3. Launch app
+#### 2. Launch app
 <p align="center"><img src="InstallationImages/sample2.png" width="320"></p>
 
 <a id="InstallYourApp"></a>
