@@ -3,6 +3,7 @@ package ly.appsocial.chatcenter.dto.ws.response;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,11 +20,19 @@ public class GetAppsResponseDto {
 		public String name;
 		@SerializedName("uid")
 		public String uid;
-		@SerializedName("icon_url")
-		public String iconUrl;
+		@SerializedName("app_icons")
+		public ArrayList<AppIcon> icons;
 		@SerializedName("token")
 		public String token;
 		@SerializedName("stickers")
 		public List<String> stickers;
+	}
+
+	public static class AppIcon implements Serializable {
+		@SerializedName("name")
+		public String name;
+
+		@SerializedName("icon_url")
+		public String iconUrl;
 	}
 }

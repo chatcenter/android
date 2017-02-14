@@ -1,6 +1,6 @@
 <resources>
     <!-- アプリ名 -->
-    <string name="app_name">ChatCenter  iO</string>
+    <string name="app_name">ChatCenter</string>
 
     <!-- ## 履歴 ## -->
     <string name="msg_messages_empty">No Chat</string>
@@ -37,17 +37,18 @@
 
     <string name="chatcenter_messages_signout">Logout</string>
 
-    <string name="location_dialog_title">What kind of Location you want to share?</string>
-    <string name="location_title">Location</string>
+    <string name="location_dialog_title">What kind of Location do you want to share?</string>
+    <string name="location_title">Live Location</string>
 	<string name="location_live_title">Share Live Location</string>
-    <string name="location_select_map">Venue Location</string>
-    <string name="location_select_live">Live location</string>
+    <string name="location_select_map">Send Venue</string>
+    <string name="location_select_live">Share Live Location</string>
     <string name="sending_location">Sharing live location</string>
     <string name="location_live">Live</string>
     <string name="location_stop">Stop</string>
     <string name="location_share_mylive">Share my Live Location</string>
 	<string name="location_share_time">For how long do you want to share it?</string>
-	<string name="share_time_format">%dmin</string>
+	<string name="share_time_format_min">%d Mins</string>
+	<string name="share_time_format_hour">%d Hours</string>
 
 
     <!-- ========================================================================== -->
@@ -55,7 +56,7 @@
     <!-- ========================================================================== -->
     <string name="channel_detail_header">Channel Detail</string>
     <string name="info_header">Information</string>
-    <string name="about_header">About ChatCenter.iO</string>
+    <string name="about_header">About ChatCenter iO</string>
     <string name="terms_of_service">Terms of service</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="service_level_agreement">Service Level Agreement</string>
@@ -96,7 +97,7 @@
     <string name="sticker_menu_close">Close</string>
 
     <string name="sticker_label_confirm">Question</string>
-    <string name="sticker_label_calendar">Calendar</string>
+    <string name="sticker_label_calendar">Schedule</string>
     <string name="sticker_label_location">Location</string>
     <string name="sticker_label_image">Image</string>
     <string name="sticker_label_phrase">Saved</string>
@@ -122,7 +123,7 @@
     <string name="file_uploading">Uploading</string>
     <string name="preview_title">Preview</string>
 
-    <string name="schedule_guide">Tap dates and time you are available</string>
+    <string name="schedule_guide">Choose dates and times you are available</string>
     <string name="preview">Preview</string>
     <string name="schedule_title">Schedule</string>
     <string name="next">Next</string>
@@ -172,15 +173,15 @@
 
     <string name="option">Option %d</string>
 
-    <string name="sticker_video_call_title" formatted="false">%s call %s through this channel.\n</string>
+    <string name="sticker_video_call_title" formatted="false"><![CDATA[<b>%s</b> call <b>%s</b> through this channel.<br/>]]></string>
     <string name="sticker_video_call_missed">Missed call</string>
     <string name="sticker_video_call_time" formatted="false">%02d:%02d</string>
-    <string name="sticker_video_call_now">%s is calling\n</string>
+    <string name="sticker_video_call_now"><![CDATA[<b>%s</b> is calling<br/>]]></string>
     <string name="dialog_confirm_reply_sticker">You are about to send following message.</string>
     <string name="save">Save</string>
     <string name="you">You:&#160;</string>
     <string name="no_message">No message yet.</string>
-    <string name="sent_a_sticker">Sent a sticker.</string>
+    <string name="sent_a_widget">Sent a widget.</string>
     <string name="called">Called</string>
 
     <!-- 項目エラーダイアログ -->
@@ -198,16 +199,17 @@
     <string name="schedule_hour" >%1$02d%2$s</string>
     <string name="date_format_short">h:mm a</string>
     <string name="date_format_date">EEE MMM d</string>
+    <string name="date_format_date_time">EEE MMM d h:mm a</string>
 
 	<string name="note_hint">Content</string>
     <string name="business_funnel">Business Funnel</string>
     <string name="message_status">Messages Status</string>
     <string name="unassigned_status"> Unassigned</string>
-    <string name="assigned_status">Assigned</string>
+    <string name="assigned_status">Assigned to me</string>
     <string name="close_status">Closed</string>
     <string name="all">All</string>
     <string name="accept">Yes</string>
-    <string name="chat_network_error_message">Can not load data</string>
+    <string name="chat_network_error_message">No internet connection</string>
     <string name="chat_send_button">Send</string>
     <string name="chat_textbox_hint_message">Compose your message</string>
     <string name="done">Done</string>
@@ -231,4 +233,25 @@
     <string name="btn_switch">Switch</string>
     <string name="inbox">Inbox</string>
     <string name="select_user_to_call">Please select user to call</string>
+    <string name="api_request_error">An error occurred. Please try again later</string>
+    <string name="connecting">Connecting</string>
+    <string name="venue_widget_title">Venue</string>
+    <string name="internet_connected">Came Online</string>
+
+    <string name="person_name_suffix"></string>
+
+    <string name="open_dashboard">Open Dashboard</string>
+    <string name="settings_title">ChatCenter iO for Android\nVersion %s</string>
+
+    <string name="about_ChatCenter_url">https://www.chatcenter.io/</string>
+    <string name="terms_of_service_url">https://www.chatcenter.io/termsofservice/</string>
+    <string name="privacy_policy_url">https://www.chatcenter.io/privacypolicy/</string>
+    <string name="sla_url">https://www.chatcenter.io/sla/</string>
+
+    <string name="alert_schedule_select_schedule_slot">Please select at least 1 time slot.</string>
+    <string name="alert_question_widget_title_too_long">Please input %d characters or less for question title.</string>
+    <string name="alert_question_widget_question_too_long">Please input %d characters or less for question text.</string>
+    <string name="alert_question_widget_choice_too_many">Please select up to %d choices</string>
+
+    <string name="guest">Guest</string>
 </resources>

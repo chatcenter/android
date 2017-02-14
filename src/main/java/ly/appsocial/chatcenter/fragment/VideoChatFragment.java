@@ -224,7 +224,7 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 
 	@Override
 	public void onConnected(Session session) {
-		mPublisher = new Publisher(getActivity(), "publisher", true, !mIsAudioOnly );
+		mPublisher = new Publisher(getActivity(), "publisher", true,  !mIsAudioOnly);
 		mPublisher.setPublisherListener(this);
 		mPublisher.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);
 		mPublisherViewContainer.addView(mPublisher.getView());

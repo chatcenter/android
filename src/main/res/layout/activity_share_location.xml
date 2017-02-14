@@ -4,87 +4,92 @@
   -->
 
 <RelativeLayout
-	android:id="@+id/activity_share_location"
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	tools:context="ly.appsocial.chatcenter.activity.ShareLocationActivity"
-	xmlns:map="http://schemas.android.com/apk/res-auto">
+    android:id="@+id/activity_share_location"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ly.appsocial.chatcenter.activity.ShareLocationActivity">
 
-	<android.support.v7.widget.Toolbar
-		android:id="@+id/toolbar"
-		android:layout_width="match_parent"
-		android:layout_height="?actionBarSize"
-		android:theme="@style/ToolbarStyle">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:theme="@style/ToolbarStyle">
 
-	</android.support.v7.widget.Toolbar>
+    </android.support.v7.widget.Toolbar>
 
-	<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:name="com.google.android.gms.maps.MapFragment"
-			  android:id="@+id/map"
-			  map:cameraZoom="13"
-			  map:mapType="normal"
-			  android:layout_below="@+id/toolbar"
-			  android:layout_above="@+id/button_bar"
-			  android:layout_width="match_parent"
-			  android:layout_height="match_parent"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:background="@color/color_chatcenter_widget_divider"
+        android:layout_below="@id/toolbar"/>
 
-	<RelativeLayout
-		android:id="@+id/button_bar"
-		android:layout_alignParentBottom="true"
-		android:gravity="center_vertical"
-		android:paddingTop="8dp"
-		android:paddingBottom="8dp"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content">
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.MapFragment"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/button_bar"
+        android:layout_below="@+id/toolbar"
+        map:cameraZoom="15"
+        map:mapType="normal"/>
 
-		<Button
-			android:id="@+id/minus_btn"
-			android:layout_width="54dp"
-			android:layout_height="54dp"
-			android:layout_alignParentLeft="true"
-			android:layout_marginLeft="10dp"
-			android:background="@drawable/minus_btn"/>
+    <LinearLayout
+        android:id="@+id/button_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
+        android:padding="10dp"
+        android:orientation="horizontal">
 
-		<LinearLayout
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_centerHorizontal="true"
-			android:layout_centerVertical="true"
-			android:orientation="vertical">
+        <Button
+            android:id="@+id/minus_btn"
+            android:layout_width="@dimen/live_location_time_button"
+            android:layout_height="@dimen/live_location_time_button"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/minus_btn"/>
 
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/location_share_time"
-				android:layout_gravity="center_horizontal"
-				android:textSize="12sp"
-				/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
 
-			<TextView
-				android:id="@+id/share_time"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center_horizontal"
-				android:layout_marginTop="8dp"
-				android:text="15 min"
-				android:textSize="18sp"
-				android:textStyle="bold"
-				/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/location_share_time"
+                android:textSize="12sp"
+                android:textColor="@color/color_chatcenter_text"/>
 
-		</LinearLayout>
+            <TextView
+                android:id="@+id/share_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/margin5dp"
+                android:text="15 min"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/color_chatcenter_text"/>
+
+        </LinearLayout>
 
 
-		<Button
-			android:id="@+id/plus_btn"
-			android:layout_width="54dp"
-			android:layout_height="54dp"
-			android:layout_alignParentRight="true"
-			android:layout_marginRight="10dp"
-			android:background="@drawable/plus_btn"/>
-
-	</RelativeLayout>
+        <Button
+            android:id="@+id/plus_btn"
+            android:layout_width="@dimen/live_location_time_button"
+            android:layout_height="@dimen/live_location_time_button"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/plus_btn"/>
+    </LinearLayout>
 
 
 </RelativeLayout>

@@ -51,7 +51,7 @@ import ly.appsocial.chatcenter.dto.param.PhotoParamDto;
 public class PhotoActivity extends BaseActivity implements View.OnClickListener, ProgressDialogFragment.DialogListener, AlertDialogFragment.DialogListener {
 
 	public static final String PHOTO_DATA = "PHOTO_DATA";
-	public static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1000;
+	private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1000;
 
 	// //////////////////////////////////////////////////////////////////////////
 	// インスタンスフィールド

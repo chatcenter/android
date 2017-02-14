@@ -1,7 +1,6 @@
 <LinearLayout
     android:id="@+id/chat_root_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
@@ -68,7 +67,7 @@
             android:padding="@dimen/margin10dp"
             android:background="@android:color/transparent"
             android:src="@drawable/icon_videochat_widget"
-            android:tint="@color/color_chatcenter_widget_border"
+            android:tint="@color/color_chatcenter_title_button"
             android:visibility="gone"/>
 
         <ImageButton
@@ -78,7 +77,7 @@
             android:layout_gravity="right"
             android:padding="@dimen/margin10dp"
             android:background="@android:color/transparent"
-            android:tint="@color/color_chatcenter_widget_border"
+            android:tint="@color/color_chatcenter_title_button"
             android:src="@drawable/icon_phonecall_widget"
             android:visibility="gone"/>
 
@@ -89,13 +88,12 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:drawablePadding="@dimen/margin10dp"
-            android:drawableRight="@drawable/icon_right_triangle_small"
-            android:drawableTint="@color/color_chatcenter_text"
             android:textColor="@color/color_chatcenter_title_text"
             android:textStyle="normal"
             android:maxLines="1"
             android:ellipsize="end"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:layout_gravity="center"/>
 
     </android.support.v7.widget.Toolbar>
 
@@ -127,7 +125,6 @@
             android:layout_height="match_parent"
             android:divider="@null"
             android:dividerHeight="3dp"
-            android:stackFromBottom="true"
             android:transcriptMode="disabled"/>
 
         <!-- ネットワークエラー -->
@@ -139,6 +136,7 @@
             android:gravity="center"
             android:padding="5dp"
             android:text="@string/chat_network_error_message"
+            android:textSize="11sp"
             android:textColor="#fff"/>
     </RelativeLayout>
 

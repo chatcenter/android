@@ -40,31 +40,31 @@
         </LinearLayout>
 
         <!-- 削除 -->
-        <Button
-            android:id="@+id/messages_delete_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:background="@null"
-            android:minHeight="0dp"
-            android:minWidth="0dp"
-            android:padding="@dimen/margin10dp"
-            android:text="削除"
-            android:textColor="@drawable/selector_messages_header_text_color"
-            android:visibility="gone"/>
+        <!--<Button-->
+            <!--android:id="@+id/messages_delete_button"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="right"-->
+            <!--android:background="@null"-->
+            <!--android:minHeight="0dp"-->
+            <!--android:minWidth="0dp"-->
+            <!--android:padding="@dimen/margin10dp"-->
+            <!--android:text="削除"-->
+            <!--android:textColor="@drawable/selector_messages_header_text_color"-->
+            <!--android:visibility="gone"/>-->
 
-        <Button
-            android:id="@+id/messages_edit_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:background="@null"
-            android:minHeight="0dp"
-            android:minWidth="0dp"
-            android:padding="@dimen/margin10dp"
-            android:text="編集"
-            android:textColor="@drawable/selector_messages_header_text_color"
-            android:visibility="visible"/>
+        <!--<Button-->
+            <!--android:id="@+id/messages_edit_button"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="right"-->
+            <!--android:background="@null"-->
+            <!--android:minHeight="0dp"-->
+            <!--android:minWidth="0dp"-->
+            <!--android:padding="@dimen/margin10dp"-->
+            <!--android:text="編集"-->
+            <!--android:textColor="@drawable/selector_messages_header_text_color"-->
+            <!--android:visibility="visible"/>-->
 
     </android.support.v7.widget.Toolbar>
 
@@ -74,13 +74,6 @@
         android:layout_below="@id/toolbar"
         android:background="@color/color_chatcenter_separator_light"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/widget_line_width"
-        android:layout_below="@id/toolbar"
-        android:background="@color/color_chatcenter_separator_light"/>
-
-    <!-- リスト -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -119,7 +112,8 @@
             android:background="#fb000a"
             android:gravity="center"
             android:padding="5dp"
-            android:text="データロードに失敗しました。"
+            android:text="@string/chat_network_error_message"
+            android:textSize="11sp"
             android:textColor="#fff"/>
 
         <!-- プログレスバー -->
@@ -145,5 +139,13 @@
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/toolbar"
+        android:background="@color/color_chatcenter_separator_light"/>
+
+    <!-- リスト -->
 
 </LinearLayout>

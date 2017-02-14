@@ -29,15 +29,17 @@ import ly.appsocial.chatcenter.util.PreferenceUtil;
 
 public class ShareLocationActivity extends BaseActivity implements OnMapReadyCallback, WidgetPreviewDialog.WidgetPreviewListener{
 
+	private final static int SHARE_TIME_MIN = 15; // 15 minutes
+	private final static int SHARE_TIME_DEFAULT = 60; // 60 minutes
+	private final static int ONE_HOUR = 60;
+	private final static int QUARTER_HOUR = 15;
+
 	private GoogleMap mMap;
 	private Location mLocation;
 	private TextView mShareTimeLabel;
-	private int mShareTime = 60;
+	private int mShareTime = SHARE_TIME_DEFAULT;
 	private boolean mDontShowPreview = false;
 
-	final static private int SHARE_TIME_MIN = 5;
-	final static private int SHARE_TIME_MAX = 60;
-	final static private int SHARE_TIME_VAL = 5;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +61,7 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		setHomeAsUpIndicator(R.drawable.bt_close);
 
 		setTitle(R.string.location_live_title);
 
@@ -144,24 +147,55 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 	}
 
 	private void updateShareTime(){
-		String form = getString(R.string.share_time_format);
-		mShareTimeLabel.setText(String.format(form, mShareTime));
+		if (mShareTime >= SHARE_TIME_DEFAULT) {
+			if (mShareTime > 12 * ONE_HOUR) {
+				mShareTimeLabel.setText(getString(R.string.infinite));
+			} else {
+				int shareTimeInHour = mShareTime / ONE_HOUR;
+				String text = String.format(getString(R.string.share_time_format_hour), shareTimeInHour);
+
+				if (shareTimeInHour == 1) {
+					text = text.substring(0, text.length() - 1);
+				}
+				mShareTimeLabel.setText(text);
+			}
+		} else {
+			mShareTimeLabel.setText(String.format(getString(R.string.share_time_format_min), mShareTime));
+		}
 	}
 
 	private void increaseTime(){
-		int time = mShareTime + SHARE_TIME_VAL;
-		if ( time <= SHARE_TIME_MAX ){
-			mShareTime = time;
+		if (mShareTime >= SHARE_TIME_DEFAULT) {
+			if (mShareTime >= 12 * ONE_HOUR) {
+				mShareTime = Integer.MAX_VALUE;
+			} else {
+				mShareTime += ONE_HOUR;
+			}
+		} else {
+			mShareTime += QUARTER_HOUR;
 		}
+
 		updateShareTime();
 	}
 
 	private void decreaseTime(){
-		int time = mShareTime - SHARE_TIME_VAL;
-		if ( time >= SHARE_TIME_MIN ){
-			mShareTime = time;
+		if ( mShareTime > SHARE_TIME_MIN ){
+			if (mShareTime > SHARE_TIME_DEFAULT) {
+				if (mShareTime > 12 * ONE_HOUR) {
+					mShareTime = 12 * ONE_HOUR;
+				} else {
+					mShareTime -= ONE_HOUR;
+				}
+			} else {
+				mShareTime -= QUARTER_HOUR;
+			}
 		}
 		updateShareTime();
 	}
 
+	@Override
+	public void finish() {
+		super.finish();
+		this.overridePendingTransition(0, R.anim.activity_close_exit);
+	}
 }

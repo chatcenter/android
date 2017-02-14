@@ -1,5 +1,9 @@
 package ly.appsocial.chatcenter.util;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.URL;
 
 /**
@@ -41,5 +45,21 @@ public class StringUtil {
 		String urlString = url.getFile();
 
 		return urlString.substring(urlString.lastIndexOf('/') + 1).split("\\?")[0].split("#")[0];
+	}
+
+	/** Check if String is json object*/
+	public static boolean isJSONValid(String testString) {
+		try {
+			new JSONObject(testString);
+		} catch (JSONException ex) {
+			// edited, to include @Arthur's comment
+			// e.g. in case JSONArray is valid as well...
+			try {
+				new JSONArray(testString);
+			} catch (JSONException ex1) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

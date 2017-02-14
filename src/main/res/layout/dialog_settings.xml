@@ -2,46 +2,86 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:orientation="vertical"
+    android:padding="@dimen/activity_vertical_margin">
 
-    <TextView
-        android:id="@+id/tv_title"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="@dimen/margin10dp"
-        android:text="@string/settings_title"
-        android:textColor="@color/color_chatcenter_text"/>
+        android:background="@drawable/bg_flat_dialog"
+        android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="@dimen/margin10dp"
+            android:text="@string/settings_title"
+            android:textColor="#9d9d9d"
+            android:lineSpacingExtra="@dimen/margin8dp"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/widget_line_width"
-        android:background="@color/color_chatcenter_widget_divider"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/widget_line_width"
+            android:background="@color/color_chatcenter_widget_divider"/>
 
-    <Button
-        android:id="@+id/btn_logout"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_header_height"
-        android:background="@android:color/transparent"
-        android:gravity="center"
-        android:text="@string/chatcenter_messages_signout"
-        android:textColor="@color/color_chatcenter_text_red"
-        android:textSize="16sp"
-        android:textStyle="bold"/>
+        <Button
+            android:id="@+id/btn_open_dashboard"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/activity_header_height"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:text="@string/open_dashboard"
+            android:textAllCaps="false"
+            android:textColor="@color/color_chatcenter_text_light"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/widget_line_width"
-        android:background="@color/color_chatcenter_widget_divider"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/widget_line_width"
+            android:background="@color/color_chatcenter_widget_divider"/>
+
+        <Button
+            android:id="@+id/btn_about"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/activity_header_height"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:text="@string/about_header"
+            android:textAllCaps="false"
+            android:textColor="@color/color_chatcenter_text_light"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/widget_line_width"
+            android:background="@color/color_chatcenter_widget_divider"/>
+
+        <Button
+            android:id="@+id/btn_logout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/activity_header_height"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:text="@string/chatcenter_messages_signout"
+            android:textAllCaps="false"
+            android:textColor="@color/color_chatcenter_text_red"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_cancel"
         android:layout_width="match_parent"
         android:layout_height="@dimen/activity_header_height"
-        android:background="@android:color/transparent"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@drawable/bg_flat_dialog"
         android:gravity="center"
         android:text="@string/cancel"
-        android:textColor="@color/color_chatcenter_text"/>
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/color_chatcenter_text_light"/>
 </LinearLayout>

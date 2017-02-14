@@ -41,7 +41,7 @@ public class FixedPhrasesAdapter extends ArrayAdapter<FixedPhraseActivity.FPList
             WidgetView view = (WidgetView) convertView.findViewById(R.id.fixed_phrase_view);
             View overlayView = convertView.findViewById(R.id.fixed_phrase_overlay);
 
-            view.setupCustomerView(stickerItem.getChatItem(), null);
+            view.setupCustomerView(stickerItem.getChatItem(), null, false);
 
             overlayView.setOnClickListener(new View.OnClickListener() {
                 @Override

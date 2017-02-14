@@ -29,6 +29,8 @@ public class WebViewActivity extends BaseActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setTitle("");
 
         mWebView = (WebView) findViewById(R.id.webview);
 
@@ -54,7 +56,7 @@ public class WebViewActivity extends BaseActivity {
     }
 
     // url = file path or whatever suitable URL you want.
-    public static String getMimeType(String url) {
+    private static String getMimeType(String url) {
         String type = null;
         String extension = MimeTypeMap.getFileExtensionFromUrl(url);
         if (extension != null) {
@@ -123,6 +125,15 @@ public class WebViewActivity extends BaseActivity {
 			getProgressBar().setProgress(100);
 			getProgressBar().setVisibility(View.INVISIBLE);
             super.onPageFinished(view, url);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mWebView.canGoBack()) {
+            mWebView.goBack();
+        } else {
+            super.onBackPressed();
         }
     }
 }

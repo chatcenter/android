@@ -1,6 +1,7 @@
 package ly.appsocial.chatcenter.ws;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.squareup.okhttp.OkHttpClient;
@@ -36,21 +37,35 @@ public class CCWebSocketClient {
     private WebSocketListener mWSListener = new WebSocketListener() {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
+            Log.d(TAG, "onOpen: " + webSocket);
             mWebSocket = webSocket;
-
+            mIsDisconnected = false;
             if (mListener != null) {
                 mListener.onConnect();
             }
 
-            try {
-                mWebSocket.sendPing(null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                mWebSocket.sendPing(null);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }).start();
+                }
+            }, 1000);
         }
 
         @Override
         public void onFailure(IOException e, Response response) {
+            Log.d(TAG, "onFailure: ");
+
             if (mListener != null) {
                 mListener.onError(e);
             }
@@ -58,6 +73,7 @@ public class CCWebSocketClient {
 
         @Override
         public void onMessage(ResponseBody message) throws IOException {
+            Log.d(TAG, "onMessage: ");
             if (mListener != null) {
                 mListener.onMessage(message.string());
             }
@@ -76,12 +92,17 @@ public class CCWebSocketClient {
 
         @Override
         public void onClose(int code, String reason) {
+            Log.d(TAG, "onClose: " + code + " " + reason);
             mWebSocket = null;
+            mIsDisconnected = true;
             if (mListener != null) {
                 mListener.onDisconnect(code, reason);
             }
         }
     };
+
+    private boolean mIsDisconnected = true;
+    private Handler mHandler;
 
     public CCWebSocketClient(Context context, String endpoint, Listener listener) {
         this.setEndPoint(endpoint);
@@ -89,6 +110,8 @@ public class CCWebSocketClient {
 
         mWrapper = new NetworkUtilitiesWrapper();
         InjectorHelper.getInstance().injectNetworkModule(context, mWrapper);
+
+        mHandler = new Handler();
     }
 
     public void send(String message) {
@@ -126,7 +149,8 @@ public class CCWebSocketClient {
     }
 
     public boolean isConnected() {
-        return mWebSocket != null;
+        Log.d(TAG, "isConnected: " + mWebSocket + " " + mIsDisconnected);
+        return mWebSocket != null && !mIsDisconnected;
     }
 
     public void connect() {

@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
@@ -40,7 +41,7 @@ public class ChatCenterDeviceTokenRequest extends AsyncTask<Object, String, Stri
             Log.e(TAG, "GCM Push notification SenderID not found");
             return null;
         }
-        final int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);
+        final int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(mContext);
         if (resultCode != ConnectionResult.SUCCESS) {
             Log.e(TAG, "Google Play Service is not available on this device");
             return null;

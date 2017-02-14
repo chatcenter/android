@@ -65,6 +65,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -79,6 +81,7 @@ import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.adapter.ChatAdapter;
 import ly.appsocial.chatcenter.activity.adapter.WidgetMenuGridAdapter;
+import ly.appsocial.chatcenter.activity.receivers.NetworkStateReceiver;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.ChatItem;
@@ -87,6 +90,7 @@ import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.UserItem;
 import ly.appsocial.chatcenter.dto.WidgetAction;
 import ly.appsocial.chatcenter.dto.param.ChatParamDto;
+import ly.appsocial.chatcenter.dto.param.PhotoParamDto;
 import ly.appsocial.chatcenter.dto.ws.request.GetMessagesRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostChannelsRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostMessageReadRequestDto;
@@ -107,6 +111,7 @@ import ly.appsocial.chatcenter.dto.ws.response.PostUsersResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.StartVideoChatResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsChannelJoinMessageDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
+import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
 import ly.appsocial.chatcenter.fragment.ProgressDialogFragment;
 import ly.appsocial.chatcenter.util.ApiUtil;
 import ly.appsocial.chatcenter.util.AuthUtil;
@@ -119,9 +124,9 @@ import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.widgets.VideoCallWidget;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
 import ly.appsocial.chatcenter.ws.ApiRequest;
-import ly.appsocial.chatcenter.ws.CCWebSocketClient;
 import ly.appsocial.chatcenter.ws.CCWebSocketClientListener;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
+import ly.appsocial.chatcenter.ws.WebSocketHelper;
 import ly.appsocial.chatcenter.ws.parser.GetAppsParser;
 import ly.appsocial.chatcenter.ws.parser.GetMessagesParser;
 import ly.appsocial.chatcenter.ws.parser.PostChannelsParser;
@@ -139,7 +144,7 @@ import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_
  * 「チャット」アクティビティ。
  *
  */
-public class ChatActivity extends BaseActivity implements View.OnClickListener,
+public class ChatActivity extends BaseActivity implements View.OnClickListener, AlertDialogFragment.DialogListener,
 		ProgressDialogFragment.DialogListener, ViewUtil.OnSoftKeyBoardVisibleListener,
 		WidgetView.StickerActionListener, WidgetMenuGridAdapter.WidgetMenuClickListener{
 
@@ -188,7 +193,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	/** プログレスバー */
 	private ProgressBar mProgressBar;
 	/** ネットワークエラー */
-	private TextView mNetoworkErrorTextView;
+	private TextView mNetworkErrorTextView;
 	/** ListView */
 	private ListView mListView;
 	/** テキストボックス */
@@ -209,7 +214,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private ArrayList<JSONObject> userVideoChat = new ArrayList<>();
 
 
-	private boolean mSharingLocation = false;
 	private String mSharingLocationId;
 
 	// タスク
@@ -233,19 +237,19 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private ApiRequest<LiveLocationResponseDto> mLiveLocationRequest;
 
 	/** WebSocket */
-	private CCWebSocketClient mWebSocketClient;
+//	private CCWebSocketClient mWebSocketClient;
 	/** ネットワークエラー表示タスク */
 	private final Runnable mShowNWErrorTask = new Runnable() {
 		@Override
 		public void run() {
-			mNetoworkErrorTextView.setVisibility(View.VISIBLE);
+			showNWErrorLabel(isInternetConnecting);
 		}
 	};
 	/** ネットワークエラー非表示タスク */
 	private final Runnable mHideNWErrorTask = new Runnable() {
 		@Override
 		public void run() {
-			mNetoworkErrorTextView.setVisibility(View.GONE);
+			mNetworkErrorTextView.setVisibility(View.GONE);
 		}
 	};
 	/** 再接続タスク */
@@ -315,7 +319,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private GuestsListDialogFragment mGuestListDialog;
 
 	private UpdateReceiver mReceiver;
-	private IntentFilter mIntentFilter;
+	private NetworkStateReceiver mNetworkStateReceiver;
+	private boolean isInternetConnecting = true;
 
 	public static ChatActivity getInstance() {
 		Log.i("ChatActivity", "getInstance");
@@ -337,7 +342,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		getSupportActionBar().setTitle("");
 
 		// パラメータの取得
-		mParamDto = getIntent().getExtras().getParcelable(ChatParamDto.class.getCanonicalName());
+		mParamDto = (ChatParamDto) getIntent().getExtras().get(ChatCenterConstants.Extra.CHAT_PARAM);
 
 		// ルートレイアウト
 		mRootLayout = (ViewGroup) findViewById(R.id.chat_root_layout);
@@ -346,13 +351,16 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		mTitleTextView = (TextView) findViewById(R.id.toolbar_title);
 		mTitleTextView.setOnClickListener(this);
 		mTitleTextView.setVisibility(View.GONE);
+		mTitleTextView.setCompoundDrawablesWithIntrinsicBounds(null, null,
+				setDrawableTint(R.drawable.icon_right_triangle_small, R.color.color_chatcenter_title_text), null);
 
 		// プログレスバー
 		mProgressBar = (ProgressBar) findViewById(R.id.chat_progressbar);
 
 		// ネットワークエラー
-		mNetoworkErrorTextView = (TextView) findViewById(R.id.chat_network_error_textview);
-		mNetoworkErrorTextView.setVisibility(View.GONE);
+		mNetworkErrorTextView = (TextView) findViewById(R.id.chat_network_error_textview);
+		mNetworkErrorTextView.setVisibility(View.GONE);
+		checkNetworkToStart();
 
 		// ListView
 		mListView = (ListView) findViewById(R.id.chat_listview);
@@ -431,22 +439,60 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				&& mCurrentApp.stickers.size() > 0) {
 			mIbtSendSticker.setVisibility(View.VISIBLE);
 			setupWidgetMenu();
-		} else if (mCurrentApp == null) {
+		} else if (mCurrentApp == null && mParamDto.providerTokenCreatedAt == AuthUtil.getProviderTokenTimestamp(this)
+				&& StringUtil.isNotBlank(AuthUtil.getUserToken(this))) {
 			requestGetApps();
 		}
 
 		mReceiver = new UpdateReceiver();
-		mIntentFilter = new IntentFilter();
+		IntentFilter mIntentFilter = new IntentFilter();
 		mIntentFilter.addAction(ChatCenterConstants.BroadcastAction.UPDATE_CHAT);
 		mIntentFilter.addAction(ChatCenterConstants.BroadcastAction.RELOAD_CHAT);
 		registerReceiver(mReceiver, mIntentFilter);
+
+		mNetworkStateReceiver = new NetworkStateReceiver() {
+			@Override
+			public void onNetWorkConnected() {
+				isInternetConnecting = true;
+				mHandler.post(mShowNWErrorTask);
+				if (mReconnectTask != null) {
+					mHandler.post(mReconnectTask);
+				}
+			}
+
+			@Override
+			public void onNetWorkLost() {
+				isInternetConnecting = false;
+				mHandler.post(mShowNWErrorTask);
+				WebSocketHelper.disconnect();
+			}
+		};
+		IntentFilter netWorkStateFilter = new IntentFilter();
+		netWorkStateFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+		registerReceiver(mNetworkStateReceiver, netWorkStateFilter);
 	}
 
 	@Override
-	public void onDestroy(){
-		unregisterReceiver(mReceiver);
+	protected void onResume() {
+		super.onResume();
+		checkNetworkToStart();
+	}
 
+	@Override
+	public void onDestroy() {
 		super.onDestroy();
+
+		unregisterReceiver(mReceiver);
+		unregisterReceiver(mNetworkStateReceiver);
+
+		if (mIsWebSocketInited) {
+			disconnectWS();
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
 	}
 
 	private void setupWidgetMenu(){
@@ -457,6 +503,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 	public String getChannelUid(){
 		return mChannelUid;
+	}
+
+	public String getOrgUid(){
+		return mParamDto.kissCd;
 	}
 
 	@Override
@@ -483,8 +533,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		// Handler のキャンセル
 		mHandler.removeCallbacks(mReconnectTask);
 
-
-		disconnectWS();
+//		disconnectWS();
 
 		// API のキャンセル
 		mOkHttpClient.cancel(REQUEST_TAG);
@@ -515,9 +564,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home:
-				if (isTaskRoot()) {
-					ChatCenter.showMessages(this, null, null);
-					finish();
+				if (mIsAgent) {
+					if (isTaskRoot()) {
+						ChatCenter.showMessages(this, null, null);
+						finish();
+					} else {
+						finish();
+					}
 				} else {
 					finish();
 				}
@@ -531,18 +584,19 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	public void onClick(View view) {
 		int id = view.getId();
 		if (view.equals(mSendButton)) { // 送信ボタン
-			if (mWebSocketClient == null) {
-				// メッセージ送信エラーダイアログの表示
-				DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ERROR, null, getString(R.string.chatcenter_dialog_message_send_error_body));
-				return;
-			}
+			// TODO Uncomment
+//			if (mWebSocketClient == null) {
+//				// メッセージ送信エラーダイアログの表示
+//				DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ERROR, null, getString(R.string.chatcenter_dialog_message_send_error_body));
+//				return;
+//			}
 			String message =  mEditText.getText().toString();
 			mEditText.setText("");
 			requestPostMessages(message);
 		} else if (id == R.id.toolbar_title) { // Information button
 			Intent intent = new Intent(this, InfoActivity.class);
 			intent.putExtra(ChatCenterConstants.Extra.CHANNEL_UID, mChannelUid);
-			intent.putExtra(ChatParamDto.class.getSimpleName(), mParamDto);
+			intent.putExtra(ChatCenterConstants.Extra.CHAT_PARAM, mParamDto);
 			intent.putExtra(ChatCenterConstants.Extra.IS_AGENT, mIsAgent);
 			intent.putExtra(ChatCenterConstants.Extra.ORG, mCurrentOrgItem);
 			startActivity(intent);
@@ -567,6 +621,16 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		if (DialogUtil.Tag.ERROR_401.equals(tag)) { // 401エラー
 			finish();
 		}
+	}
+
+	/**
+	 * ダイアログの肯定ボタンを押下した際のコールバック。
+	 *
+	 * @param tag このフラグメントのタグ
+	 */
+	@Override
+	public void onPositiveButtonClick(String tag) {
+
 	}
 
 	@Override
@@ -607,7 +671,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			// channels->message
 			requestGetChannel(mChannelUid);
 		} else { // 詳細から
-			if (mParamDto.providerTokenTimestamp != AuthUtil.getProviderTokenTimestamp(this)
+			if (mParamDto.providerTokenCreatedAt != AuthUtil.getProviderTokenTimestamp(this)
 					|| StringUtil.isBlank(AuthUtil.getUserToken(this))) { // Userトークンが無い
 				// users->message
 				requestPostUsers();
@@ -622,7 +686,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * POST /api/users
 	 */
 	private void requestPostUsers() {
-		if (mPostUsersRequest != null) {
+		if (!isInternetConnecting || mPostUsersRequest != null) {
 			return;
 		}
 
@@ -631,7 +695,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		PostUsersRequestDto postUsersRequestDto = new PostUsersRequestDto();
 		postUsersRequestDto.provider = mParamDto.provider;
 		postUsersRequestDto.providerToken = mParamDto.providerToken;
-		postUsersRequestDto.setProviderTokenCreateAt(this, mParamDto.providerTokenTimestamp);
+		postUsersRequestDto.providerTokenSecret = mParamDto.providerTokenSecret;
+		postUsersRequestDto.providerRefreshToken = mParamDto.providerRefreshToken;
+		postUsersRequestDto.setProviderTokenCreateAt(this, mParamDto.providerTokenCreatedAt);
 		postUsersRequestDto.setProviderExpires(this, mParamDto.providerTokenExpires);
 		postUsersRequestDto.kissCd = mParamDto.kissCd;
 		postUsersRequestDto.channelInformations = mParamDto.channelInformations;
@@ -654,7 +720,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * GET /api/channels/:channel_uid
 	 */
 	private void requestGetChannel(String channelUid) {
-		if (mGetChannelsRequest != null) {
+		if (!isInternetConnecting || mGetChannelsRequest != null) {
 			return;
 		}
 
@@ -674,7 +740,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * POST /api/channels
 	 */
 	private void requestPostChannels() {
-		if (mPostChannelsRequest != null) {
+		if (!isInternetConnecting || mPostChannelsRequest != null) {
 			return;
 		}
 
@@ -699,7 +765,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * GET /api/channels/:channel_uid/messages
 	 */
 	private void requestGetMessages(Integer lastId) {
-		if (mGetMessagesRequest != null) {
+		if (!isInternetConnecting || mGetMessagesRequest != null) {
 			return;
 		}
 
@@ -728,7 +794,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * POST /api/channels/:channel_uid/messages
 	 */
 	private void requestPostMessages(String message) {
-		if (mPostMessagesRequest != null) {
+		if (!isInternetConnecting || mPostMessagesRequest != null) {
 			return;
 		}
 
@@ -763,7 +829,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * POST /api/channels/:channel_uid/messages
 	 */
 	private void requestPostSticker(String content) {
-		if (mPostMessagesRequest != null || content == null) {
+		if (!isInternetConnecting || mPostMessagesRequest != null || content == null) {
 			return;
 		}
 
@@ -813,7 +879,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	}
 
 	private void requestStartVideoChat(boolean audioOnly, List<String> userIds) {
-		if (mPostMessagesRequest != null) {
+		if (!isInternetConnecting || mPostMessagesRequest != null) {
 			return;
 		}
 
@@ -852,7 +918,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 *
 	 */
 	private void requestStartLiveLocation(Location location, final int share_time) {
-		if (mLiveLocationRequest != null ) {
+		if (!isInternetConnecting || mLiveLocationRequest != null ) {
 			return;
 		}
 
@@ -931,7 +997,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * POST /api/channels/:channel_uid/messages Reply sticker
 	 */
 	private void sendMessageResponseForChannel(BasicWidget.StickerAction.ActionData answer, String replyTo) {
-		if (mPostMessagesRequest != null) {
+		if (!isInternetConnecting || mPostMessagesRequest != null) {
 			return;
 		}
 
@@ -965,7 +1031,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	}
 
 	private void sendCheckboxResponseForChannel(List<BasicWidget.StickerAction.ActionData> answers, String replyTo) {
-		if (mPostMessagesRequest != null) {
+		if (!isInternetConnecting || mPostMessagesRequest != null) {
 			return;
 		}
 
@@ -1002,7 +1068,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * @param messageIds 既読にするメッセージIDリスト
 	 */
 	private void requestPostMessagesRead(List<Integer> messageIds) {
-		if (mPostMessagesRequest != null) {
+		if (!isInternetConnecting || mPostMessagesRequest != null) {
 			return;
 		}
 
@@ -1026,7 +1092,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 * GET /api/apps
 	 */
 	private void requestGetApps() {
-		if (mGetAppsRequest != null) {
+		if (!isInternetConnecting || mGetAppsRequest != null) {
 			return;
 		}
 
@@ -1061,7 +1127,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	}
 
 	private void requestUploadFile(String picturePath, MediaType mediaType) {
-		if (mPostMessagesRequest != null) {
+		if (!isInternetConnecting || mPostMessagesRequest != null) {
 			return;
 		}
 
@@ -1101,15 +1167,15 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 		NetworkQueueHelper.enqueue(mPostMessagesRequest, REQUEST_TAG);
 	}
 
-	/**
-	 * ネットワークエラー表示し、再接続を行います。
-	 */
-	private void errorWithReconnect() {
-		// ネットワークエラー表示
-		mHandler.post(mShowNWErrorTask);
-		// 再接続
-		mHandler.postDelayed(mReconnectTask, 3000);
-	}
+//	/**
+//	 * ネットワークエラー表示し、再接続を行います。
+//	 */
+//	private void errorWithReconnect() {
+//		// ネットワークエラー表示
+//		mHandler.post(mShowNWErrorTask);
+//		// 再接続
+//		mHandler.postDelayed(mReconnectTask, 3000);
+//	}
 
 	/**
 	 * API が認証エラーか判定し、認証エラーの場合は認証エラーダイアログを表示します。
@@ -1200,31 +1266,66 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	private void onSuggestionActionSelected(BasicWidget.StickerAction.ActionData actionData) {
 
 		// Old Suggestion Structure
-		if (StringUtil.isBlank(actionData.type)) {
+		if (StringUtil.isBlank(actionData.type) && actionData != null) {
 			for (String actionString : actionData.action) {
-				if (actionString.startsWith("http")) {
+				if (actionString.startsWith(WidgetAction.REPLY_SUGGESTION_MSG)) {
+					mEditText.setText(actionData.message);
+					break;
+				} else if (actionString.startsWith(WidgetAction.OPEN_CALENDAR)) {
+					onDateTimeAvailabilityClicked();
+					break;
+				} else if (actionString.startsWith("http")) {
 					Intent intent = new Intent(this, WebViewActivity.class);
 					intent.putExtra(ChatCenterConstants.Extra.URL, actionData.action.get(0));
 					startActivity(intent);
 					break;
+				}
+			}
+		} else if (StringUtil.isNotBlank(actionData.type) && actionData != null) {
+
+			for (String actionString : actionData.action) {
+				if (actionString.startsWith(WidgetAction.OPEN_CALENDAR)) {
+					/** "open calendar" is specified */
+					onDateTimeAvailabilityClicked();
+					break;
+				} else if (actionString.startsWith(WidgetAction.OPEN_IMAGE)) {
+					/** "open image" is specified*/
+					try {
+						String imageUrl = actionString.substring(actionString.indexOf("http"));
+						URL url = new URL(imageUrl);
+						PhotoParamDto photoParam = new PhotoParamDto(imageUrl);
+						photoParam.fileName = StringUtil.getFileNameFromUrl(url);
+						Intent intent = new Intent(this, PhotoActivity.class);
+						intent.putExtra(PhotoActivity.PHOTO_DATA, photoParam);
+						this.startActivity(intent);
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+					}
+					break;
 				} else if (actionString.startsWith(WidgetAction.REPLY_SUGGESTION_MSG)) {
 					mEditText.setText(actionData.message);
 					break;
-				}
-			}
-		} else {
-			// New Suggestion Structure
-			if (actionData.type.equals(ResponseType.MESSAGE)) {
-				mEditText.setText(actionData.message);
-			} else if (actionData.type.equals(ResponseType.URL) && actionData.action != null && actionData.action.size() > 0) {
-				Intent intent = new Intent(this, WebViewActivity.class);
-				intent.putExtra(ChatCenterConstants.Extra.URL, actionData.action.get(0));
-				startActivity(intent);
-			} else {
-				if (actionData != null
-						&& actionData.suggestionSticker != null) {
+				} else if (actionString.startsWith(WidgetAction.REPLY_SUGGESTION_STICKER)
+						|| actionData.type.equals(ResponseType.LOCATION)
+						|| actionData.type.equals(ResponseType.SAVED)
+						|| actionData.type.equals(ResponseType.FILE)) {
 					Gson gson = new Gson();
 					openWidgetPreview(gson.toJson(actionData.suggestionSticker).toString());
+					break;
+				} else if (actionString.startsWith(WidgetAction.OPEN_LOCATION) && actionData.action.size() > 1) {
+					String mapUrl = actionData.action.get(1);
+					Intent intent = new Intent(this, WebViewActivity.class);
+					intent.putExtra(ChatCenterConstants.Extra.URL, mapUrl);
+					intent.putExtra(ChatCenterConstants.Extra.ACTIVITY_TITLE, getString(R.string.google_map));
+					startActivity(intent);
+					break;
+				} else {
+					if (actionData.type.equals("url") && actionString.startsWith("http")) {
+						Intent intent = new Intent(this, WebViewActivity.class);
+						intent.putExtra(ChatCenterConstants.Extra.URL, actionData.action.get(0));
+						startActivity(intent);
+						break;
+					}
 				}
 			}
 		}
@@ -1446,8 +1547,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	 */
 	private void onFixedPhraseClicked() {
 		Intent intent = new Intent(this, FixedPhraseActivity.class);
-		intent.putExtra(FixedPhraseActivity.ORG_UID, mCurrentOrgItem.uid);
-		if (mParamDto.appToken != null) {
+		if (mParamDto != null) {
+			intent.putExtra(FixedPhraseActivity.ORG_UID, mParamDto.kissCd);
 			intent.putExtra(FixedPhraseActivity.API_TOKEN, mParamDto.appToken);
 		}
 		startActivityForResult(intent, REQUEST_FIXED_PHRASES);
@@ -1502,29 +1603,18 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	}
 
 	private void startLiveLocationSharing(int interval, String widgetId, int share_time){
-		if (!CSLocationService.isStarted()) {
-			Intent intent = new Intent(this, CSLocationService.class);
-			intent.putExtra("command", ChatCenterConstants.LocationService.START);
-			intent.putExtra("icon_id", ChatCenter.mAppIconId);
-			intent.putExtra("app_name", ChatCenter.mAppName);
-			intent.putExtra("app_token", ChatCenter.mAppToken);
-			intent.putExtra("channel_uid", mChannelUid);
-			intent.putExtra("interval", interval);
-			intent.putExtra("widget_id", widgetId);
-			intent.putExtra("share_time", share_time);
+		Intent intent = new Intent(this, CSLocationService.class);
+		intent.putExtra("command", ChatCenterConstants.LocationService.START);
+		intent.putExtra("icon_id", ChatCenter.mAppIconId);
+		intent.putExtra("app_name", ChatCenter.mAppName);
+		intent.putExtra("app_token", ChatCenter.mAppToken);
+		intent.putExtra("org_uid", mParamDto.kissCd);
+		intent.putExtra("channel_uid", mChannelUid);
+		intent.putExtra("interval", interval);
+		intent.putExtra("widget_id", widgetId);
+		intent.putExtra("share_time", share_time);
 
-			startService(intent);
-			mSharingLocation = true;
-		}
-	}
-
-	public void stopLiveLocationSharing(){
-		if (CSLocationService.isStarted()) {
-			Intent intent = new Intent(this, CSLocationService.class);
-			intent.putExtra("command", ChatCenterConstants.LocationService.STOP);
-			startService(intent);
-		}
-		mSharingLocation = false;
+		startService(intent);
 	}
 
 	/*
@@ -1587,10 +1677,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	}
 
 	private void selectImageFromCameraroll() {
-		Intent intent = new Intent();
-		intent.setType("image/*, application/pdf");
-		intent.setAction(Intent.ACTION_GET_CONTENT);
-		startActivityForResult(Intent.createChooser(intent, getString(R.string.select_file)), REQUEST_CAMERA_ROLL);
+		Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		startActivityForResult(intent, REQUEST_CAMERA_ROLL);
 	}
 
 	/*
@@ -1705,7 +1793,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				case REQUEST_LOCATION_PICKER:
 					Place place = PlacePicker.getPlace(data, this);
 					if (place != null) {
-						String content = ChatItem.createLocationStickerContent(place);
+						String content = ChatItem.createLocationStickerContent(place, this);
 						requestPostSticker(content);
 					}
 					break;
@@ -1849,7 +1937,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 			if (!isAuthErrorWithAlert(error)) {
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 		}
 
@@ -1865,8 +1953,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			}
 
 			// トークンの保存
-			AuthUtil.saveTokens(ChatActivity.this, mParamDto.providerTokenTimestamp, responseDto.users.get(0));
+			AuthUtil.saveTokens(ChatActivity.this, mParamDto.providerTokenCreatedAt, responseDto.users.get(0));
 			requestGetMessages(null);
+			if (mCurrentApp == null) {
+				requestGetApps();
+			}
 		}
 	}
 
@@ -1882,7 +1973,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 			if (!isAuthErrorWithAlert(error)) {
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 		}
 
@@ -1901,16 +1992,24 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 			// タイトル設定
 			if(!mIsAgent) {
-				mTitleTextView.setText(responseDto.orgName);
-				mTitleTextView.setVisibility(View.VISIBLE);
-			} else {
-				if (responseDto.getGuests() != null && responseDto.getGuests().size() > 0) {
-					mTitleTextView.setText(responseDto.getGuests().get(0).displayName);
-					mTitleTextView.setVisibility(View.VISIBLE);
+				if (responseDto.displayName != null) {
+					mTitleTextView.setText(responseDto.displayName.guest);
 				} else {
 					mTitleTextView.setText(responseDto.orgName);
-					mTitleTextView.setVisibility(View.VISIBLE);
 				}
+				mTitleTextView.setVisibility(View.VISIBLE);
+			} else {
+				if (responseDto.displayName != null) {
+					mTitleTextView.setText(responseDto.displayName.admin);
+				} else {
+					if (responseDto.getGuests() != null && responseDto.getGuests().size() > 0) {
+						mTitleTextView.setText(responseDto.getGuests().get(0).displayName);
+					} else {
+						mTitleTextView.setText(responseDto.orgName);
+					}
+
+				}
+				mTitleTextView.setVisibility(View.VISIBLE);
 			}
 
 			requestGetMessages(null);
@@ -1929,7 +2028,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 			if (!isAuthErrorWithAlert(error)) {
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 		}
 
@@ -1940,7 +2039,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			if (responseDto == null || responseDto.items == null) {
 				mProgressBar.setVisibility(View.GONE);
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 
 			int userId = AuthUtil.getUserId(ChatActivity.this);
@@ -1966,7 +2065,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 						continue;
 					}
 				} else if (chatItem.type.equals(ResponseType.CALL)) {
-					checkIsVideoChatActive(chatItem);
+					// checkIsVideoChatActive(chatItem);
 				}
 
 				if (chatItem.widget != null) {
@@ -2125,7 +2224,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			mGetAppsRequest = null;
 			if (!isAuthErrorWithAlert(error)) {
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 		}
 	}
@@ -2273,31 +2372,25 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 	// ===================================================================================
 	// WebSocket support
 	// ===================================================================================
+	boolean mIsWebSocketInited;
 	private void connectWS() {
-		CCWebSocketClient.Listener listener;
-		if (mWebSocketClient != null && (listener = mWebSocketClient.getListener()) != null) {
-				/*
-				 * onError() などのコールバックが呼ばれないようにキャンセルを設定。
-				 */
-			((WebSocketClientListener) listener).cancel();
-		}
-
 		String appToken = getAppToken();
-		String url = ApiUtil.getWsUrl(this) + "/?authentication="
-				+ AuthUtil.getUserToken(getApplicationContext()) + "&app_token=" + appToken; //;
-
-		mWebSocketClient = new CCWebSocketClient(this, url, new WebSocketClientListener());
-		mWebSocketClient.connect();
+		WebSocketHelper.connectWithAppToken(getApplicationContext(), appToken, new WebSocketClientListener());
+		if (WebSocketHelper.isConnected()) {
+			// ネットワークエラーの非表示
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_green));
+					mNetworkErrorTextView.setText(R.string.internet_connected);
+				}
+			});
+			mHandler.postDelayed(mHideNWErrorTask, 1000);
+		}
 	}
 
 	private void disconnectWS() {
-		// WebSocket の切断
-		CCWebSocketClient.Listener listener;
-		if (mWebSocketClient != null && (listener = mWebSocketClient.getListener()) != null) {
-			((WebSocketClientListener) listener).cancel();
-			// TODO: onError: java.net.SocketException: Socket closed になる。
-			mWebSocketClient.disconnect();
-		}
+		WebSocketHelper.disconnect();
 	}
 
 	private class WebSocketClientListener extends CCWebSocketClientListener {
@@ -2308,10 +2401,17 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			WsConnectChannelRequest wsConnectChannelRequest = new WsConnectChannelRequest();
 			wsConnectChannelRequest.channelUid = mChannelUid;
 
-			mWebSocketClient.send(wsConnectChannelRequest.toJson());
+			WebSocketHelper.send(wsConnectChannelRequest.toJson());
 
 			// ネットワークエラーの非表示
-			mHandler.post(mHideNWErrorTask);
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_green));
+					mNetworkErrorTextView.setText(R.string.internet_connected);
+				}
+			});
+			mHandler.postDelayed(mHideNWErrorTask, 1000);
 		}
 
 		@Override
@@ -2321,7 +2421,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 
 		@Override
 		public void onWSError(Exception exception) {
-			errorWithReconnect();
+			// errorWithReconnect();
 		}
 
 		private Boolean updateMessage(ChatItem item){
@@ -2349,13 +2449,44 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			if (item.id != null ) {
 				for (int i = 0; i < mAdapter.getCount(); i++) {
 					ChatItem oldItem = mAdapter.getItem(i);
-					if (oldItem.id == null) {
+					if (oldItem == null || oldItem.id == null) {
 						continue;
 					}
 
 					if (oldItem.id.equals(id)) {
 						if (oldItem.updateWithResponse(ChatActivity.this, item) ){
-							mAdapter.remove(mAdapter.getItem(i));
+							mAdapter.remove(oldItem);
+							if (item != null
+									&& item.widget != null
+									&& item.widget.content != null) {
+								try {
+
+									Gson gson = new Gson();
+									BasicWidget.StickerAction.ActionData answer = gson.fromJson(item.widget.content.getJSONObject("answer").toString(),
+											BasicWidget.StickerAction.ActionData.class);
+									ArrayList<BasicWidget.StickerAction.ActionData> answers = new ArrayList<>();
+									JSONArray jsonArray = item.widget.content.getJSONArray("answers");
+									if (jsonArray != null && jsonArray.length() > 0) {
+										for (int j = 0; j < jsonArray.length(); j++) {
+											JSONObject jsonObject = jsonArray.getJSONObject(j);
+											BasicWidget.StickerAction.ActionData ans = gson.fromJson(jsonObject.toString(),
+													BasicWidget.StickerAction.ActionData.class);
+											answers.add(ans);
+										}
+									}
+
+									BasicWidget.StickerAction.ResponseAction responseAction = new BasicWidget.StickerAction.ResponseAction(answer);
+									responseAction.actionObj = answers;
+									responseAction.actionOld = answer;
+									responseAction.actionDataList = answers;
+
+									oldItem.widget.stickerAction.responseActions.clear();
+									oldItem.widget.stickerAction.responseActions.add(responseAction);
+
+								} catch (JSONException e) {
+									e.printStackTrace();
+								}
+							}
 							mAdapter.insert(oldItem, i);
 							mAdapter.notifyDataSetChanged();
 							return true;
@@ -2399,8 +2530,32 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 							// already on chat
 							return;
 						}
-						openVideoChatActivity((VideoCallWidget)item.widget, String.valueOf(item.id));
+
+						VideoCallWidget videoCallWidget = (VideoCallWidget) item.widget;
+						int currentUserId = AuthUtil.getUserId(ChatActivity.this);
+						boolean showVideoChat = false;
+
+						if (videoCallWidget != null && videoCallWidget.receivers != null && videoCallWidget.receivers.size() > 0) {
+							for (VideoCallWidget.VideoCallUser receiver : videoCallWidget.receivers) {
+								if (receiver.userId == currentUserId) {
+									showVideoChat = true;
+									break;
+								}
+							}
+						}
+
+						if (showVideoChat) {
+							if (item.channelUid.equals(mChannelUid)) {
+								openVideoChatActivity(videoCallWidget, String.valueOf(item.id));
+							}
+						}
 					} else {
+						if (messageType.equals(ResponseType.CALL) && item.widget != null) {
+							VideoCallWidget videoCallWidget = (VideoCallWidget) item.widget;
+							if (videoCallWidget.caller == null || videoCallWidget.receivers == null || videoCallWidget.receivers.size() == 0) {
+								return;
+							}
+						}
 						// Add or update the item
 						boolean found = updateMessage(item);
 						boolean processed = false;
@@ -2644,13 +2799,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 					mBtVideoCall.setVisibility(View.VISIBLE);
 					mBtPhoneCall.setVisibility(View.VISIBLE);
 				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE)) {
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_CAMERA,
-							R.drawable.icon_widget_camera,
-							getString(R.string.sticker_label_camera)));
-
 					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE,
 							R.drawable.icon_widget_image,
 							getString(R.string.sticker_label_image)));
+
+					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_CAMERA,
+							R.drawable.icon_widget_camera,
+							getString(R.string.sticker_label_camera)));
 				}
 			}
 
@@ -2793,7 +2948,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 			return;
 
 		intent.putExtra(ChatCenterConstants.Extra.CHANNEL_UID, mChannelUid);
-		intent.putExtra(ChatParamDto.class.getSimpleName(), mParamDto);
+		intent.putExtra(ChatCenterConstants.Extra.CHAT_PARAM, mParamDto);
 		intent.putExtra("api_key", mVideoCallItem.apiKey);
 		intent.putExtra("session_id", mVideoCallItem.sessionId);
 		intent.putExtra("token", token);
@@ -2922,5 +3077,26 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener,
 				requestGetMessages(null);
 			}
 		}
+	}
+
+	private void checkNetworkToStart() {
+		if (!isNetworkAvailable()) {
+			isInternetConnecting = false;
+			if (mHandler != null) {
+				mHandler.post(mShowNWErrorTask);
+			}
+		}
+	}
+
+	private void showNWErrorLabel(boolean isConnecting) {
+		if (isConnecting) {
+			mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_orange));
+			mNetworkErrorTextView.setText(R.string.connecting);
+		} else {
+			mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_chatcenter_text_red));
+			mNetworkErrorTextView.setText(R.string.chat_network_error_message);
+		}
+
+		mNetworkErrorTextView.setVisibility(View.VISIBLE);
 	}
 }

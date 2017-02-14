@@ -24,8 +24,7 @@
 			android:textColor="@color/color_chatcenter_title_button_text"
 			android:textSize="16sp"
 			android:textAllCaps="false"
-			android:background="@drawable/toolbar_button"
-			/>
+			android:background="@drawable/toolbar_button"/>
 		
 	</android.support.v7.widget.Toolbar>
 

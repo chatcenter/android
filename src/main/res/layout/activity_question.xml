@@ -1,27 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/mainLayout"
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+<LinearLayout
+    android:id="@+id/mainLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:theme="@style/ToolbarStyle">
-
-        <Button
-            android:id="@+id/next_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:background="@android:color/transparent"
-            android:padding="@dimen/margin10dp"
-            android:text="@string/next"
-            android:textAllCaps="false"
-            android:textColor="@color/color_chatcenter_title_text"
-            android:textSize="16sp"/>
 
     </android.support.v7.widget.Toolbar>
 
@@ -31,60 +20,85 @@
         android:layout_below="@id/toolbar"
         android:background="@color/color_chatcenter_separator_light"/>
 
-    <LinearLayout
-        android:id="@+id/common_field"
+    <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/toolbar"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:orientation="vertical"
-        android:textColor="@color/color_chatcenter_text">
+        android:layout_height="wrap_content">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin10dp"
-            android:layout_marginTop="@dimen/margin10dp"
-            android:text="@string/enter_question"
-            android:textColor="@color/color_chatcenter_text"/>
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin">
 
-        <EditText
-            android:id="@+id/edit_question"
-            android:layout_width="match_parent"
-            android:layout_height="128dp"
-            android:background="@drawable/edittext_border"
-            android:gravity="top|left"
-            android:hint="@string/widget_question_hint"
-            android:padding="@dimen/margin8dp"
-            android:textSize="14sp"/>
+            <LinearLayout
+                android:id="@+id/common_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:textColor="@color/color_chatcenter_text">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin10dp"
-            android:layout_marginTop="@dimen/margin10dp"
-            android:text="@string/answer_type"
-            android:textColor="@color/color_chatcenter_text"/>
-
-        <Spinner
-            android:id="@+id/spinner"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_spinner"
-            android:spinnerMode="dropdown">
-        </Spinner>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin10dp"
+                    android:layout_marginTop="@dimen/margin10dp"
+                    android:text="@string/enter_question"
+                    android:textColor="@color/color_chatcenter_text"/>
 
 
-    </LinearLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp">
 
-    <FrameLayout
-        android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/common_field"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="30dp"/>
+                    <EditText
+                        android:id="@+id/edit_question"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:background="@drawable/edittext_border"
+                        android:gravity="top|left"
+                        android:hint="@string/widget_question_hint"
+                        android:padding="@dimen/margin8dp"
+                        android:textSize="14sp"/>
 
-</RelativeLayout>
+                    <TextView
+                        android:id="@+id/tv_remaining_characters"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginBottom="4dp"
+                        android:layout_marginRight="@dimen/margin8dp"
+                        android:textColor="@color/color_chatcenter_text"
+                        android:textSize="12sp"/>
+                </RelativeLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin10dp"
+                    android:layout_marginTop="@dimen/margin10dp"
+                    android:text="@string/answer_type"
+                    android:textColor="@color/color_chatcenter_text"/>
+
+                <Spinner
+                    android:id="@+id/spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_spinner"
+                    android:spinnerMode="dropdown">
+                </Spinner>
+
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

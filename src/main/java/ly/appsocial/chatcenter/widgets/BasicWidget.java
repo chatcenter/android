@@ -148,6 +148,14 @@ public class BasicWidget extends Widget {
 		return null;
 	}
 
+	protected String getOrgUid(Context context){
+		if ( context.getClass().equals(ChatActivity.class) ){
+			ChatActivity chatActivity = (ChatActivity)context;
+			return chatActivity.getOrgUid();
+		}
+		return null;
+	}
+
 	public void setupWidgetView(WidgetView widgetView, Context context){
 		if (StringUtil.isNotBlank(this.text)) {
 			widgetView.setText(this.text);
@@ -156,7 +164,7 @@ public class BasicWidget extends Widget {
 		}
 
 		if (this.stickerContent == null) {
-			widgetView.getImageView().setVisibility(View.GONE);
+			widgetView.getWidgetImageView().setVisibility(View.GONE);
 		} else {
 			widgetView.setImageUrl(this.stickerContent.thumbnailUrl);
 			if (this.stickerContent.stickerData != null && this.stickerContent.stickerData.location != null) {
@@ -164,6 +172,10 @@ public class BasicWidget extends Widget {
 					widgetView.setWidgetIcon(WIDGET_TYPE_COLOCATION);
 				} else {
 					widgetView.setWidgetIcon(WIDGET_TYPE_LOCATION);
+					widgetView.getWidgetImageView().removeRounded(RoundImageView.RoundedOptions.TOP);
+					if (this.message == null || StringUtil.isBlank(this.message.text)) {
+						widgetView.setText(context.getString(R.string.venue_widget_title));
+					}
 				}
 			}
 		}
@@ -176,7 +188,7 @@ public class BasicWidget extends Widget {
 				this.stickerAction.actionData == null ||
 				this.stickerAction.actionData.size() == 0) {
 			// No action found
-			widgetView.getImageView().addRounded(RoundImageView.RoundedOptions.BOTTOM);
+			widgetView.getWidgetImageView().addRounded(RoundImageView.RoundedOptions.BOTTOM);
 			widgetView.postInvalidate();
 			return;
 		}
@@ -217,7 +229,7 @@ public class BasicWidget extends Widget {
 		}
 
 		// Now it has action data
-		widgetView.getImageView().removeRounded(RoundImageView.RoundedOptions.BOTTOM);
+		widgetView.getWidgetImageView().removeRounded(RoundImageView.RoundedOptions.BOTTOM);
 		widgetView.postInvalidate();
 	}
 
@@ -228,11 +240,24 @@ public class BasicWidget extends Widget {
 				List<StickerAction.ActionData> actionDataList = responseAction.getActions();
 				if ( actionDataList != null ){
 					for ( StickerAction.ActionData actionData : actionDataList ){
-						if (actionData != null && actionData.label != null &&
-								actionData.label.equals(action.label)) {
+						if (actionData != null
+								&& actionData.label != null
+								&& actionData.value != null
+								&& actionData.value.answer != null
+								&& action != null
+								&& action.label != null
+								&& action.value != null
+								&& action.value.answer != null
+								&& actionData.label.equals(action.label)
+								&& actionData.value.answer.equals(action.value.answer)) {
+							return true;
+						} else if (actionData != null
+								&& (actionData.value == null || actionData.value.answer == null)
+								&& actionData.label != null
+								&& actionData.label.equals(action.label)) {
 							return true;
 						}
-					}
+						}
 				}
 			}
 		return  false;
@@ -271,6 +296,7 @@ public class BasicWidget extends Widget {
 		Intent intent = new Intent(context, LiveLocationActivity.class);
 		intent.putExtra("app_token", getAppToken(context));
 		intent.putExtra("channel_uid", getChannelUid(context));
+		intent.putExtra("org_uid", getOrgUid(context));
 		intent.putExtra(ChatCenterConstants.Extra.URL, url);
 		context.startActivity(intent);
 	}
@@ -377,11 +403,11 @@ public class BasicWidget extends Widget {
 			public static class Value {
 				/** The start value of a datetime action */
 				@SerializedName("start")
-				public long start;
+				public Long start;
 
 				/** The end value of a datetime action */
 				@SerializedName("end")
-				public long end;
+				public Long end;
 
 				/** The answer value */
 				@SerializedName("answer")

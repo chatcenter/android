@@ -18,6 +18,7 @@ import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import ly.appsocial.chatcenter.BuildConfig;
@@ -163,6 +164,7 @@ public class OkHttpApiRequest<T> implements ApiRequest<T> {
 		newHeaders.put("Sdk-Version", BuildConfig.SDK_VERSION);
 		newHeaders.put("App-Version", BuildConfig.VERSION_NAME);
 		newHeaders.put("Dev-Version", "" + BuildConfig.VERSION_CODE);
+		newHeaders.put("Accept-Language", Locale.getDefault().getLanguage());
 
 		return newHeaders;
 	}

@@ -13,9 +13,10 @@
         <item name="android:textColorTertiary">@color/color_chatcenter_text_light</item>
         <item name="android:windowContentOverlay">@null</item>
 		<item name="colorPrimary">@color/color_chatcenter_title_background</item>
+        <item name="colorPrimaryDark">@color/color_chatcenter_title_background_dark</item>
 		<item name="colorAccent">@color/color_chatcenter_text_light</item>
 		<item name="android:colorBackground">@color/color_chatcenter_background</item>
-        <item name="actionBarSize">50dp</item>
+        <item name="actionBarSize">@dimen/activity_header_height</item>
 	</style>
 
     <!-- テーマ(アクションバー無し) -->
@@ -34,9 +35,12 @@
     <!-- ツールバー -->
     <style name="ToolbarStyle" parent="ThemeOverlay.AppCompat.Light">
         <item name="android:background">@color/color_chatcenter_title_background</item>
+        <item name="colorPrimaryDark">@color/color_chatcenter_title_background_dark</item>
         <item name="android:textColorPrimary">@color/color_chatcenter_title_text</item>
         <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="colorControlNormal">@color/color_chatcenter_title_text</item>
+        <item name="actionButtonStyle">@style/ChatCenter.MenuButtonStyle</item>
+        <item name="actionMenuTextColor">@color/color_chatcenter_title_button</item>
     </style>
 
     <!-- プルアップ画面用 -->
@@ -51,9 +55,15 @@
     <style name="ChatCeterButtonStyle" parent="@android:style/Widget.Holo.Light.Button" tools:targetApi="11">
         <item name="android:minHeight">1dip</item>
         <item name="android:minWidth">1dip</item>
-        <item name="android:textSize">14sp</item>
         <item name="android:padding">0dp</item>
     </style>
+
+
+    <style name="ChatCenter.MenuButtonStyle" parent="@android:style/Widget.Holo.Light.Button" tools:targetApi="11">
+        <item name="textAllCaps">false</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
 
     <!-- ========================================================================== -->
     <!-- アニメーション -->

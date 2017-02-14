@@ -3,12 +3,6 @@ package ly.appsocial.chatcenter.dto.param;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import ly.appsocial.chatcenter.activity.ChatActivity;
-import ly.appsocial.chatcenter.activity.PhotoActivity;
-
-/**
- * {@link PhotoActivity} param.
- */
 public class PhotoParamDto implements Parcelable {
 
 	// //////////////////////////////////////////////////////////////////////////

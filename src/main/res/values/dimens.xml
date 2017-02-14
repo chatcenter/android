@@ -5,8 +5,8 @@
 	<dimen name="activity_horizontal_margin">16dp</dimen>
 	<dimen name="activity_vertical_margin">16dp</dimen>
 	<dimen name="chat_list_user_ava_size">35dp</dimen>
-	<dimen name="common_sticker_width">250dp</dimen>
-	<dimen name="sticker_radius">10dp</dimen>
+	<dimen name="common_sticker_width">230dp</dimen>
+	<dimen name="sticker_radius">6dp</dimen>
 	<dimen name="message_text_size">12sp</dimen>
 	<dimen name="sticker_image_min_height">135dp</dimen>
 	<dimen name="sticker_menu_button_vertical_margin">25dp</dimen>
@@ -36,11 +36,12 @@
 	<dimen name="info_item_vertical_margin">20dp</dimen>
 
 	<dimen name="drawer_menu_avatar">50dp</dimen>
-	<dimen name="drawer_menu_width">320dp</dimen>
+	<dimen name="drawer_menu_width">280dp</dimen>
 	<dimen name="left_menu_item_height">60dp</dimen>
 	<dimen name="drawer_menu_height">150dp</dimen>
 	<dimen name="left_menu_org_icon_size">28dp</dimen>
 	<dimen name="video_activity_btn_call_size">50dp</dimen>
 	<dimen name="left_menu_app_icon_radius">4dp</dimen>
+	<dimen name="live_location_time_button">40dp</dimen>
 
 </resources>

@@ -17,6 +17,7 @@ import java.util.List;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
+import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.widgets.LiveLocationUser;
 
@@ -196,7 +197,7 @@ public class ChatItem {
 		return createTemporaryMessage(widget, userId);
 	}
 
-	public static String createLocationStickerContent(Place place) {
+	public static String createLocationStickerContent(Place place, Context context) {
 		if (place == null) {
 			return "";
 		}
@@ -212,7 +213,10 @@ public class ChatItem {
 
 		// ChatItem Message
 		widget.message = new BasicWidget.Message();
-		widget.message.text = "アドレス: " + place.getAddress();
+		String placeName = place.getName().toString();
+		String address = place.getAddress().toString();
+		widget.message.text = StringUtil.isNotBlank(placeName)
+				&& StringUtil.isNotBlank(address) ? placeName : context.getString(R.string.venue_widget_title);
 
 		return new Gson().toJson(widget).toString();
 	}
@@ -269,7 +273,7 @@ public class ChatItem {
 					return updateLiveLocationUser(context, newItem);
 			}
 		}
-		return false;
+		return true;
 	}
 
 

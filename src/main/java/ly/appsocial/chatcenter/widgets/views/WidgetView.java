@@ -7,10 +7,12 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
+import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,7 +38,9 @@ import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
+import ly.appsocial.chatcenter.dto.WidgetAction;
 import ly.appsocial.chatcenter.ui.RoundImageView;
+import ly.appsocial.chatcenter.util.AuthUtil;
 import ly.appsocial.chatcenter.util.ViewUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.util.StringUtil;
@@ -46,8 +50,11 @@ import ly.appsocial.chatcenter.widgets.LiveLocationUser;
 public class WidgetView extends FrameLayout {
 	private static final String TAG = "StickerView";
 
-	private TextView mTextView;
-	private RoundImageView mImageView;
+	private TextView mTvMessage;
+	private RelativeLayout mRlWidgetView;
+
+	private TextView mWidgetTitle;
+	private RoundImageView mWidgetImageView;
 	private LinearLayout mActionSelectContainer;
 	private View mActionConfirmContainer;
 	private RelativeLayout mActionLinearContainer;
@@ -98,6 +105,7 @@ public class WidgetView extends FrameLayout {
 		LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View v = inflater.inflate(R.layout.view_sticker, this, true);
 		findChildViews(v);
+		mUserToken = AuthUtil.getUserToken(getContext());
 
 		// Now provide the view with values
 		setDefaultValue(attrs);
@@ -139,47 +147,90 @@ public class WidgetView extends FrameLayout {
 		a.recycle();
 	}
 
-	public void setupCustomerView(ChatItem item, StickerActionListener listener){
+	public void setupCustomerView(ChatItem item, StickerActionListener listener, boolean canMail){
 		setChatItem(item);
 
-		if (ResponseType.STICKER.equals(item.type) || ResponseType.CALL.equals(item.type)) {
+		if (canMail) {
+			mTvMessage.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS | Linkify.EMAIL_ADDRESSES);
+			mWidgetTitle.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS | Linkify.EMAIL_ADDRESSES);
+		} else {
+			mTvMessage.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS);
+			mWidgetTitle.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS);
+		}
+
+		boolean isMessage = StringUtil.isBlank(item.type) || ResponseType.MESSAGE.equals(item.type);
+		selectWidgetView(isMessage);
+
+		if (isMessage) {
+//			reset();
+			if ( item.widget != null && StringUtil.isNotBlank(item.widget.text) ) {
+				setMessageFromCustomer(item.widget.text);
+			}
+		} else {
 			setStickerActionListener(listener);
 			return;
 		}
 
-		reset();
-		setMessageFromCustomer(item.widget.text);
+
 	}
 
-	public void setupClientView(String userToken, ChatItem item, StickerActionListener listener){
+	public void setupClientView(String userToken, ChatItem item, StickerActionListener listener, boolean canMail){
 		mUserToken = userToken;
 		setChatItem(item);
 
-		if (ResponseType.STICKER.equals(item.type) || ResponseType.CALL.equals(item.type)) {
-			setStickerActionListener(listener);
-			return;
+		if (canMail) {
+			mTvMessage.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS | Linkify.EMAIL_ADDRESSES);
+			mWidgetTitle.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS | Linkify.EMAIL_ADDRESSES);
+		} else {
+			mTvMessage.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS);
+			mWidgetTitle.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS);
 		}
 
-		reset();
-		if ( item.widget != null && item.widget.text != null ){
-			setMessageFromClient(item.widget.text);
+		boolean isMessage = StringUtil.isBlank(item.type) || ResponseType.MESSAGE.equals(item.type);
+		selectWidgetView(isMessage);
+
+		if (isMessage) {
+//			reset();
+			if ( item.widget != null && StringUtil.isNotBlank(item.widget.text) ){
+				setMessageFromClient(item.widget.text);
+			}
+		} else {
+			setStickerActionListener(listener);
+			return;
 		}
 	}
 
 	public void loadImageToImageView(String url){
-		Picasso.with(getContext()).load(addToken(mUserToken, url)).into(getImageView());
-		getImageView().addRounded(RoundImageView.RoundedOptions.BOTH);
-		getImageView().setVisibility(View.VISIBLE);
+		Picasso.with(getContext()).load(rebuildUrl(url)).into(getWidgetImageView());
+		getWidgetImageView().setVisibility(View.VISIBLE);
 	}
 
-	/**
-	 * URL の末尾にユーザートークンのパラメータを付与します。
-	 *
-	 * @param url URL
-	 * @return トークン付きの URL
-	 */
-	private String addToken(String userToken, String url) {
-		return url + "?authentication=" + userToken;
+	private String rebuildUrl(String url) {
+		String newUrl;
+		if (url.startsWith(getContext().getString(R.string.api_chatcenter))) {
+			Uri uri = Uri.parse(url);
+			Uri.Builder newUri = uri.buildUpon().clearQuery();
+			boolean addMore = true;
+			for (String param : uri.getQueryParameterNames()) {
+				String value;
+				if (param.equals("authentication")) {
+					value = mUserToken;
+					addMore = false;
+				} else {
+					value = uri.getQueryParameter(param);
+				}
+				newUri.appendQueryParameter(param, value);
+			}
+
+			// If there is no authentication param in url
+			if (addMore) {
+				newUri.appendQueryParameter("authentication", mUserToken);
+			}
+			newUrl = newUri.build().toString();
+		} else {
+			newUrl = url;
+		}
+		return newUrl;
 	}
 
 	public void setConfirmActionBackground(int positiveResId, int negativeResId) {
@@ -196,8 +247,12 @@ public class WidgetView extends FrameLayout {
 	}
 
 	private void findChildViews(View v) {
-		mTextView = (TextView) v.findViewById(R.id.sticker_textview);
-		mImageView = (RoundImageView) v.findViewById(R.id.sticker_image);
+
+		mTvMessage = (TextView) findViewById(R.id.tv_message);
+
+		mRlWidgetView = (RelativeLayout) findViewById(R.id.widget_view);
+		mWidgetTitle = (TextView) v.findViewById(R.id.sticker_textview);
+		mWidgetImageView = (RoundImageView) v.findViewById(R.id.sticker_image);
 		mActionSelectContainer = (LinearLayout)v.findViewById(R.id.sticker_action_select_container);
 		mActionLinearContainer = (RelativeLayout)v.findViewById(R.id.sticker_action_linear_container);
 		mActionConfirmContainer = v.findViewById(R.id.sticker_action_confirm_contaier);
@@ -212,7 +267,7 @@ public class WidgetView extends FrameLayout {
 
 		mLiveLabel = (TextView) v.findViewById(R.id.bt_live);
 
-		mImageView.setOnClickListener(new OnClickListener() {
+		mWidgetImageView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				if ( mChatItem.widget != null ){
@@ -224,43 +279,42 @@ public class WidgetView extends FrameLayout {
 
 	public void setDrawable(Drawable drawable) {
 		if (drawable == null) {
-			mImageView.setVisibility(GONE);
+			mWidgetImageView.setVisibility(GONE);
 			return;
 		}
 
-		mImageView.setVisibility(View.VISIBLE);
-		mImageView.setImageDrawable(drawable);
+		mWidgetImageView.setVisibility(View.VISIBLE);
+		mWidgetImageView.setImageDrawable(drawable);
 	}
 
 	public void setImageUrl(String url) {
 		if (StringUtil.isBlank(url)) {
-			Picasso.with(getContext()).cancelRequest(mImageView);
-			mImageView.setVisibility(GONE);
+			Picasso.with(getContext()).cancelRequest(mWidgetImageView);
+			mWidgetImageView.setVisibility(GONE);
 			return;
 		}
 
-		mImageView.setVisibility(View.VISIBLE);
+		mWidgetImageView.setVisibility(View.VISIBLE);
 		if (url.startsWith("http")) {
-			Picasso.with(getContext()).load(url).into(mImageView);
+			loadImageToImageView(url);
 		} else {
-			Picasso.with(getContext()).load(new File(url)).into(mImageView);
+			Picasso.with(getContext()).load(new File(url)).into(mWidgetImageView);
 		}
 	}
 
 	public void setText(String text) {
-		if (text == null) {
-			mTextView.setVisibility(GONE);
-			mImageView.addRounded(RoundImageView.RoundedOptions.TOP);
+		if (StringUtil.isBlank(text)) {
+			mWidgetTitle.setVisibility(GONE);
+			mWidgetImageView.addRounded(RoundImageView.RoundedOptions.TOP);
 			return;
 		}
 
-		mImageView.removeRounded(RoundImageView.RoundedOptions.TOP);
-		mTextView.setVisibility(View.VISIBLE);
-		mTextView.setText(text);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			mTextView.setTextColor(getResources().getColor(R.color.color_chatcenter_widget_text, null));
+		mWidgetImageView.removeRounded(RoundImageView.RoundedOptions.TOP);
+		mWidgetTitle.setVisibility(View.VISIBLE);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			mWidgetTitle.setText(Html.fromHtml(text, 0));
 		} else {
-			mTextView.setTextColor(getResources().getColor(R.color.color_chatcenter_widget_text));
+			mWidgetTitle.setText(Html.fromHtml(text));
 		}
 	}
 
@@ -269,11 +323,22 @@ public class WidgetView extends FrameLayout {
 		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)) {
 			drawable = R.drawable.icon_widget_question;
 		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_SELECT)) {
-			drawable = R.drawable.icon_widget_schedule;
+
+			drawable = R.drawable.icon_widget_question;
+
+			// Change icon if this is calendar widget
+			if (mChatItem != null && mChatItem.widget != null && mChatItem.widget.stickerAction != null
+					&& mChatItem.widget.stickerAction.actionData != null) {
+				BasicWidget.StickerAction.ActionData lastActionData =
+						mChatItem.widget.stickerAction.actionData.get(mChatItem.widget.stickerAction.actionData.size() - 1);
+				if (lastActionData != null && lastActionData.action != null && lastActionData.action.contains(WidgetAction.OPEN_CALENDAR)) {
+					drawable = R.drawable.icon_widget_schedule;
+				}
+			}
 		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_LOCATION)) {
 			drawable = R.drawable.icon_widget_location;
 		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_COLOCATION)) {
-			drawable = R.drawable.icon_widget_colocation;
+			drawable = R.drawable.icon_live_location;
 		}
 
 		ImageView widgetIcon = (ImageView) findViewById(R.id.widget_icon);
@@ -283,35 +348,14 @@ public class WidgetView extends FrameLayout {
 
 	public void setMessageFromClient(String message) {
 
-		setText(message);
-
-		Drawable backImage = DrawableCompat.wrap(getResources().getDrawable(R.drawable.bg_chat_client_bubble));
-		DrawableCompat.setTint(backImage, getResources().getColor(R.color.color_chatcenter_operator_bubble));
-		mTextView.setBackgroundDrawable(backImage);
-
-		RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mTextView.getLayoutParams();
-		params.setMargins(0,0,0,0);
-		mTextView.setLayoutParams(params);
-		mTextView.setTextColor(getResources().getColor(R.color.color_chatcenter_operator_bubble_text));
+		mTvMessage.setText(message);
 	}
 
 	public void setMessageFromCustomer(String message) {
-		setText(message);
-
-		Drawable backImage = DrawableCompat.wrap(getResources().getDrawable(R.drawable.bg_chat_customer_bubble));
-		DrawableCompat.setTint(backImage, getResources().getColor(R.color.color_chatcenter_customer_bubble));
-		mTextView.setBackgroundDrawable(backImage);
-
-		RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mTextView.getLayoutParams();
-		params.setMargins(0,0,0,0);
-		params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		mTextView.setLayoutParams(params);
-		mTextView.setTextColor(getResources().getColor(R.color.color_chatcenter_customer_bubble_text));
-		mTextView.setLinkTextColor(getResources().getColor(R.color.color_chatcenter_customer_bubble_text));
-	}
-
-	public void setTextColor(int color) {
-		mTextView.setTextColor(color);
+		mTvMessage.setText(message);
+		mTvMessage.setBackgroundResource(R.drawable.bg_customer_sticker);
+		mTvMessage.setTextColor(getResources().getColor(R.color.color_chatcenter_customer_bubble_text));
+		mTvMessage.setLinkTextColor(getResources().getColor(R.color.color_chatcenter_customer_bubble_text));
 	}
 
 	public StickerActionListener getStickerActionListener() {
@@ -326,14 +370,14 @@ public class WidgetView extends FrameLayout {
 		return mChatItem;
 	}
 
-	public void reset() {
-		mImageView.setVisibility(View.GONE);
-		mActionSelectContainer.setVisibility(View.GONE);
-		mActionLinearContainer.setVisibility(View.GONE);
-		mActionConfirmContainer.setVisibility(View.GONE);
-		Picasso.with(getContext()).cancelRequest(getImageView());
-		this.setBackgroundResource(0);
-	}
+//	public void reset() {
+//		mWidgetImageView.setVisibility(View.GONE);
+//		mActionSelectContainer.setVisibility(View.GONE);
+//		mActionLinearContainer.setVisibility(View.GONE);
+//		mActionConfirmContainer.setVisibility(View.GONE);
+//		Picasso.with(getContext()).cancelRequest(getWidgetImageView());
+//		this.setBackgroundResource(0);
+//	}
 
 	public void setChatItem(ChatItem chatItem) {
 		mChatItem = chatItem;
@@ -603,12 +647,12 @@ public class WidgetView extends FrameLayout {
 
 	}
 
-	public TextView getTextView() {
-		return mTextView;
+	public TextView getWidgetTitle() {
+		return mWidgetTitle;
 	}
 
-	public RoundImageView getImageView() {
-		return mImageView;
+	public RoundImageView getWidgetImageView() {
+		return mWidgetImageView;
 	}
 
 	public void setSelectActionBackgroundResId(int selectActionResId, int selectActionLastResId) {
@@ -652,6 +696,11 @@ public class WidgetView extends FrameLayout {
 		void onCheckBoxOK(List<String> labels, List<String> answers, String messageId);
 
 		void onSuggestionBubbleClicked(ChatItem chatItem);
+	}
+
+	private void selectWidgetView(boolean isMessage) {
+		mTvMessage.setVisibility(isMessage ? VISIBLE : GONE);
+		mRlWidgetView.setVisibility(isMessage ? GONE : VISIBLE);
 	}
 
 	// //////////////////////////////////////////////////////////////////////////

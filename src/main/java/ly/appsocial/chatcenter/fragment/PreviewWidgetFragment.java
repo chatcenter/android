@@ -36,9 +36,9 @@ public class PreviewWidgetFragment extends Fragment {
 			item.type = ResponseType.STICKER;
 			item.setupContent(BasicWidget.class, content);
 			if ( userToken != null && !userToken.isEmpty() ){
-				widgetView.setupClientView(userToken, item, null);
+				widgetView.setupClientView(userToken, item, null,false);
 			} else {
-				widgetView.setupCustomerView(item, null);
+				widgetView.setupCustomerView(item, null, false);
 			}
 		} catch (JSONException e){
 		}

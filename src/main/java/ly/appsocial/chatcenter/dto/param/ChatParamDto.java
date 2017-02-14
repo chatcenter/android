@@ -33,8 +33,12 @@ public class ChatParamDto implements Parcelable {
 	public String provider;
 	/** Token received from provider */
 	public String providerToken;
+	/** Token secret -> for twitter*/
+	public String providerTokenSecret;
+	/** Token Refresh -> google and yahoojp*/
+	public String providerRefreshToken;
 	/** Token created timestamp */
-	public long providerTokenTimestamp;
+	public long providerTokenCreatedAt;
 	/** Token expires timestamp */
 	public long providerTokenExpires;
 	/** Device token for Push Notification */
@@ -63,7 +67,9 @@ public class ChatParamDto implements Parcelable {
 	protected ChatParamDto(Parcel in) {
 		provider = in.readString();
 		providerToken = in.readString();
-		providerTokenTimestamp = in.readLong();
+		providerTokenSecret = in.readString();
+		providerRefreshToken = in.readString();
+		providerTokenCreatedAt = in.readLong();
 		providerTokenExpires = in.readLong();
 		deviceToken = in.readString();
 		channelUid = in.readString();
@@ -90,7 +96,9 @@ public class ChatParamDto implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(provider);
 		dest.writeString(providerToken);
-		dest.writeLong(providerTokenTimestamp);
+		dest.writeString(providerTokenSecret);
+		dest.writeString(providerRefreshToken);
+		dest.writeLong(providerTokenCreatedAt);
 		dest.writeLong(providerTokenExpires);
 		dest.writeString(deviceToken);
 		dest.writeString(channelUid);

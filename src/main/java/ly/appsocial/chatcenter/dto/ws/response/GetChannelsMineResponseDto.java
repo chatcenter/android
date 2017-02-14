@@ -23,12 +23,12 @@ public class GetChannelsMineResponseDto {
 	// //////////////////////////////////////////////////////////////////////////
 
 	/** 項目 */
-	public List<Item> items = new ArrayList<>();
+	public List<Channel> items = new ArrayList<>();
 
 	/**
 	 * 項目
 	 */
-	public static class Item {
+	public static class Channel {
 
 		/** チャネルUID */
 		@SerializedName("uid")
@@ -52,6 +52,10 @@ public class GetChannelsMineResponseDto {
 		@SerializedName("unread_messages")
 		public int unreadMessages;
 
+		/** Channel's display name*/
+		@SerializedName("display_name")
+		public DisplayName displayName;
+
 		/** 最新メッセージ */
 		@SerializedName("latest_message")
 		public LatestMessage latestMessage;
@@ -59,6 +63,24 @@ public class GetChannelsMineResponseDto {
 		/** Channel's last updated at */
 		@SerializedName("last_updated_at")
 		public double lastUpdatedAt;
+
+		/**
+		 * Assignee
+		 */
+		@SerializedName("assignee")
+		public UserItem assignee;
+
+		/**
+		 * IconUrl
+		 */
+		@SerializedName("icon_url")
+		public String iconUrl;
+
+		/**
+		 * Funnel id
+		 */
+		@SerializedName("funnel_id")
+		public int funnel_id;
 
 		/**
 		 * 最新メッセージ
@@ -79,12 +101,22 @@ public class GetChannelsMineResponseDto {
 			if (status.equals(ChannelItem.CHANNEL_UNASSIGNED)) {
 				return ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED;
 			} else if (status.equals(ChannelItem.CHANNEL_ASSIGNED)) {
-				return ChannelItem.ChannelStatus.CHANNEL_ASSIGNED;
+				return ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME;
 			} else if (status.equals(ChannelItem.CHANNEL_CLOSED)) {
 				return ChannelItem.ChannelStatus.CHANNEL_CLOSE;
 			} else {
 				return ChannelItem.ChannelStatus.CHANNEL_ALL;
 			}
+		}
+
+		public static class DisplayName {
+			/** The name that will display on guest's UI*/
+			@SerializedName("guest")
+			public String guest;
+
+			/** The name that will display on agent's UI*/
+			@SerializedName("admin")
+			public String admin;
 		}
 	}
 }

@@ -29,6 +29,7 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -39,7 +40,9 @@ import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ws.request.PostStickerRequestDto;
 import ly.appsocial.chatcenter.dto.ws.response.LiveLocationResponseDto;
 import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.DialogUtil;
 import ly.appsocial.chatcenter.util.NetworkQueueHelper;
+import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.ws.ApiRequest;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
@@ -55,19 +58,10 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 	private OkHttpApiRequest<LiveLocationResponseDto> mLiveLocationRequest;
 
 	private int mUpdateInterval = 15;
-	private String mChannelUid;
 	private String mAppToken;
-	private String mWidgetId;
-	private int mShareTime = 60;
-	private Timer mTimer;
-	private int mTimerCount = 0;
 	final int INTERVAL_PERIOD = 1000;
 
-	private static boolean gStarted = false;
-
-	public static boolean isStarted() {
-		return gStarted;
-	}
+	private ArrayList<ShareInfo> mShareList = new ArrayList<>();
 
 	public CSLocationService() {
 	}
@@ -85,52 +79,58 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 				.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 	}
 
+	private void updateOrCreateInfo(String channelUid, String widgetId, int shareTime ){
+		boolean bFound = false;
+		for ( ShareInfo info : mShareList ){
+			if ( info.mChannelUid.equals(channelUid) ){
+				bFound = true;
+				info.mShareTime = shareTime;
+				info.updateTimer();
+			}
+		}
+
+		if ( !bFound ){
+			ShareInfo info = new ShareInfo();
+			info.mChannelUid = channelUid;
+			info.mShareTime = shareTime;
+			info.mWidgetId = widgetId;
+			mShareList.add(info);
+			info.updateTimer();
+		}
+	}
+
 	public int onStartCommand (Intent intent, int flags, int startId)
 	{
 		super.onStartCommand(intent, flags, startId);
 
-		gStarted = true;
-		mUpdateInterval = intent.getIntExtra("interval", mUpdateInterval);
+		if ( intent.hasExtra("interval")) {
+			mUpdateInterval = intent.getIntExtra("interval", mUpdateInterval);
+		}
+
 		int icon_id = intent.getIntExtra("icon_id", -1);
 		String appTitle = intent.getStringExtra("app_name");
 
-		if ( intent.hasExtra("channel_uid")) {
-			mChannelUid = intent.getStringExtra("channel_uid");
-		}
 		if ( intent.hasExtra("app_token")) {
 			mAppToken = intent.getStringExtra("app_token");
 		}
-		if ( intent.hasExtra("widget_id") ){
-			mWidgetId = intent.getStringExtra("widget_id");
-		}
-		if ( intent.hasExtra("share_time") ) {
-			// share time is minute
-			mShareTime = intent.getIntExtra("share_time", mShareTime);
-			if (mTimer != null) {
-				mTimer.cancel();
-			}
-			mTimerCount = 0;
-			mTimer = new Timer();
-			mTimer.scheduleAtFixedRate(new TimerTask() {
-				@Override
-				public void run() {
-					mTimerCount++;
-					if ( mTimerCount >= mShareTime * 60){
-						mTimer.cancel();
-						mTimer = null;
-						requestStopLiveLocation();
-					} else {
-						sendBroadCast(true, mShareTime, mTimerCount);
-					}
-				}
-			}, 0, INTERVAL_PERIOD);
-		}
 
-		if ( intent.hasExtra("command") ){
-			String command = intent.getStringExtra("command");
-			if (ChatCenterConstants.LocationService.STOP.equals(command)){
-				requestStopLiveLocation();
+		String channelUid = intent.getStringExtra("channel_uid");
+
+		String command = intent.getStringExtra("command");
+		if (ChatCenterConstants.LocationService.STOP.equals(command)) {
+			for (ShareInfo info : mShareList) {
+				if (info.mChannelUid.equals(channelUid)) {
+					info.requestStopLiveLocation();
+				}
 			}
+		} else if (ChatCenterConstants.LocationService.STOP_ALL.equals(command)){
+			for (ShareInfo info : mShareList) {
+				info.requestStopLiveLocation();
+			}
+		} else {
+			Integer shareTime = intent.getIntExtra("share_time", 60);
+			String widgetId = intent.getStringExtra("widget_id");
+			updateOrCreateInfo(channelUid, widgetId, shareTime);
 		}
 
 		if( mGoogleApiClient == null ) {
@@ -144,8 +144,11 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 		}
 
 		if ( icon_id != -1 ) {
-			Intent activityIntent = new Intent(this, ChatActivity.class);
-			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, 0);
+			String orgUid = intent.getStringExtra("org_uid");
+			Intent activityIntent = ChatCenter.getShowChatIntent(getApplicationContext(), orgUid, channelUid, null);
+			activityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 			Notification notification = new Notification.Builder(this)
 					.setContentTitle(appTitle)
 					.setContentText(getString(R.string.sending_location))
@@ -163,7 +166,6 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 			mGoogleApiClient.connect();
 		}
 
-
 		new Handler().postDelayed(new Runnable() {
 			@Override
 			public void run() {
@@ -178,7 +180,9 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 
 	@Override
 	public void onLocationChanged(Location location) {
-		requestUpdateLocation(location);
+		for ( ShareInfo info : mShareList ){
+			info.requestUpdateLocation(location);
+		}
 
 		Log.d(REQUEST_TAG, "Location Changed:lon=" + location.getLongitude() + " lat=" + location.getLatitude() );
 	}
@@ -200,14 +204,10 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 			mGoogleApiClient = null;
 		}
 
-		if ( mTimer != null ){
-			mTimer.cancel();
-			mTimer = null;
+		for ( ShareInfo info : mShareList ){
+			info.requestStopLiveLocation();
 		}
 
-		sendBroadCast(false, mShareTime, mTimerCount);
-
-		gStarted = false;
 		super.onDestroy();
 	}
 
@@ -229,128 +229,6 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 		mInProgress = false;
 		mGoogleApiClient = null;
 		CSLocationService.this.stopSelf();
-	}
-
-	protected void sendBroadCast(boolean sharing, int timer_org, int timer_count) {
-
-		Intent broadcastIntent = new Intent();
-		broadcastIntent.putExtra("sharing", sharing);
-		broadcastIntent.putExtra("timer_count", timer_count);
-		broadcastIntent.putExtra("timer_org", timer_org);
-		broadcastIntent.setAction(ChatCenterConstants.BroadcastAction.UPDATE_STATUS);
-		getBaseContext().sendBroadcast(broadcastIntent);
-	}
-
-	private void requestUpdateLocation(Location location) {
-		if (mLiveLocationRequest != null ) {
-			return;
-		}
-
-		String path = "channels/" + mChannelUid + "/messages";
-
-		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
-
-		mLiveLocationRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
-			@Override
-			public void onSuccess(LiveLocationResponseDto responseDto) {
-				mLiveLocationRequest = null;
-			}
-
-			@Override
-			public void onError(ApiRequest.Error error) {
-				mLiveLocationRequest = null;
-			}
-		}, new ApiRequest.Parser<LiveLocationResponseDto>() {
-			@Override
-			public int getErrorCode() {
-				return 0;
-			}
-
-			@Override
-			public LiveLocationResponseDto parser(String response) {
-				try {
-					return new Gson().fromJson(response, LiveLocationResponseDto.class);
-				} catch (Exception e) {
-				}
-				return null;
-			}
-		});
-
-		mLiveLocationRequest.setApiToken(mAppToken);
-
-		BasicWidget widget = new BasicWidget();
-		widget.stickerContent = new BasicWidget.StickerContent();
-		widget.stickerContent.stickerData = new BasicWidget.StickerContent.StickerData();
-		widget.stickerContent.stickerData.location = new BasicWidget.StickerContent.StickerData.Location();
-		widget.stickerContent.stickerData.location.latitude = location.getLatitude();
-		widget.stickerContent.stickerData.location.longitude = location.getLongitude();
-		widget.replyTo = mWidgetId;
-		widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION;
-
-		PostStickerRequestDto requestDto = new PostStickerRequestDto();
-		requestDto.content = new Gson().toJson(widget).toString();
-		requestDto.type = "response";
-
-		mLiveLocationRequest.setJsonBody(requestDto.toJson());
-		NetworkQueueHelper.enqueue(mLiveLocationRequest, REQUEST_TAG);
-	}
-
-	private void requestStopLiveLocation() {
-		if (mLiveLocationRequest != null ) {
-			return;
-		}
-
-		String path = "channels/" + mChannelUid + "/messages";
-
-		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
-
-		mLiveLocationRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
-			@Override
-			public void onSuccess(LiveLocationResponseDto responseDto) {
-				mLiveLocationRequest = null;
-				mWidgetId = null;
-				CSLocationService.this.stopSelf();
-			}
-
-			@Override
-			public void onError(ApiRequest.Error error) {
-				mLiveLocationRequest = null;
-				mWidgetId = null;
-				CSLocationService.this.stopSelf();
-			}
-		}, new ApiRequest.Parser<LiveLocationResponseDto>() {
-			@Override
-			public int getErrorCode() {
-				return 0;
-			}
-
-			@Override
-			public LiveLocationResponseDto parser(String response) {
-				try {
-					return new Gson().fromJson(response, LiveLocationResponseDto.class);
-				} catch (Exception e) {
-				}
-				return null;
-			}
-		});
-
-		mLiveLocationRequest.setApiToken(mAppToken);
-
-		BasicWidget widget = new BasicWidget();
-		widget.stickerContent = new BasicWidget.StickerContent();
-		widget.stickerContent.stickerData = new BasicWidget.StickerContent.StickerData();
-		widget.stickerContent.stickerData.type = "stop";
-		widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION;
-		widget.replyTo = mWidgetId;
-
-		PostStickerRequestDto requestDto = new PostStickerRequestDto();
-		requestDto.content = new Gson().toJson(widget).toString();
-		requestDto.type = "response";
-
-		mLiveLocationRequest.setJsonBody(requestDto.toJson());
-		NetworkQueueHelper.enqueue(mLiveLocationRequest, REQUEST_TAG);
 	}
 
 	private static final int REQUEST_LOCATION_SET = 1013;
@@ -382,4 +260,185 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 			}
 		});
 	}
+
+	private class ShareInfo{
+		public String mChannelUid;
+		public int mShareTime = 60;
+		public String mWidgetId;
+		public int mTimerCount = 0;
+		private Timer mTimer;
+		public String mMessage;
+
+		public void updateTimer(){
+			// Do not create timer if Sharing time = infinitive
+			if (mShareTime > 12 * 60) {
+				return;
+			}
+
+			stopTimer();
+
+			mTimerCount = 0;
+			mTimer = new Timer();
+			mTimer.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+					mTimerCount++;
+					if ( mTimerCount >= mShareTime * 60){
+						requestStopLiveLocation();
+					} else {
+						sendBroadCast(true);
+					}
+				}
+			}, 0, INTERVAL_PERIOD);
+		}
+
+		private void stopTimer(){
+			if (mTimer != null) {
+				mTimer.cancel();
+			}
+			mTimer = null;
+		}
+
+		private void requestUpdateLocation(Location location) {
+			if (mLiveLocationRequest != null ) {
+				return;
+			}
+
+			String path = "channels/" + mChannelUid + "/messages";
+
+			Map<String, String> headers = new HashMap<>();
+			headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+
+			mLiveLocationRequest = new OkHttpApiRequest<>(CSLocationService.this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
+				@Override
+				public void onSuccess(LiveLocationResponseDto responseDto) {
+					mLiveLocationRequest = null;
+				}
+
+				@Override
+				public void onError(ApiRequest.Error error) {
+					mLiveLocationRequest = null;
+				}
+			}, new ApiRequest.Parser<LiveLocationResponseDto>() {
+				@Override
+				public int getErrorCode() {
+					return 0;
+				}
+
+				@Override
+				public LiveLocationResponseDto parser(String response) {
+					try {
+						return new Gson().fromJson(response, LiveLocationResponseDto.class);
+					} catch (Exception e) {
+					}
+					return null;
+				}
+			});
+
+			mLiveLocationRequest.setApiToken(mAppToken);
+
+			BasicWidget widget = new BasicWidget();
+			widget.stickerContent = new BasicWidget.StickerContent();
+			widget.stickerContent.stickerData = new BasicWidget.StickerContent.StickerData();
+			widget.stickerContent.stickerData.location = new BasicWidget.StickerContent.StickerData.Location();
+			widget.stickerContent.stickerData.location.latitude = location.getLatitude();
+			widget.stickerContent.stickerData.location.longitude = location.getLongitude();
+			widget.replyTo = mWidgetId;
+			widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION;
+
+			PostStickerRequestDto requestDto = new PostStickerRequestDto();
+			requestDto.content = new Gson().toJson(widget).toString();
+			requestDto.type = "response";
+
+			mLiveLocationRequest.setJsonBody(requestDto.toJson());
+			NetworkQueueHelper.enqueue(mLiveLocationRequest, REQUEST_TAG);
+		}
+
+		private void onStopSharing(){
+			stopTimer();
+			mLiveLocationRequest = null;
+			mWidgetId = null;
+			mShareList.remove(this);
+			new Handler().postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					sendBroadCast(false);
+					if ( mShareList.size() == 0 ) {
+						CSLocationService.this.stopSelf();
+					}
+				}
+			}, 1000);
+		}
+
+		private void requestStopLiveLocation() {
+			if (mLiveLocationRequest != null ) {
+				return;
+			}
+
+			String path = "channels/" + mChannelUid + "/messages";
+
+			Map<String, String> headers = new HashMap<>();
+			headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+
+			mLiveLocationRequest = new OkHttpApiRequest<>(CSLocationService.this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
+
+				@Override
+				public void onSuccess(LiveLocationResponseDto responseDto) {
+					onStopSharing();
+				}
+
+				@Override
+				public void onError(ApiRequest.Error error) {
+					// onStopSharing();
+					mMessage = getString(R.string.api_request_error);
+				}
+			}, new ApiRequest.Parser<LiveLocationResponseDto>() {
+				@Override
+				public int getErrorCode() {
+					return 0;
+				}
+
+				@Override
+				public LiveLocationResponseDto parser(String response) {
+					try {
+						return new Gson().fromJson(response, LiveLocationResponseDto.class);
+					} catch (Exception e) {
+					}
+					return null;
+				}
+			});
+
+			mLiveLocationRequest.setApiToken(mAppToken);
+
+			BasicWidget widget = new BasicWidget();
+			widget.stickerContent = new BasicWidget.StickerContent();
+			widget.stickerContent.stickerData = new BasicWidget.StickerContent.StickerData();
+			widget.stickerContent.stickerData.type = "stop";
+			widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_CO_LOCATION;
+			widget.replyTo = mWidgetId;
+
+			PostStickerRequestDto requestDto = new PostStickerRequestDto();
+			requestDto.content = new Gson().toJson(widget).toString();
+			requestDto.type = "response";
+
+			mLiveLocationRequest.setJsonBody(requestDto.toJson());
+			NetworkQueueHelper.enqueue(mLiveLocationRequest, REQUEST_TAG);
+		}
+
+		protected void sendBroadCast(boolean sharing) {
+			Intent broadcastIntent = new Intent();
+			broadcastIntent.putExtra("sharing", sharing);
+			broadcastIntent.putExtra("timer_count", mTimerCount);
+			broadcastIntent.putExtra("timer_org", mShareTime);
+			broadcastIntent.putExtra("channel_uid", mChannelUid);
+			if (StringUtil.isNotBlank(mMessage)) {
+				broadcastIntent.putExtra("message", mMessage);
+				mMessage = "";
+			}
+			broadcastIntent.setAction(ChatCenterConstants.BroadcastAction.UPDATE_STATUS);
+			getBaseContext().sendBroadcast(broadcastIntent);
+		}
+
+	}
+
 }

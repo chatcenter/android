@@ -5,63 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/schedule_header"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_header_height">
+        android:layout_height="?actionBarSize"
+        android:theme="@style/ToolbarStyle">
 
-        <ImageButton
-            android:id="@+id/schedule_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="5dp"
-            android:background="@drawable/bt_close"/>
+    </android.support.v7.widget.Toolbar>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="50dp"
-            android:text="@string/schedule_title"
-            android:textColor="@color/color_chatcenter_title_text"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-
-        <Button
-            android:id="@+id/schedule_preview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="5dp"
-            android:background="@android:color/transparent"
-            android:text="@string/next"
-            android:textAllCaps="false"
-            android:textColor="@color/color_chatcenter_title_text"
-            android:textStyle="bold"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/widget_line_width"
-            android:background="@color/color_chatcenter_separator_light"
-            android:layout_alignParentBottom="true"/>
-
-    </RelativeLayout>
-
-    <!--<org.lucasr.twowayview.TwoWayView-->
-    <!--android:id="@+id/schedule_date_selector"-->
-    <!--style="@style/TwoWayView"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="70dp"-->
-    <!--android:drawSelectorOnTop="false"-->
-    <!--android:layout_below="@id/schedule_header"/>-->
     <LinearLayout
         android:id="@+id/date_selector_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/schedule_header"
+        android:layout_below="@id/toolbar"
         android:orientation="vertical">
 
         <TextView

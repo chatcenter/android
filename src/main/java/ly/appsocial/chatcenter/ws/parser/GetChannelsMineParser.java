@@ -46,7 +46,7 @@ public class GetChannelsMineParser implements ApiRequest.Parser<GetChannelsMineR
 			for (int i = 0; i < itemArray.length(); i++ ){
 				JSONObject obj = itemArray.getJSONObject(i);
 				if ( obj != null ){
-					GetChannelsMineResponseDto.Item item = new Gson().fromJson(obj.toString(), GetChannelsMineResponseDto.Item.class);
+					GetChannelsMineResponseDto.Channel item = new Gson().fromJson(obj.toString(), GetChannelsMineResponseDto.Channel.class);
 					if ( item != null && item.latestMessage != null ){
 						if (item.latestMessage.type.equals(ResponseType.INFORMATION)) {
 							continue;

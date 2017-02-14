@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_group_title"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/left_menu_item_height"
+        android:drawableLeft="@drawable/icon_inbox"
+        android:drawablePadding="@dimen/margin10dp"
+        android:gravity="center_vertical"
+        android:padding="@dimen/margin10dp"
+        android:text="@string/inbox"
+        android:textColor="@color/color_chatcenter_text"
+        android:drawableRight="@drawable/icon_left_menu_indicator"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
+
+</LinearLayout>

@@ -13,7 +13,7 @@ public class ChannelItem implements Serializable {
     }
 
     public enum ChannelStatus {
-        CHANNEL_UNASSIGNED, CHANNEL_ASSIGNED, CHANNEL_CLOSE, CHANNEL_ALL
+        CHANNEL_UNASSIGNED, CHANNEL_ASSIGNED_TO_ME, CHANNEL_CLOSE, CHANNEL_ALL
     }
 
     public static final String CHANNEL_UNASSIGNED = "unassigned";
@@ -64,6 +64,9 @@ public class ChannelItem implements Serializable {
     @SerializedName("note")
     public Note note;
 
+    @SerializedName("display_name")
+    public DisplayName displayName;
+
     public UserItem getAssignee() {
         if(assignee != null) {
             for (UserItem user : users) {
@@ -86,6 +89,16 @@ public class ChannelItem implements Serializable {
         return guests;
     }
 
+    public boolean isAdmin(Integer userId) {
+        for (UserItem userItem: users) {
+            if (userItem.id.equals(userId)) {
+                return userItem.admin;
+            }
+        }
+
+        return false;
+    }
+
     public boolean isAssigneeOnline() {
         UserItem user = getAssignee();
         return user != null && user.online;
@@ -95,7 +108,7 @@ public class ChannelItem implements Serializable {
         if (statusString.equals(CHANNEL_UNASSIGNED)) {
             return ChannelStatus.CHANNEL_UNASSIGNED;
         } else if (statusString.equals(CHANNEL_ASSIGNED)) {
-            return ChannelStatus.CHANNEL_ASSIGNED;
+            return ChannelStatus.CHANNEL_ASSIGNED_TO_ME;
         } else if (statusString.equals(CHANNEL_CLOSED)) {
             return ChannelStatus.CHANNEL_CLOSE;
         } else {
@@ -117,5 +130,15 @@ public class ChannelItem implements Serializable {
         @SerializedName("updated_at")
         public String updated_at;
 
+    }
+
+    public static class DisplayName implements Serializable{
+        /** The name that will display on guest's UI*/
+        @SerializedName("guest")
+        public String guest;
+
+        /** The name that will display on agent's UI*/
+        @SerializedName("admin")
+        public String admin;
     }
 }

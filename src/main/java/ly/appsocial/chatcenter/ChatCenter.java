@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
-import android.support.v4.content.IntentCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import java.util.HashMap;
@@ -126,9 +125,9 @@ public class ChatCenter {
 		});
 	}
 	public static void signInDeviceToken(final Context context, String email, String password,
-										 String provider, String providerToken, long providerCreatedAt, long providerExpiresAt,
+										 String provider, String providerToken, String providerTokenSecret, long providerCreatedAt, long providerExpiresAt,
 										 final SignInCallback callback) {
-		client(context).getUserToken(email, password, provider, providerToken, providerCreatedAt,
+		client(context).getUserToken(email, password, provider, providerToken, providerTokenSecret, providerCreatedAt,
 				providerExpiresAt, new ApiRequest.Callback<PostUsersAuthResponseDto>() {
 					@Override
 					public void onSuccess(PostUsersAuthResponseDto responseDto) {
@@ -143,7 +142,7 @@ public class ChatCenter {
 	}
 
 	public static void signIn(final Context context, String email, String password, final SignInCallback callback ) {
-		client(context).getUserToken(email, password, null, null, 0, 0, new ApiRequest.Callback<PostUsersAuthResponseDto>() {
+		client(context).getUserToken(email, password, null, null, null,  0, 0, new ApiRequest.Callback<PostUsersAuthResponseDto>() {
 			@Override
 			public void onSuccess(PostUsersAuthResponseDto responseDto) {
 				callback.onSuccess();
@@ -249,7 +248,7 @@ public class ChatCenter {
 	}
 
 	/**
-	 * Open Messages List (History) Activity
+	 * Open Messages List (History) Activity for client (Not agent)
 	 * 履歴画面を表示します。
 	 *
 	 * @param context
@@ -273,19 +272,19 @@ public class ChatCenter {
 	 * @param channelType
 	 * @param provider
 	 * @param providerToken
-	 * @param providerTokenTimestamp
+	 * @param providerTokenCreateAt
 	 * @param providerTokenExpires
 	 */
 	public static void showMessages(final Context context,
 									final ChannelItem.ChannelType channelType,
 									final ChannelItem.ChannelStatus channelStatus,
 									final String provider, final String providerToken,
-									final long providerTokenTimestamp,
+									final long providerTokenCreateAt,
 									final long providerTokenExpires) {
 		MessagesParamDto messagesParamDto = new MessagesParamDto();
 		messagesParamDto.provider = provider;
 		messagesParamDto.providerToken = providerToken;
-		messagesParamDto.providerTokenTimestamp = providerTokenTimestamp;
+		messagesParamDto.providerTokenCreateAt = providerTokenCreateAt;
 		messagesParamDto.providerTokenExpires = providerTokenExpires;
 		messagesParamDto.channelType = channelType;
 		messagesParamDto.channelStatus = channelStatus;
@@ -302,15 +301,15 @@ public class ChatCenter {
 	 *
 	 * @param context コンテキスト
 	 * @param providerToken Providerトークン
-	 * @param providerTokenTimestamp Providerトークン生成タイムスタンプ(ms)
+	 * @param providerTokenCreateAt Providerトークン生成タイムスタンプ(ms)
 	 */
 	@Deprecated
-	public static void showMessages(final Context context, final String provider, final String providerToken, final long providerTokenTimestamp) {
+	public static void showMessages(final Context context, final String provider, final String providerToken, final long providerTokenCreateAt) {
 
 		MessagesParamDto messagesParamDto = new MessagesParamDto();
 		messagesParamDto.provider = provider;
 		messagesParamDto.providerToken = providerToken;
-		messagesParamDto.providerTokenTimestamp = providerTokenTimestamp;
+		messagesParamDto.providerTokenCreateAt = providerTokenCreateAt;
 
 		// 「履歴」アクティビティの起動
 		Intent intent = new Intent(context, MessagesActivity.class);
@@ -324,10 +323,10 @@ public class ChatCenter {
 	 *
 	 * @param context コンテキスト
 	 * @param providerToken Providerトークン
-	 * @param providerTokenTimestamp providerToken生成タイムスタンプ(ms)
+	 * @param providerTokenCreateAt providerToken生成タイムスタンプ(ms)
 	 * @param listener 未読メッセージ取得のリスナー
 	 */
-	public static void getUnreadMessages(Context context, String providerToken, long providerTokenTimestamp, ChatCenter.OnGetUnreadMessagesListener listener) {
+	public static void getUnreadMessages(Context context, String providerToken, long providerTokenCreateAt, ChatCenter.OnGetUnreadMessagesListener listener) {
 
 		String userToken = AuthUtil.getUserToken(context);
 		if (StringUtil.isBlank(userToken)) {
@@ -354,7 +353,7 @@ public class ChatCenter {
 	private static void showChat(Context context, ChatParamDto chatParamDto) {
 		// 「チャット」アクティビティの起動
 		Intent intent = new Intent(context, ChatActivity.class);
-		intent.putExtra(ChatParamDto.class.getCanonicalName(), chatParamDto);
+		intent.putExtra(ChatCenterConstants.Extra.CHAT_PARAM, chatParamDto);
 		context.startActivity(intent);
 
 		// 表示済みチャットに追加
@@ -416,26 +415,30 @@ public class ChatCenter {
 	 * @param providerToken
 	 * @param providerTokenCreatedAt
 	 * @param providerTokenExpiresDate
-	 * @param channelInformations
+	 * @param channelInformation
 	 */
 	public static void showChat(final Context context,
 								final String orgUid,
 								final String provider,
 								final String providerToken,
+								final String providerTokenSecret,
+								final String providerRefreshToken,
 								final long providerTokenCreatedAt,
 								final long providerTokenExpiresDate,
-								final Map<String, String> channelInformations) {
+								final Map<String, String> channelInformation) {
 		client(context).getDeviceToken(new ChatCenterClient.GetDeviceTokenCallback() {
 			@Override
 			public void onSuccess(String deviceToken) {
 				ChatParamDto chatParamDto = new ChatParamDto();
 				chatParamDto.provider = provider;
 				chatParamDto.providerToken = providerToken;
-				chatParamDto.providerTokenTimestamp = providerTokenCreatedAt;
+				chatParamDto.providerTokenSecret = providerTokenSecret;
+				chatParamDto.providerRefreshToken = providerRefreshToken;
+				chatParamDto.providerTokenCreatedAt = providerTokenCreatedAt;
 				chatParamDto.providerTokenExpires = providerTokenExpiresDate;
 				chatParamDto.deviceToken = deviceToken;
 				chatParamDto.kissCd = orgUid;
-				chatParamDto.channelInformations = channelInformations;
+				chatParamDto.channelInformations = channelInformation;
 
 				showChat(context, chatParamDto);
 			}
@@ -443,6 +446,86 @@ public class ChatCenter {
 			public void onError() {
 			}
 		});
+	}
+
+	/**
+	 * Open Chat activity after Using Twitter Account for Log In
+	 * @param context
+	 * @param orgUid
+	 * @param providerToken
+	 * @param providerTokenSecret
+	 * @param channelInformation
+     */
+	public static void showChatWithTwitterAccount(final Context context,
+												  final String orgUid,
+												  final String providerToken,
+												  final String providerTokenSecret,
+												  final Map<String, String> channelInformation) {
+		showChat(context,
+				orgUid,
+				LoginType.TWITTER,
+				providerToken,
+				providerTokenSecret,
+				null,
+				0,
+				0,
+				channelInformation);
+	}
+
+	/**
+	 * Open Chat activity after Using Facebook Account for Log In
+	 * @param context
+	 * @param orgUid
+	 * @param providerToken
+	 * @param providerTokenExpiresDate
+	 * @param channelInformation
+	 */
+	public static void showChatWithFacebookAccount(final Context context,
+												  final String orgUid,
+												  final String providerToken,
+												  final long providerTokenExpiresDate,
+												  final Map<String, String> channelInformation) {
+		showChat(context,
+				orgUid,
+				LoginType.FACEBOOK,
+				providerToken,
+				null,
+				null,
+				0,
+				providerTokenExpiresDate,
+				channelInformation);
+	}
+
+	public static void showChatWithGoogleAccount(final Context context,
+												   final String orgUid,
+												   final String providerToken,
+												   final String providerRefreshToken,
+												   final Map<String, String> channelInformation) {
+		showChat(context,
+				orgUid,
+				LoginType.GOOGLE,
+				providerToken,
+				null,
+				providerRefreshToken,
+				0,
+				0,
+				channelInformation);
+	}
+
+	public static void showChatWithYahooJPAccount(final Context context,
+												 final String orgUid,
+												 final String providerToken,
+												 final String providerRefreshToken,
+												 final Map<String, String> channelInformation) {
+		showChat(context,
+				orgUid,
+				LoginType.YAHOO,
+				providerToken,
+				null,
+				providerRefreshToken,
+				0,
+				0,
+				channelInformation);
 	}
 
 	/**
@@ -464,9 +547,9 @@ public class ChatCenter {
 		chatParamDto.channelInformations = channelInformations;
 		chatParamDto.provider = provider;
 		chatParamDto.providerTokenExpires = providerTokenExpires;
-		chatParamDto.providerTokenTimestamp = providerTokenCreatedAt;
+		chatParamDto.providerTokenCreatedAt = providerTokenCreatedAt;
 		Intent intent = new Intent(context, ChatActivity.class);
-		intent.putExtra(ChatParamDto.class.getCanonicalName(), chatParamDto);
+		intent.putExtra(ChatCenterConstants.Extra.CHAT_PARAM, chatParamDto);
 		return intent;
 	}
 	public static Intent getShowChatIntent(final Context context,
@@ -486,21 +569,21 @@ public class ChatCenter {
 	 *
 	 * @param context コンテキスト
 	 * @param providerToken Providerトークン
-	 * @param providerTokenTimestamp Providerトークン生成タイムスタンプ(ms)
+	 * @param providerTokenCreatedAt Providerトークン生成タイムスタンプ(ms)
 	 * @param kissCd KISSコード
 	 */
 	@Deprecated
-	public static void showChat(final Context context, final String providerToken, final long providerTokenTimestamp, final String kissCd) {
+	public static void showChat(final Context context, final String providerToken, final long providerTokenCreatedAt, final String kissCd) {
 
 		ChatParamDto chatParamDto = new ChatParamDto();
 		chatParamDto.provider = null;
 		chatParamDto.providerToken = providerToken;
-		chatParamDto.providerTokenTimestamp = providerTokenTimestamp;
+		chatParamDto.providerTokenCreatedAt = providerTokenCreatedAt;
 		chatParamDto.kissCd = kissCd;
 
 		// 「チャット」アクティビティの起動
 		Intent intent = new Intent(context, ChatActivity.class);
-		intent.putExtra(ChatParamDto.class.getCanonicalName(), chatParamDto);
+		intent.putExtra(ChatCenterConstants.Extra.CHAT_PARAM, chatParamDto);
 		context.startActivity(intent);
 
 		// 表示済みチャットに追加
@@ -573,7 +656,7 @@ public class ChatCenter {
 		public void onSuccess(GetChannelsMineResponseDto responseDto) {
 			int unreadMessages = 0;
 			if (responseDto.items != null) {
-				for (GetChannelsMineResponseDto.Item item : responseDto.items) {
+				for (GetChannelsMineResponseDto.Channel item : responseDto.items) {
 					if (item.isClosed()) {
 						continue;
 					}
@@ -622,5 +705,13 @@ public class ChatCenter {
 
 	public static void setTopActivity(AppCompatActivity topActivity) {
 		ChatCenter.mTopActivity = topActivity;
+	}
+
+	public interface LoginType {
+		String EMAIL = "email";
+		String FACEBOOK = "facebook";
+		String TWITTER = "twitter";
+		String GOOGLE = "google";
+		String YAHOO = "yahoojp";
 	}
 }

@@ -99,7 +99,7 @@
                 android:id="@+id/tv_channel_status"
                 style="@style/NotificationTextView"
                 android:layout_marginLeft="@dimen/margin8dp"
-                android:text="Unassigned"/>
+                android:text="@string/unassigned_status"/>
 
             <TextView
                 android:id="@+id/tv_unread_msg"

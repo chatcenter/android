@@ -2,6 +2,8 @@ package ly.appsocial.chatcenter.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -27,7 +29,7 @@ import ly.appsocial.chatcenter.ws.ApiRequest;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
 import ly.appsocial.chatcenter.ws.parser.GetFixedPhraseParser;
 
-public class FixedPhraseActivity extends BaseActivity implements View.OnClickListener,
+public class FixedPhraseActivity extends BaseActivity implements
         ProgressDialogFragment.DialogListener, FixedPhrasesAdapter.OnFixedPhrasesItemClickListener,
         RadioGroup.OnCheckedChangeListener{
 
@@ -41,7 +43,7 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
     public static final String SELECTED_CONTENT = "selected_fixed_phrase";
     public static final String SELECTED_TYPE = "selected_type";
 
-    private Button mButtonCancel;
+    // private Button mButtonCancel;
     private ListView mLvFixedPhrases;
     private RadioGroup mSegmentController;
 
@@ -53,6 +55,8 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
     private List<FPListItem> mListTeamItems;
     private List<FPListItem> mListEveryoneItems;
     private FixedPhrasesAdapter mFixedPhrasesAdapter;
+
+    private Toolbar mToolbar;
 
     /**
      * GET /api/fixed_phrases/
@@ -68,8 +72,12 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
 
         setContentView(R.layout.activity_fixed_phrase);
 
-        mButtonCancel = (Button) findViewById(R.id.bt_cancel);
-        mButtonCancel.setOnClickListener(this);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setTitle("");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setHomeAsUpIndicator(R.drawable.bt_close);
 
         mLvFixedPhrases = (ListView) findViewById(R.id.lv_fixed_phrases);
 
@@ -96,21 +104,18 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
         mGetFixedPhraseRequest = null;
     }
 
-    /**
-     * Called when a view has been clicked.
-     *
-     * @param v The view that was clicked.
-     */
     @Override
-    public void onClick(View v) {
-        int id = v.getId();
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case android.R.id.home:
+                Intent intent = new Intent();
 
-        if (id == R.id.bt_cancel) {
-            Intent intent = new Intent();
-
-            setResult(RESULT_CANCELED, intent);
-            finish();
+                setResult(RESULT_CANCELED, intent);
+                finish();
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -349,5 +354,11 @@ public class FixedPhraseActivity extends BaseActivity implements View.OnClickLis
         public void setChatItem(ChatItem chatItem) {
             mChatItem = chatItem;
         }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        this.overridePendingTransition(0, R.anim.activity_close_exit);
     }
 }

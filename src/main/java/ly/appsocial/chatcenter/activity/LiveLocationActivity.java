@@ -20,8 +20,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
-import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -57,6 +57,7 @@ public class LiveLocationActivity extends WebViewActivity {
 	private String mSharingLocationId;
 
 	private String mChannelUid;
+	private String mOrgUid;
 	private String mAppToken;
 	private ApiRequest<LiveLocationResponseDto> mLiveLocationRequest;
 
@@ -87,6 +88,10 @@ public class LiveLocationActivity extends WebViewActivity {
 		if ( intent.hasExtra("app_token")) {
 			mAppToken = intent.getStringExtra("app_token");
 		}
+		if ( intent.hasExtra("org_uid")) {
+			mOrgUid = intent.getStringExtra("org_uid");
+		}
+
 		if ( intent.hasExtra(ChatCenterConstants.Extra.URL)){
 			String url = intent.getStringExtra(ChatCenterConstants.Extra.URL);
 			if ( !StringUtil.isBlank(url) ){
@@ -104,7 +109,7 @@ public class LiveLocationActivity extends WebViewActivity {
 			public void onClick(View view) {
 				if ( mSharingLocation ){
 					stopShareLocation();
-				} else if (!CSLocationService.isStarted()) {
+				} else {
 					if (ContextCompat.checkSelfPermission(LiveLocationActivity.this,
 								Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
 							ActivityCompat.requestPermissions(LiveLocationActivity.this,
@@ -186,9 +191,6 @@ public class LiveLocationActivity extends WebViewActivity {
 			return;
 		}
 
-//		String progMsg = getResources().getString(R.string.processing);
-//		DialogUtil.showProgressDialog(getSupportFragmentManager(), progMsg, DialogUtil.Tag.PROGRESS);
-
 		String path = "channels/" + mChannelUid + "/messages";
 
 		Map<String, String> headers = new HashMap<>();
@@ -258,28 +260,27 @@ public class LiveLocationActivity extends WebViewActivity {
 	}
 
 	private void startLiveLocationSharing(int interval, String widgetId, int share_time){
-		if (!CSLocationService.isStarted()) {
-			Intent intent = new Intent(this, CSLocationService.class);
-			intent.putExtra("command", ChatCenterConstants.LocationService.START);
-			intent.putExtra("icon_id", ChatCenter.mAppIconId);
-			intent.putExtra("app_name", ChatCenter.mAppName);
-			intent.putExtra("app_token", ChatCenter.mAppToken);
-			intent.putExtra("channel_uid", mChannelUid);
-			intent.putExtra("interval", interval);
-			intent.putExtra("widget_id", widgetId);
-			intent.putExtra("share_time", share_time);
+		Intent intent = new Intent(this, CSLocationService.class);
+		intent.putExtra("command", ChatCenterConstants.LocationService.START);
+		intent.putExtra("icon_id", ChatCenter.mAppIconId);
+		intent.putExtra("app_name", ChatCenter.mAppName);
+		intent.putExtra("app_token", ChatCenter.mAppToken);
+		intent.putExtra("channel_uid", mChannelUid);
+		intent.putExtra("org_uid", mOrgUid);
+		intent.putExtra("interval", interval);
+		intent.putExtra("widget_id", widgetId);
+		intent.putExtra("share_time", share_time);
 
-			startService(intent);
-			mSharingLocation = true;
-		}
+		startService(intent);
+		mSharingLocation = true;
+		updateStatus(true, share_time, 0);
 	}
 
 	private void stopShareLocation(){
-		if (CSLocationService.isStarted()) {
-			Intent intent = new Intent(LiveLocationActivity.this, CSLocationService.class);
-			intent.putExtra("command", ChatCenterConstants.LocationService.STOP);
-			startService(intent);
-		}
+		Intent intent = new Intent(LiveLocationActivity.this, CSLocationService.class);
+		intent.putExtra("command", ChatCenterConstants.LocationService.STOP);
+		intent.putExtra("channel_uid", mChannelUid);
+		startService(intent);
 		mSharingLocation = false;
 	}
 
@@ -290,10 +291,23 @@ public class LiveLocationActivity extends WebViewActivity {
 	 */
 	private void updateStatus(boolean sharing, int timer_org, int timer_count){
 		if ( sharing ){
-			int remainSec = timer_org*60 - timer_count;
-			int min = remainSec / 60;
-			int sec = remainSec % 60;
-			String secStr = String.format("%02d:%02d", min, sec);
+			String secStr;
+
+			if (timer_org > 12 * 60) {
+				secStr = getString(R.string.infinite);
+			} else {
+				int remainSec = timer_org * 60 - timer_count;
+				int remainMin = remainSec / 60;
+				int sec = remainSec % 60;
+
+				if (remainMin >= 60) {
+					int hour = remainMin / 60;
+					int min = remainMin % 60;
+					secStr = String.format("%02d:%02d:%02d", hour, min, sec);
+				} else {
+					secStr = String.format("%02d:%02d", remainMin, sec);
+				}
+			}
 
 			mTimerLabel.setVisibility(View.VISIBLE);
 			mTimerLabel.setText(secStr);
@@ -320,11 +334,17 @@ public class LiveLocationActivity extends WebViewActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Bundle bundle = intent.getExtras();
-			int timer_org = bundle.getInt("timer_org");
-			int timer_count = bundle.getInt("timer_count");
-			boolean sharing = bundle.getBoolean("sharing");
-
-			updateStatus(sharing, timer_org, timer_count);
+			String channelUid = bundle.getString("channel_uid");
+			if ( mChannelUid.equals(channelUid)){
+				int timer_org = bundle.getInt("timer_org");
+				int timer_count = bundle.getInt("timer_count");
+				boolean sharing = bundle.getBoolean("sharing");
+				String message = bundle.getString("message");
+				updateStatus(sharing, timer_org, timer_count);
+				if (StringUtil.isNotBlank(message)) {
+					Toast.makeText(context, getString(R.string.api_request_error), Toast.LENGTH_SHORT).show();
+				}
+			}
 		}
 	}
 }

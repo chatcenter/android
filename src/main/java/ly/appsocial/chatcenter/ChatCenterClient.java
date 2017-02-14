@@ -128,6 +128,7 @@ public class ChatCenterClient {
 
 	public void getUserToken(final String email, final String password,
 							 final String provider, final String providerToken,
+							 final String providerTokenSecret,
 							 final long providerCreatedAt, final long providerExpiresAt,
 							 final ApiRequest.Callback<PostUsersAuthResponseDto> callback) {
 		if (mPostUsersAuthRequest != null) {
@@ -142,6 +143,7 @@ public class ChatCenterClient {
 				PostUsersAuthRequestDto postUsersAuthRequestDto = new PostUsersAuthRequestDto();
 				postUsersAuthRequestDto.provider = provider;
 				postUsersAuthRequestDto.providerToken = providerToken;
+				postUsersAuthRequestDto.providerTokenSecret = providerTokenSecret;
 				postUsersAuthRequestDto.setProviderTokenCreateAt(providerCreatedAt);
 				postUsersAuthRequestDto.setProviderTokenExpires(providerExpiresAt);
 				postUsersAuthRequestDto.deviceToken = deviceToken;

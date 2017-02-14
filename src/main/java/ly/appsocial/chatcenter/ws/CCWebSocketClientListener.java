@@ -7,12 +7,14 @@ import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import ly.appsocial.chatcenter.BuildConfig;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.ws.response.WsChannelJoinMessageDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
+import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.widgets.VideoCallWidget;
 
@@ -65,8 +67,13 @@ public abstract class CCWebSocketClientListener implements CCWebSocketClient.Lis
         }
 
         try {
+
+			if (!StringUtil.isJSONValid(message)) {
+				return;
+			}
+
             JSONArray rootArray = new JSONArray(message);
-            if (rootArray.length() < 2) {
+            if (rootArray == null || rootArray.length() < 2) {
                 return;
             }
 

@@ -10,23 +10,21 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 
 import ly.appsocial.chatcenter.R;
-import ly.appsocial.chatcenter.activity.AssigneeFollowersUsersActivity;
 import ly.appsocial.chatcenter.activity.ChatActivity;
+import ly.appsocial.chatcenter.activity.model.AssigneeFollowerListItem;
 import ly.appsocial.chatcenter.util.ViewUtil;
 
 /**
  * {@link ChatActivity} adapter.
  */
-public class AssigneeFollowerUsersAdapter extends ArrayAdapter<AssigneeFollowersUsersActivity.ItemListAssigneeFollower> {
+public class AssigneeFollowerUsersAdapter extends ArrayAdapter<AssigneeFollowerListItem> {
 
-	List<AssigneeFollowersUsersActivity.ItemListAssigneeFollower> mItems;
+	List<AssigneeFollowerListItem> mItems;
 
-	public AssigneeFollowerUsersAdapter(Context context, int resource, List<AssigneeFollowersUsersActivity.ItemListAssigneeFollower> objects) {
+	public AssigneeFollowerUsersAdapter(Context context, int resource, List<AssigneeFollowerListItem> objects) {
 		super(context, resource, objects);
 
 		mItems = objects;
@@ -42,7 +40,7 @@ public class AssigneeFollowerUsersAdapter extends ArrayAdapter<AssigneeFollowers
 		TextView iconTextView = (TextView) view.findViewById(R.id.chat_client_listitem_icon_textview);
 		ImageView iconImageView = (ImageView) view.findViewById(R.id.chat_client_listitem_icon_imageview);
 
-		AssigneeFollowersUsersActivity.ItemListAssigneeFollower item = getItem(position);
+		AssigneeFollowerListItem item = getItem(position);
 		tvName.setText(item.getUser().displayName);
 		cbSelected.setSelected(item.isSelected());
 
@@ -66,7 +64,7 @@ public class AssigneeFollowerUsersAdapter extends ArrayAdapter<AssigneeFollowers
 	}
 
 	@Override
-	public AssigneeFollowersUsersActivity.ItemListAssigneeFollower getItem(int position) {
+	public AssigneeFollowerListItem getItem(int position) {
 		return mItems.get(position);
 	}
 

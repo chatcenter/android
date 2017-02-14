@@ -65,6 +65,8 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     private ImageView mIconImage;
     private TextView mIconTextView;
     private TextView mEmailTextView;
+    private TextView mFacebookTextView;
+    private TextView mTwitterTextView;
     private TextView mTvFunnel;
     private TextView mTvCloseChannel;
     private LinearLayout mChannelControlView;
@@ -98,12 +100,14 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
 
     private ArrayList<FunnelItem> mFunnels;
 
+    private List<UserItem> mFollowers = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.info);
 
-        mParamDto = getIntent().getParcelableExtra(ChatParamDto.class.getSimpleName());
+        mParamDto = getIntent().getParcelableExtra(ChatCenterConstants.Extra.CHAT_PARAM);
         mChannelUid = getIntent().getStringExtra(ChatCenterConstants.Extra.CHANNEL_UID);
         mCurrentOrgitem = getIntent().getParcelableExtra(ChatCenterConstants.Extra.ORG);
 
@@ -127,6 +131,8 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         mIconImage = (ImageView) findViewById(R.id.info_assignee_icon_image);
         mIconTextView = (TextView) findViewById(R.id.info_assignee_icon_textview);
         mEmailTextView = (TextView) findViewById(R.id.info_assignee_email);
+        mFacebookTextView = (TextView) findViewById(R.id.info_assignee_facebook);
+        mTwitterTextView = (TextView) findViewById(R.id.info_assignee_twitter);
         mTvFunnel = (TextView) findViewById(R.id.tv_channel_funnel);
         mTvCloseChannel = (TextView) findViewById(R.id.bt_close_channel);
 
@@ -135,6 +141,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         if (mIsAgent) {
             mAssigneeFollowersView.setVisibility(View.VISIBLE);
             mChannelControlView.setVisibility(View.VISIBLE);
+            findViewById(R.id.btn_about).setVisibility(View.GONE);
         } else {
             mAssigneeFollowersView.setVisibility(View.GONE);
             mChannelControlView.setVisibility(View.GONE);
@@ -221,27 +228,19 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     private void setUpEmailView(final UserItem user) {
         if (StringUtil.isNotBlank(user.email)) {
             mEmailTextView.setText(user.email);
-            mEmailTextView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.icon_email_tint, 0, 0, 0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mEmailTextView.setTextColor(getColor(R.color.color_chatcenter_text_red));
-            } else {
-                mEmailTextView.setTextColor(getResources().getColor(R.color.color_chatcenter_text_red));
-            }
             mEmailTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     composeEmail(new String[]{user.email}, "", null);
                 }
             });
-        } else if (StringUtil.isNotBlank(user.facebookID)) {
-            mEmailTextView.setText("facebook");
-            mEmailTextView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.icon_facebook_tint, 0, 0, 0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mEmailTextView.setTextColor(getColor(R.color.color_chatcenter_facebook));
-            } else {
-                mEmailTextView.setTextColor(getResources().getColor(R.color.color_chatcenter_facebook));
-            }
-            mEmailTextView.setOnClickListener(new View.OnClickListener() {
+            mEmailTextView.setVisibility(View.VISIBLE);
+        } else {
+            mEmailTextView.setVisibility(View.GONE);
+        }
+
+        if (StringUtil.isNotBlank(user.facebookID)) {
+            mFacebookTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (StringUtil.isNotBlank(user.facebookURL)) {
@@ -250,16 +249,13 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
                     }
                 }
             });
-        } else if (StringUtil.isNotBlank(user.twitterID)) {
-            mEmailTextView.setText("Twitter");
-            mEmailTextView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.icon_twitter_tint, 0, 0, 0);
-            mEmailTextView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.icon_facebook_tint, 0, 0, 0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mEmailTextView.setTextColor(getColor(R.color.color_chatcenter_twitter));
-            } else {
-                mEmailTextView.setTextColor(getResources().getColor(R.color.color_chatcenter_twitter));
-            }
-            mEmailTextView.setOnClickListener(new View.OnClickListener() {
+            mFacebookTextView.setVisibility(View.VISIBLE);
+        } else {
+            mFacebookTextView.setVisibility(View.GONE);
+        }
+
+        if (StringUtil.isNotBlank(user.twitterID)) {
+            mTwitterTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (StringUtil.isNotBlank(user.twitterURL)) {
@@ -268,10 +264,14 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
                     }
                 }
             });
+
+            mTwitterTextView.setVisibility(View.VISIBLE);
+        } else {
+            mTwitterTextView.setVisibility(View.GONE);
         }
     }
 
-    public void composeEmail(String[] addresses, String subject, Uri attachment) {
+    private void composeEmail(String[] addresses, String subject, Uri attachment) {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
         intent.setType("*/*");
         intent.setData(Uri.parse("mailto:")); // only email apps should handle this
@@ -298,6 +298,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
 
     private void updateFollowersView() {
         mFollowersView.removeAllViews();
+        mFollowers.clear();
 
         int numberOfFollowers = 0;
         for (UserItem user : mCurrentChannel.users) {
@@ -307,6 +308,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
                 } else {
                     mFollowersView.addView(createAvaLayout(user.displayName, user.iconUrl));
                     numberOfFollowers += 1;
+                    mFollowers.add(user);
                 }
             }
         }
@@ -457,7 +459,8 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
                 setUpFunnel(funnel);
             } else if (REQUEST_SETUP_NOTE == requestCode) {
                 String content = data.getStringExtra("result").trim();
-                if (mCurrentChannel.note == null || content.equals(mCurrentChannel.note.content)) {
+                if (mCurrentChannel.note == null
+                        || (mCurrentChannel.note != null && !content.equals(mCurrentChannel.note.content))) {
                     setupNote(content);
                 }
             }
@@ -470,8 +473,10 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
 
     private void setUpAssignee(List<UserItem> users) {
         if (users != null && users.size() > 0) {
+            DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
             requestPostChannelAssignIfNeed(mChannelUid, users.get(0));
         } else if (users != null && users.size() == 0 && mCurrentChannel.assignee != null) {
+            DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
             requestPostChannelUnassign(mChannelUid, mCurrentChannel.assignee);
         }
     }
@@ -479,18 +484,21 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
     private int mFollowResponse = 0;
     private int mFollowRequest = 0;
     private void setUpFollowers(List<UserItem> users) {
-        DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
-        mFollowRequest = users.size();
-        // Un-follow if need
-        for (UserItem user : mCurrentChannel.users) {
-            if(user.admin && isUserInList(users, user)) {
+        List<UserItem> newFollowers = getNewFollowers(mFollowers, users);
+        List<UserItem> unfollowers = getUnfollowers(mFollowers, users);
+
+        mFollowRequest = newFollowers.size() + unfollowers.size();
+
+        if (mFollowRequest > 0) {
+            DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+
+            // Un-follow if need
+            for (UserItem user : unfollowers) {
                 requestPostChannelUnFollow(mChannelUid, user);
             }
-        }
 
-        // Follow if need
-        for (UserItem user : users) {
-            if(!user.admin) {
+            // Follow if need
+            for (UserItem user : newFollowers) {
                 requestPostChannelFollow(mChannelUid, user);
             }
         }
@@ -503,6 +511,27 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
             }
         }
         return false;
+    }
+
+    private List<UserItem> getNewFollowers(List<UserItem> oldFollowers, List<UserItem> currentFollowers) {
+        List<UserItem> newFollowers = new ArrayList<>();
+        for(UserItem userItem: currentFollowers) {
+            if (!isUserInList(oldFollowers, userItem)) {
+                newFollowers.add(userItem);
+            }
+        }
+
+        return newFollowers;
+    }
+
+    private List<UserItem> getUnfollowers(List<UserItem> oldFollowers, List<UserItem> currentFollowers) {
+        List<UserItem> unfollowers = new ArrayList<>();
+        for (UserItem userItem: oldFollowers) {
+            if (!isUserInList(currentFollowers, userItem)) {
+                unfollowers.add(userItem);
+            }
+        }
+        return unfollowers;
     }
 
     private void setUpFunnel(FunnelItem funnel) {
@@ -709,6 +738,11 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
 
         mGetFunnelsRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.GET, path, null, headers,
                 new GetFunnelsCallback(), new GetFunnelsParser());
+
+        if (mParamDto.appToken != null) {
+            mGetFunnelsRequest.setApiToken(mParamDto.appToken);
+        }
+
         NetworkQueueHelper.enqueue(mGetFunnelsRequest, REQUEST_TAG);
     }
 
@@ -787,7 +821,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
         ApiRequest<PostChannelsResponseDto> postChannelRequest = new OkHttpApiRequest<>(this,
-                ApiRequest.Method.PATCH, path, headers, headers, new PostCloseChannelCallback(), new PostChannelsParser());
+                ApiRequest.Method.PATCH, path, headers, headers, new PostFunnelCallback(), new PostChannelsParser());
 
         if (mParamDto.appToken != null) {
             postChannelRequest.setApiToken(mParamDto.appToken);
@@ -802,7 +836,7 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
 
         postChannelRequest.setJsonBody(jsonBody);
         NetworkQueueHelper.enqueue(postChannelRequest, REQUEST_TAG);
-        DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+        // DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
     }
 
     /**
@@ -864,11 +898,13 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         @Override
         public void onError(OkHttpApiRequest.Error error) {
 //            mPostChannelRequest = null;
+            DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
         }
 
         @Override
         public void onSuccess(PostChannelsResponseDto responseDto) {
 //            mPostChannelRequest = null;
+            DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
 
             mCurrentChannel = responseDto;
             runOnUiThread(new Runnable() {
@@ -887,10 +923,12 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         @Override
         public void onError(OkHttpApiRequest.Error error) {
 //            mPostChannelRequest = null;
+            DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
         }
 
         @Override
         public void onSuccess(PostChannelsResponseDto responseDto) {
+            DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
 //            mPostChannelRequest = null;
 
             mCurrentChannel = responseDto;

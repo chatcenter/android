@@ -7,6 +7,8 @@ package ly.appsocial.chatcenter.activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -31,6 +33,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -50,12 +53,16 @@ import java.util.Map;
 
 import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.R;
+import ly.appsocial.chatcenter.activity.adapter.LeftMenuAdapter;
 import ly.appsocial.chatcenter.activity.adapter.MessagesAdapter;
-import ly.appsocial.chatcenter.activity.adapter.MessagesAgentMenuAdapter;
+import ly.appsocial.chatcenter.activity.model.LeftMenuChildItem;
+import ly.appsocial.chatcenter.activity.model.LeftMenuGroupItem;
+import ly.appsocial.chatcenter.activity.receivers.NetworkStateReceiver;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.FunnelItem;
 import ly.appsocial.chatcenter.dto.OrgItem;
+import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.UserItem;
 import ly.appsocial.chatcenter.dto.param.ChatParamDto;
 import ly.appsocial.chatcenter.dto.param.MessagesParamDto;
@@ -63,6 +70,7 @@ import ly.appsocial.chatcenter.dto.ws.request.GetChannelsMineRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.GetChannelsRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostChannelsCloseRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostUsersAuthRequestDto;
+import ly.appsocial.chatcenter.dto.ws.request.WsConnectChannelRequest;
 import ly.appsocial.chatcenter.dto.ws.response.GetAppsResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetChannelsCountResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetChannelsMineResponseDto;
@@ -84,9 +92,9 @@ import ly.appsocial.chatcenter.util.PreferenceUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.util.ViewUtil;
 import ly.appsocial.chatcenter.ws.ApiRequest;
-import ly.appsocial.chatcenter.ws.CCWebSocketClient;
 import ly.appsocial.chatcenter.ws.CCWebSocketClientListener;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
+import ly.appsocial.chatcenter.ws.WebSocketHelper;
 import ly.appsocial.chatcenter.ws.parser.GetAppsParser;
 import ly.appsocial.chatcenter.ws.parser.GetChannelsCountParser;
 import ly.appsocial.chatcenter.ws.parser.GetChannelsMineParser;
@@ -115,9 +123,9 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	private static final String REQUEST_TAG = MessagesActivity.class.getCanonicalName();
 
 	/** チャネル並び順のコンパレータ */
-	public static final Comparator<GetChannelsMineResponseDto.Item> COMPARATOR = new Comparator<GetChannelsMineResponseDto.Item>() {
+	private static final Comparator<GetChannelsMineResponseDto.Channel> COMPARATOR = new Comparator<GetChannelsMineResponseDto.Channel>() {
 		@Override
-		public int compare(final GetChannelsMineResponseDto.Item o1, final GetChannelsMineResponseDto.Item o2) {
+		public int compare(final GetChannelsMineResponseDto.Channel o1, final GetChannelsMineResponseDto.Channel o2) {
 
 			long t1 = (o1.latestMessage == null) ? o1.created : o1.latestMessage.created;
 			long t2 = (o2.latestMessage == null) ? o2.created : o2.latestMessage.created;
@@ -137,9 +145,9 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	private MessagesParamDto mParamDto;
 
 	/** 削除ボタン */
-	private Button mDeleteButton;
+	// private Button mDeleteButton;
 	/** 編集/キャンセルボタン */
-	private Button mEditButton;
+	// private Button mEditButton;
 	/** 0件メッセージ */
 	private TextView mEmptyTextView;
 	/** ListView */
@@ -149,7 +157,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	/** プログレスバー */
 	private LinearLayout mProgressBar;
 	/** ネットワークエラー */
-	private TextView mNetoworkErrorTextView;
+	private TextView mNetworkErrorTextView;
 	/** Header title*/
 	private TextView mTvOrgName;
 	/** Header funnel*/
@@ -175,29 +183,29 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		}
 	};
 	/** List of Channel items */
-	private List<GetChannelsMineResponseDto.Item> mChannelItems;
+	private List<GetChannelsMineResponseDto.Channel> mChannelItems;
 
 	// etc
 	/** Handler */
 	private Handler mHandler = new Handler();
 	/** 初回ロードかどうか */
-	private boolean mIsInit = true;
+	// private boolean mIsInit = true;
 
 	// For agents
 	/** True if is agent, false otherwise */
 	private boolean mIsAgent = false;
 	/** List of all items */
-	private List<MessagesAgentMenuItem> mMenuOrgItems;
-	private List<MessagesAgentMenuItem> mMenuAppItems;
+	private List<LeftMenuChildItem> mMenuOrgItems;
+	private List<LeftMenuChildItem> mMenuAppItems;
 	/** Adapter for agent menu */
-	private MessagesAgentMenuAdapter mMenuAdapter;
+	private LeftMenuAdapter mMenuAdapter;
 	/** Current Org */
 	private OrgItem mCurrentOrgItem;
 	/** Current App ID */
 	private String mCurrentAppId;
 	private RelativeLayout mMenuLayout;
 	/** The menu list view */
-	private ListView mMenuListView;
+	private ExpandableListView mMenuListView;
 	/** The menu view */
 	private DrawerLayout mMenu;
 	/** Current App */
@@ -214,34 +222,6 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 	private SettingsDialogFragment mSettingDialog;
 	private AppsListDialogFragment mAppsListDialog;
-
-	private AdapterView.OnItemClickListener mMenuClickListener = new AdapterView.OnItemClickListener() {
-		@Override
-		public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-			MessagesAgentMenuItem item = mMenuOrgItems.get(position);
-
-
-			if (mCurrentOrgItem.uid.equals(item.getValue())) {
-				return;
-			}
-
-			// Load new channel
-			mCurrentOrgItem = item.getOrg();
-			PreferenceUtil.saveLastOrgUid(MessagesActivity.this, mCurrentOrgItem.uid);
-
-			mTvOrgName.setText(mCurrentOrgItem.name);
-			mTvFunnel.setEnabled(true);
-			requestGetChannels();
-
-			// Update the view to loading
-			mMenu.closeDrawers();
-			mListView.setVisibility(View.GONE);
-			mProgressBar.setVisibility(View.VISIBLE);
-			mEmptyTextView.setVisibility(View.GONE);
-			mMenuAdapter.setSelectedOrg(mCurrentOrgItem.uid);
-			mMenuAdapter.notifyDataSetChanged();
-		}
-	};
 
 	/** POST /api/orgs */
 	private OkHttpApiRequest<GetOrgsResponseDto> mGetOrgsRequest;
@@ -260,6 +240,27 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 	/** Left menu Header*/
 	private View mMenuHeader;
+	private NetworkStateReceiver mNetworkStateReceiver;
+	private boolean isInternetConnecting = true;
+
+	/** ネットワークエラー表示タスク */
+	private final Runnable mShowNWErrorTask = new Runnable() {
+		@Override
+		public void run() {
+			showNWErrorLabel(isInternetConnecting);
+		}
+	};
+	/** ネットワークエラー非表示タスク */
+	private final Runnable mHideNWErrorTask = new Runnable() {
+		@Override
+		public void run() {
+			mNetworkErrorTextView.setVisibility(View.GONE);
+		}
+	};
+	private boolean mIsInit = true;
+
+	private ChannelFilterView.MessageFunnelItem mCurrentFilterFunnel;
+	private ChannelFilterView.MessageStatusItem mCurrentFilterStatus;
 
 	// //////////////////////////////////////////////////////////////////////////
 	// イベントメソッド
@@ -277,19 +278,23 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		setContentView(mIsAgent ? R.layout.messages_agent : R.layout.messages);
 
 		// 削除ボタン
-		mDeleteButton = (Button) findViewById(R.id.messages_delete_button);
-		mDeleteButton.setOnClickListener(this);
+		// mDeleteButton = (Button) findViewById(R.id.messages_delete_button);
+		// mDeleteButton.setOnClickListener(this);
 
 		mToolbar = (Toolbar) findViewById(R.id.toolbar);
-		mToolbar.setNavigationIcon(mIsAgent ? R.drawable.btn_menu : R.drawable.bt_close);
 		setSupportActionBar(mToolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setTitle("");
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		if (mIsAgent) {
+			mToolbar.setNavigationIcon(R.drawable.btn_menu);
+		} else {
+			getSupportActionBar().setDisplayShowHomeEnabled(true);
+		}
 
 		// 編集/キャンセルボタン
-		mEditButton = (Button) findViewById(R.id.messages_edit_button);
-		mEditButton.setOnClickListener(this);
-		mEditButton.setVisibility(View.GONE);
+		// mEditButton = (Button) findViewById(R.id.messages_edit_button);
+		// mEditButton.setOnClickListener(this);
+		// mEditButton.setVisibility(View.GONE);
 
 		// 0件メッセージ
 		mEmptyTextView = (TextView) findViewById(R.id.messages_empty_textview);
@@ -298,13 +303,15 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		mProgressBar = (LinearLayout) findViewById(R.id.messages_progressbar);
 
 		// ネットワークエラー
-		mNetoworkErrorTextView = (TextView) findViewById(R.id.messages_network_error_textview);
-		mNetoworkErrorTextView.setVisibility(View.GONE);
+		mNetworkErrorTextView = (TextView) findViewById(R.id.messages_network_error_textview);
+		mNetworkErrorTextView.setVisibility(View.GONE);
+		checkNetworkToStart();
 
 		// ListView
 		mListView = (ListView) findViewById(R.id.messages_listview);
 		mChannelItems = new ArrayList<>();
-		mAdapter = new MessagesAdapter(MessagesActivity.this, mChannelItems, AuthUtil.getUserId(MessagesActivity.this));
+		mAdapter = new MessagesAdapter(MessagesActivity.this, mChannelItems,
+				AuthUtil.getUserId(MessagesActivity.this), mIsAgent);
 		mListView.setAdapter(mAdapter);
 		mListView.setOnItemClickListener(this);
 		mListView.setOnScrollListener(this);
@@ -312,6 +319,9 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		mTvFunnel = (TextView) findViewById(R.id.tv_header_funnel);
 		mTvOrgName = (TextView) findViewById(R.id.tv_org_name);
 		mTvFunnel.setEnabled(false);
+		if (!mIsAgent) {
+			mTvFunnel.setVisibility(View.GONE);
+		}
 
 		ChatCenter.initChatCenter(this, null, null);
 
@@ -326,8 +336,34 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		mSwipeRefreshLayout.setColorSchemeResources(R.color.color_orange, R.color.color_green, R.color.color_blue);
 		mSwipeRefreshLayout.setOnRefreshListener(this);
 
-		// Get full user info
-		requestGetUsers(AuthUtil.getUserId(MessagesActivity.this));
+		mNetworkStateReceiver = new NetworkStateReceiver() {
+			@Override
+			public void onNetWorkConnected() {
+				isInternetConnecting = true;
+				mHandler.post(mShowNWErrorTask);
+				if (mReconnectTask != null) {
+					mHandler.post(mReconnectTask);
+				}
+			}
+
+			@Override
+			public void onNetWorkLost() {
+				isInternetConnecting = false;
+				mHandler.post(mShowNWErrorTask);
+				WebSocketHelper.disconnect();
+			}
+		};
+		IntentFilter netWorkStateFilter = new IntentFilter();
+		netWorkStateFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+		registerReceiver(mNetworkStateReceiver, netWorkStateFilter);
+
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		checkNetworkToStart();
+		WebSocketHelper.setListener(new WebSocketClientListener());
 	}
 
 	@Override
@@ -346,11 +382,27 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		mHandler.removeCallbacks(mReconnectTask);
 
 		// API のキャンセル
+		cancelAllRequest();
+	}
+
+	private void cancelAllRequest() {
 		mOkHttpClient.cancel(REQUEST_TAG);
 		mPostUsersAuthRequest = null;
 		mPostChannelsMineRequest = null;
 		mPostChannelsCloseRequest = null;
 		mGetUsersRequest = null;
+		mGetChannelsRequest = null;
+		mGetFunnelsRequest = null;
+		mGetOrgsRequest = null;
+		mGetAppsRequest = null;
+		mGetChannelsCountRequest = null;
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		unregisterReceiver(mNetworkStateReceiver);
+		WebSocketHelper.disconnect();
 	}
 
 	@Override
@@ -391,6 +443,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 	@Override
 	public void onClick(View view) {
+		/**
 		if (view.equals(mDeleteButton)) { // 削除ボタン
 
 			List<String> channelsUids = new ArrayList<>();
@@ -407,7 +460,8 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 			// モードの切り替え
 			toggleMode();
-		} else if (view.equals(mTvFunnel)) {
+		} else */
+		if (view.equals(mTvFunnel)) {
 			if (mChannelFilterWindow == null) {
 				mChannelFilterWindow = new PopupWindow(this);
 
@@ -425,6 +479,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 				mChannelFilterWindow.dismiss();
 			} else {
 				if (mCurrentOrgItem != null) {
+					PopupWindowCompat.showAsDropDown(mChannelFilterWindow, mToolbar, 0, 0, Gravity.CENTER_HORIZONTAL);
 					requestGetChannelCount(mCurrentOrgItem.uid);
 				}
 			}
@@ -434,14 +489,12 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	@Override
 	public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 
-		GetChannelsMineResponseDto.Item item = (GetChannelsMineResponseDto.Item) adapterView.getAdapter().getItem(position);
+		GetChannelsMineResponseDto.Channel item = (GetChannelsMineResponseDto.Channel) adapterView.getAdapter().getItem(position);
 
 		if (mListView.getChoiceMode() != ListView.CHOICE_MODE_MULTIPLE) { // 通常モード
-			disconnect();
-
             ChatParamDto chatParamDto = new ChatParamDto();
             chatParamDto.providerToken = mParamDto.providerToken;
-            chatParamDto.providerTokenTimestamp = mParamDto.providerTokenTimestamp;
+            chatParamDto.providerTokenCreatedAt = mParamDto.providerTokenCreateAt;
             chatParamDto.kissCd = item.orgUid;
             chatParamDto.channelUid = item.uid;
             chatParamDto.channelName = item.orgName;
@@ -451,7 +504,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 			// 「チャット」アクティビティの起動
 			Intent intent = new Intent(this, ChatActivity.class);
-			intent.putExtra(ChatParamDto.class.getCanonicalName(), chatParamDto);
+			intent.putExtra(ChatCenterConstants.Extra.CHAT_PARAM, chatParamDto);
 			intent.putExtra(ChatCenterConstants.Extra.IS_AGENT, mIsAgent);
 			intent.putExtra(ChatCenterConstants.Extra.ORG, mCurrentOrgItem);
 			intent.putExtra(ChatCenterConstants.Extra.APP, mCurrentApp);
@@ -493,15 +546,22 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * API にリクエストします。
 	 */
 	private void requestApis() {
+		if (!isInternetConnecting) {
+			return;
+		}
+
+		// Get full user info
+		requestGetUsers(AuthUtil.getUserId(MessagesActivity.this));
+
 		if (mIsInit) {
 			/*
 			 * 初回のみプログレスを表示します。
 			 */
 			mProgressBar.setVisibility(View.VISIBLE);
 			mIsInit = false;
-		}
+		 }
 
-        if (mParamDto.providerTokenTimestamp != AuthUtil.getProviderTokenTimestamp(getApplicationContext()) // トークン生成タイムスタンプが変わっている
+        if (mParamDto.providerTokenCreateAt != AuthUtil.getProviderTokenTimestamp(getApplicationContext()) // トークン生成タイムスタンプが変わっている
                 || StringUtil.isBlank(AuthUtil.getUserToken(getApplicationContext()))) { // Userトークンが無い
             // auth->mine
             requestPostUsersAuth();
@@ -511,7 +571,6 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			} else {
 				requestGetChannels();
 			}
-			requestGetFunnels();
 		} else {
 			requestGetChannelsMine();
         }
@@ -521,7 +580,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * POST /api/users/auth
 	 */
 	private void requestPostUsersAuth() {
-		if (mPostUsersAuthRequest != null) {
+		if (!isInternetConnecting || mPostUsersAuthRequest != null) {
 			return;
 		}
 
@@ -530,7 +589,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
         PostUsersAuthRequestDto postUsersAuthRequestDto = new PostUsersAuthRequestDto();
         postUsersAuthRequestDto.provider = mParamDto.provider;
         postUsersAuthRequestDto.providerToken = mParamDto.providerToken;
-        postUsersAuthRequestDto.setProviderTokenCreateAt(mParamDto.providerTokenTimestamp);
+        postUsersAuthRequestDto.setProviderTokenCreateAt(mParamDto.providerTokenCreateAt);
         postUsersAuthRequestDto.setProviderTokenExpires(mParamDto.providerTokenExpires);
         postUsersAuthRequestDto.deviceToken = mParamDto.deviceToken;
 		postUsersAuthRequestDto.email = mParamDto.email;
@@ -553,7 +612,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * @param lastUpdatedDate last updated date in epoch timestamp
 	 */
 	private void requestGetChannelsMine(int lastUpdatedDate) {
-		if (mPostChannelsMineRequest != null) {
+		if (!isInternetConnecting || mPostChannelsMineRequest != null) {
 			return;
 		}
 
@@ -581,7 +640,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * @param channelUids 削除対象のチャネルUID
 	 */
 	private void requestPostChannelsClose(List<String> channelUids) {
-		if (mPostChannelsCloseRequest != null) {
+		if (!isInternetConnecting || mPostChannelsCloseRequest != null) {
 			return;
 		}
 
@@ -614,28 +673,31 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		return true;
 	}
 
-	/**
-	 * ネットワークエラー表示し、再接続を行います。
-	 */
-	private void errorWithReconnect() {
-		// ネットワークエラー表示
-		mNetoworkErrorTextView.setVisibility(View.VISIBLE);
-		// 再接続
-		mHandler.postDelayed(mReconnectTask, 3000);
-	}
+//	/**
+//	 * ネットワークエラー表示し、再接続を行います。
+//	 */
+//	private void errorWithReconnect() {
+//		// ネットワークエラー表示
+//		mNetoworkErrorTextView.setVisibility(View.VISIBLE);
+//		// 再接続
+//		mHandler.postDelayed(mReconnectTask, 3000);
+//	}
 
 	/**
 	 * 編集モード/通常モードをトルグします。
 	 */
+	/**
 	private void toggleMode() {
 		editMode(mListView.getChoiceMode() != ListView.CHOICE_MODE_MULTIPLE);
 	}
+	 */
 
 	/**
 	 * 編集モード/通常モードにシフトします。
 	 *
 	 * @param editMode 編集モードの場合は true、通常モードの場合は false
 	 */
+	/**
 	private void editMode(boolean editMode) {
 		if (editMode) {
 			mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -651,10 +713,11 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			mDeleteButton.setVisibility(View.GONE);
 		}
 		mAdapter.notifyDataSetChanged();
-	}
+	}*/
 
 	@Override
 	public void onFunnelItemSelected(ChannelFilterView.MessageFunnelItem item) {
+		mCurrentFilterFunnel = item;
 		mCurrentFunnel = item;
 		mProgressBar.setVisibility(View.VISIBLE);
 		mChannelFilterWindow.dismiss();
@@ -665,6 +728,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 	@Override
 	public void onStatusItemSelected(ChannelFilterView.MessageStatusItem item) {
+		mCurrentFilterStatus = item;
 		mCurrentStatus = item;
 		mProgressBar.setVisibility(View.VISIBLE);
 		mChannelFilterWindow.dismiss();
@@ -717,7 +781,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 					mEmptyTextView.setVisibility(View.VISIBLE);
 				} else {
 					// エラー表示＆再接続
-					errorWithReconnect();
+					// errorWithReconnect();
 				}
 			}
 
@@ -731,7 +795,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			mPostUsersAuthRequest = null;
 
 			// 認証情報の保存
-			AuthUtil.saveTokens(MessagesActivity.this, mParamDto.providerTokenTimestamp, responseDto.token, responseDto.id);
+			AuthUtil.saveTokens(MessagesActivity.this, mParamDto.providerTokenCreateAt, responseDto.token, responseDto.id);
 
 			if (mIsAgent) {
 				requestGetApps();
@@ -758,7 +822,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 			if (!isAuthErrorWithAlert(error)) {
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 			if (mSwipeRefreshLayout.isRefreshing()) {
 				mSwipeRefreshLayout.setRefreshing(false);
@@ -771,15 +835,17 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			mGetChannelsRequest = null;
 
 			// リスト作成
-			List<GetChannelsMineResponseDto.Item> items = new ArrayList<>();
+			List<GetChannelsMineResponseDto.Channel> items = new ArrayList<>();
 			if (responseDto!= null) {
 				if (responseDto.items == null || responseDto.items.size() == 0) {
 					mMessagesLastPage = true;
 				} else {
-					for (GetChannelsMineResponseDto.Item item : responseDto.items) {
-//						if (item.isClosed()) {
-//							continue;
-//						}
+					for (GetChannelsMineResponseDto.Channel item : responseDto.items) {
+						if (mCurrentFilterStatus != null
+								&& mCurrentFilterStatus.value != ChannelItem.ChannelStatus.CHANNEL_CLOSE
+								&& item.isClosed()) {
+							continue;
+						}
 						items.add(item);
 					}
 				}
@@ -796,7 +862,24 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			} else if (!mIsLoadMore) {
 				mChannelItems.clear();
 			}
-			mChannelItems.addAll(items);
+
+
+			if (mCurrentFilterStatus != null
+					&& mCurrentFilterStatus.value == ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME) {
+				// add channels that assigned to me
+				for (GetChannelsMineResponseDto.Channel channel: items) {
+					if (channel.assignee.id.intValue() == AuthUtil.getUserId(MessagesActivity.this)) {
+						mChannelItems.add(channel);
+					}
+				}
+			} else {
+				mChannelItems.addAll(items);
+			}
+
+			if (mCurrentOrgItem == null) {
+				mCurrentOrgItem = new OrgItem();
+				mCurrentOrgItem.uid = mChannelItems.get(0).orgUid;
+			}
 
 			boolean isEdit;
 			isEdit = mAdapter.isEdit();
@@ -809,18 +892,32 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 				mEmptyTextView.setVisibility(View.VISIBLE);
 			} else {
 				mEmptyTextView.setVisibility(View.GONE);
-				mEditButton.setVisibility(mIsAgent ? View.GONE : View.VISIBLE);
+				// mEditButton.setVisibility(mIsAgent ? View.GONE : View.VISIBLE);
 			}
 
 			mProgressBar.setVisibility(View.GONE);
 			mListView.setVisibility(View.VISIBLE);
-			// ネットワークエラーの非表示
-			mNetoworkErrorTextView.setVisibility(View.GONE);
 
-			if (mIsAgent) {
-				// Connect to WebSocket
-				reconnectWithAppToken(mCurrentAppId);
+			//if (mIsAgent) {
+			// Connect to WebSocket
+			if (!WebSocketHelper.isConnected()) {
+				if (!mIsLoadMore) {
+					if (mCurrentAppId == null) {
+						mCurrentAppId = ApiUtil.getAppToken(MessagesActivity.this);
+					}
+					WebSocketHelper.connectWithAppToken(getApplicationContext(), mCurrentAppId, new WebSocketClientListener());
+				}
+			} else {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_green));
+						mNetworkErrorTextView.setText(R.string.internet_connected);
+					}
+				});
+				mHandler.postDelayed(mHideNWErrorTask, 1000);
 			}
+			//}
 
 			mAdapter.notifyDataSetChanged();
 
@@ -857,7 +954,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			// リストから削除
 			int count = mAdapter.getCount();
 			for (int i = count - 1; i >= 0; i--) {
-				GetChannelsMineResponseDto.Item item = mAdapter.getItem(i);
+				GetChannelsMineResponseDto.Channel item = mAdapter.getItem(i);
 				if (closeChannelUids.contains(item.uid)) {
 					mAdapter.remove(item);
 				}
@@ -866,10 +963,10 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 			if (mAdapter.getCount() == 0) {
 				mEmptyTextView.setVisibility(View.VISIBLE);
-				mEditButton.setVisibility(View.GONE);
+				// mEditButton.setVisibility(View.GONE);
 
 				// 通常モードに切り替え
-				editMode(false);
+				// editMode(false);
 			}
 		}
 	}
@@ -907,16 +1004,33 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	// Agents View
 	// //////////////////////////////////////////////////////////////////////////
 	private void prepareAgentMenu() {
+		final HashMap<LeftMenuGroupItem, List<LeftMenuChildItem>> menuItems = new HashMap<>();
+
+		// Create inbox group
+		LeftMenuGroupItem inboxItem = new LeftMenuGroupItem(R.drawable.icon_inbox, getString(R.string.inbox));
 		mMenuOrgItems = new ArrayList<>();
-		mMenuAdapter = new MessagesAgentMenuAdapter(getApplicationContext(), R.layout.item_menu_org, mMenuOrgItems);
+		menuItems.put(inboxItem, mMenuOrgItems);
+
+		// Menu adapter
+		mMenuAdapter = new LeftMenuAdapter(this, menuItems);
 
 		mMenuLayout = (RelativeLayout) findViewById(R.id.messages_drawer_menu);
-		mMenuListView = (ListView) findViewById(R.id.menu_list_view);
+		mMenuListView = (ExpandableListView) findViewById(R.id.menu_list_view);
 		if (mMenuListView == null) {
 			return;
 		}
 		mMenuListView.setAdapter(mMenuAdapter);
-		mMenuListView.setOnItemClickListener(mMenuClickListener);
+
+		// Expand Inbox group
+		mMenuListView.expandGroup(0);
+		mMenuListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+				LeftMenuChildItem menuItem = menuItems.get(menuItems.keySet().toArray()[groupPosition]).get(childPosition);
+				changeOrg(menuItem);
+				return false;
+			}
+		});
 
 		mMenu = (DrawerLayout) findViewById(R.id.messages_drawer);
 
@@ -993,7 +1107,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	}
 
 	private void updateCurrentAppName() {
-		if (mCurrentApp == null)
+		if (!isInternetConnecting || mCurrentApp == null)
 			return;
 
 		TextView tvCurrentAppName = (TextView) mMenuHeader.findViewById(R.id.tv_current_app);
@@ -1002,10 +1116,10 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 		tvCurrentAppName.setText(mCurrentApp.name);
 
-		if (StringUtil.isNotBlank(mCurrentApp.iconUrl)) {
+		if (mCurrentApp.icons != null && mCurrentApp.icons.size() > 0) {
 			tvAppAva.setVisibility(View.GONE);
 			imvAppAva.setVisibility(View.VISIBLE);
-			ViewUtil.loadRoundedCornersImage(imvAppAva, mCurrentApp.iconUrl,
+			ViewUtil.loadRoundedCornersImage(imvAppAva, mCurrentApp.icons.get(0).iconUrl,
 					getResources().getDimensionPixelSize(R.dimen.left_menu_app_icon_radius));
 		} else {
 			tvAppAva.setVisibility(View.VISIBLE);
@@ -1014,7 +1128,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			tvAppAva.setText(mCurrentApp.name.toUpperCase().substring(0, 1));
 
 			GradientDrawable gradientDrawable = (GradientDrawable) tvAppAva.getBackground();
-			gradientDrawable.setColor(ViewUtil.getIconColor(mCurrentApp.uid));
+			gradientDrawable.setColor(ViewUtil.getIconColor(mCurrentApp.token));
 		}
 	}
 
@@ -1022,7 +1136,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * GET /api/orgs
 	 */
 	private void requestGetOrgs(boolean cleanOldOrgs) {
-		if (mGetOrgsRequest != null) {
+		if (!isInternetConnecting || mGetOrgsRequest != null) {
 			return;
 		}
 
@@ -1043,7 +1157,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * GET /api/orgs
 	 */
 	private void requestGetOrgForMenuUpdating() {
-		if (mGetOrgsRequest != null) {
+		if (!isInternetConnecting || mGetOrgsRequest != null) {
 			return;
 		}
 
@@ -1062,7 +1176,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * GET /api/apps
 	 */
 	private void requestGetApps() {
-		if (mGetAppsRequest != null) {
+		if (!isInternetConnecting || mGetAppsRequest != null) {
 			return;
 		}
 
@@ -1081,7 +1195,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * GET /api/channels
 	 */
 	private void requestGetChannels(int lastUpdatedDate) {
-		if (mGetChannelsRequest != null || mCurrentOrgItem == null) {
+		if (!isInternetConnecting || mGetChannelsRequest != null || mCurrentOrgItem == null) {
 			return;
 		}
 
@@ -1116,7 +1230,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	/** GET /api/channels/count*/
 
 	private void requestGetChannelCount(String orgUid) {
-		if (mGetChannelsCountRequest != null) {
+		if (!isInternetConnecting || mGetChannelsCountRequest != null) {
 			return;
 		}
 
@@ -1138,7 +1252,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * GET /api/funnels
 	 */
 	private void requestGetFunnels() {
-		if (mGetFunnelsRequest != null) {
+		if (!isInternetConnecting || mGetFunnelsRequest != null) {
 			return;
 		}
 
@@ -1149,6 +1263,8 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 		mGetFunnelsRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.GET, path, null, headers,
 				new GetFunnelsCallback(), new GetFunnelsParser());
+		mGetFunnelsRequest.setApiToken(mCurrentAppId);
+
 		NetworkQueueHelper.enqueue(mGetFunnelsRequest, REQUEST_TAG);
 	}
 
@@ -1156,7 +1272,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 * GET /api/users/:id
 	 */
 	private void requestGetUsers(int userId) {
-		if (mGetUsersRequest != null) {
+		if (!isInternetConnecting || mGetUsersRequest != null) {
 			return;
 		}
 
@@ -1170,48 +1286,6 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			mGetUsersRequest.setApiToken(mCurrentApp.token);
 		}
 		NetworkQueueHelper.enqueue(mGetUsersRequest, REQUEST_TAG);
-	}
-
-	public static class MessagesAgentMenuItem {
-		private String mValue;
-		private String mDisplayText;
-		private OrgItem mOrg;
-		private GetAppsResponseDto.App mApp;
-
-		public MessagesAgentMenuItem(String displaText, String value, OrgItem orgItem, GetAppsResponseDto.App app) {
-			this.mValue = value;
-			this.mDisplayText = displaText;
-			this.mOrg = orgItem;
-			this.mApp = app;
-		}
-
-		public String getValue() {
-			return mValue;
-		}
-
-		public void setValue(String value) {
-			mValue = value;
-		}
-
-		public String getDisplayText() {
-			return mDisplayText;
-		}
-
-		public void setDisplayText(String displayText) {
-			mDisplayText = displayText;
-		}
-
-		public OrgItem getOrg() {
-			return mOrg;
-		}
-
-		public void setOrg(OrgItem org) {
-			this.mOrg = org;
-		}
-
-		public GetAppsResponseDto.App getApp() {
-			return mApp;
-		}
 	}
 
 	private class GetOrgsCallback implements OkHttpApiRequest.Callback<GetOrgsResponseDto> {
@@ -1231,7 +1305,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			// Add the Orgs before apps
 			int currentSize = mMenuOrgItems.size();
 			for (OrgItem item : responseDto.items) {
-				mMenuOrgItems.add(mMenuOrgItems.size() - currentSize, new MessagesAgentMenuItem(item.name, item.uid, item, null));
+				mMenuOrgItems.add(mMenuOrgItems.size() - currentSize, new LeftMenuChildItem(item.name, item.uid, item, null));
 			}
 
 			// Update data
@@ -1266,7 +1340,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			mGetOrgsRequest = null;
 			if (!isAuthErrorWithAlert(error)) {
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 		}
 	}
@@ -1287,7 +1361,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 						mMenuOrgItems.get(position).getOrg().unreadMessagesChannels.addAll(item.unreadMessagesChannels);
 					}
 				} else {
-					mMenuOrgItems.add(new MessagesAgentMenuItem(item.name, item.uid, item, mCurrentApp));
+					mMenuOrgItems.add(new LeftMenuChildItem(item.name, item.uid, item, mCurrentApp));
 				}
 			}
 
@@ -1314,7 +1388,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			}
 
 			for (GetAppsResponseDto.App item : responseDto.items) {
-				mMenuAppItems.add(new MessagesAgentMenuItem(item.name, item.token, null, item));
+				mMenuAppItems.add(new LeftMenuChildItem(item.name, item.token, null, item));
 			}
 
 			// Get last configuration for App and Org
@@ -1333,12 +1407,13 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			}
 
 			requestGetOrgs(false);
+			requestGetFunnels();
 
 			// Now we register this device token
 			ChatCenter.registerDeviceToken(MessagesActivity.this, mCurrentAppId, null);
 
 			// Connect with the newly acquired app token
-			reconnectWithAppToken(mCurrentAppId);
+			WebSocketHelper.reconnectWithAppToken(getApplicationContext(), mCurrentAppId, new WebSocketClientListener());
 
 			// Update current App Name
 			updateCurrentAppName();
@@ -1355,7 +1430,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			mGetAppsRequest = null;
 			if (!isAuthErrorWithAlert(error)) {
 				// エラー表示＆再接続
-				errorWithReconnect();
+				// errorWithReconnect();
 			}
 		}
 	}
@@ -1398,43 +1473,35 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	// ===================================================================================
 	// WebSocket support
 	// ===================================================================================
-	private CCWebSocketClient mWebSocketClient;
-	public void connectWithAppToken(String appToken) {
-		String url = ApiUtil.getWsUrl(this) + "/?authentication="
-				+ AuthUtil.getUserToken(getApplicationContext()) + "&app_token=" + appToken; //;
-		mWebSocketClient = new CCWebSocketClient(this, url, new WebSocketClientListener());
-		mWebSocketClient.connect();
-	}
-
-	public void reconnectWithAppToken(String appToken) {
-		if (mWebSocketClient != null && mWebSocketClient.isConnected()) {
-			mWebSocketClient.disconnect();
-		}
-		connectWithAppToken(appToken);
-	}
-
-	public void disconnect() {
-		if (mWebSocketClient != null && mWebSocketClient.isConnected()) {
-			mWebSocketClient.disconnect();
-		}
-	}
 
 	private class WebSocketClientListener extends CCWebSocketClientListener {
 
 		@Override
 		public void onWSConnect() {
+			Log.d(TAG, "onWSConnect: ");
+
+			if (mChannelItems != null && mChannelItems.size() > 0) {
+				WsConnectChannelRequest wsConnectChannelRequest = new WsConnectChannelRequest();
+				wsConnectChannelRequest.channelUid = mChannelItems.get(0).uid;
+
+				WebSocketHelper.send(wsConnectChannelRequest.toJson());
+			}
+
+
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					// ネットワークエラーの非表示
-					mNetoworkErrorTextView.setVisibility(View.GONE);
+					mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_green));
+					mNetworkErrorTextView.setText(R.string.internet_connected);
 				}
 			});
+			mHandler.postDelayed(mHideNWErrorTask, 1000);
 		}
 
 		@Override
 		public void onWSDisconnect(int code, String reason) {
 			// Do nothing
+			Log.d(TAG, "onWSDisconnect: " + code + " " + reason);
 		}
 
 		@Override
@@ -1450,6 +1517,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 		@Override
 		public void onWSMessage(final WsMessagesResponseDto response, final String messageType) {
+			Log.d(TAG, "onWSMessage: " + messageType + " " + mCurrentOrgItem + " " + response.orgUid);
 			// Do nothing
 			runOnUiThread(new Runnable() {
 				@Override
@@ -1459,8 +1527,8 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 						return;
 					}
 
-					GetChannelsMineResponseDto.Item found = null;
-					for (GetChannelsMineResponseDto.Item item : mChannelItems) {
+					GetChannelsMineResponseDto.Channel found = null;
+					for (GetChannelsMineResponseDto.Channel item : mChannelItems) {
 						if (!item.uid.equals(response.channelUid)) {
 							continue;
 						}
@@ -1471,18 +1539,24 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 						break;
 					}
 
-					if (found == null || found.latestMessage.id.equals(response.id)) {
+					if (found == null || (found.latestMessage != null && found.latestMessage.id.equals(response.id))) {
 						return;
 					}
 
-					found.latestMessage = new GetChannelsMineResponseDto.Item.LatestMessage();
-					found.latestMessage.id = response.id;
-					found.latestMessage.type = response.type;
-					found.latestMessage.widget.text = response.widget.text;
-					found.latestMessage.created = response.created;
-					found.latestMessage.user = response.user;
-					found.unreadMessages += 1;
-					mAdapter.notifyDataSetChanged();
+					if (ResponseType.SUGGESTION.equals(response.type) || ResponseType.RESPONSE.equals(response.type)
+							&& response.widget != null && StringUtil.isNotBlank(response.widget.stickerType)
+							&& response.widget.stickerType.equals("co-location")) {
+						// Do nothing
+					} else {
+						found.latestMessage = new GetChannelsMineResponseDto.Channel.LatestMessage();
+						found.latestMessage.id = response.id;
+						found.latestMessage.type = response.type;
+						found.latestMessage.widget = response.widget;
+						found.latestMessage.created = response.created;
+						found.latestMessage.user = response.user;
+						found.unreadMessages += 1;
+						mAdapter.notifyDataSetChanged();
+					}
 				}
 			});
 		}
@@ -1501,7 +1575,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 				@Override
 				public void run() {
 					boolean old = false;
-					for (GetChannelsMineResponseDto.Item item : mChannelItems) {
+					for (GetChannelsMineResponseDto.Channel item : mChannelItems) {
 						if (!item.uid.equals(response.uid)) {
 							continue;
 						}
@@ -1536,7 +1610,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		public void onSuccess(GetChannelsCountResponseDto responseDto) {
 			mGetChannelsCountRequest = null;
 			((ChannelFilterView)mChannelFilterWindow.getContentView()).updateData(responseDto);
-			PopupWindowCompat.showAsDropDown(mChannelFilterWindow, mToolbar, 0, 0, Gravity.CENTER_HORIZONTAL);
+
 		}
 
 		/**
@@ -1564,9 +1638,11 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		public void onSuccess(GetFunnelResponseDto responseDto) {
 			mGetFunnelsRequest = null;
 
-			if (responseDto != null && responseDto.funnels != null) {
+			if (responseDto != null) {
 				mFunnelItems.clear();
-				mFunnelItems.addAll(responseDto.funnels);
+				if (responseDto.funnels != null) {
+					mFunnelItems.addAll(responseDto.funnels);
+				}
 			}
 
 		}
@@ -1586,17 +1662,35 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			LayoutInflater inflater = getActivity().getLayoutInflater();
 
 			View dialogCustomView = inflater.inflate(R.layout.dialog_settings, null);
+			Button openDashboard = (Button) dialogCustomView.findViewById(R.id.btn_open_dashboard);
 			Button logout = (Button) dialogCustomView.findViewById(R.id.btn_logout);
 			Button cancel = (Button) dialogCustomView.findViewById(R.id.btn_cancel);
+			Button about = (Button) dialogCustomView.findViewById(R.id.btn_about);
 			TextView title = (TextView) dialogCustomView.findViewById(R.id.tv_title);
 
 			title.setText(String.format(title.getText().toString(), mActivity.getLibVersion()));
+
+			openDashboard.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mActivity.mSettingDialog.dismiss();
+					mActivity.openDashboard();
+				}
+			});
 
 			logout.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					mActivity.mSettingDialog.dismiss();
 					mActivity.logout();
+				}
+			});
+
+			about.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mActivity.mSettingDialog.dismiss();
+					mActivity.showAboutChatCenter();
 				}
 			});
 
@@ -1611,6 +1705,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 			Dialog dialog = builder.create();
 			dialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 			dialog.getWindow().setGravity(Gravity.BOTTOM);
+			dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 			return dialog;
 		}
 	}
@@ -1618,7 +1713,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	public static class AppsListDialogFragment extends DialogFragment {
 		public static final String TAG = "AppsListDialogFragment";
 
-		public List<MessagesAgentMenuItem> mItems;
+		public List<LeftMenuChildItem> mItems;
 		public MessagesActivity mActivity;
 		public MenuAppsAdapter mAdapter;
 
@@ -1660,10 +1755,8 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
 	}
 
-	private void changeApp(MessagesAgentMenuItem item) {
-		if (mGetOrgsRequest != null || mGetChannelsRequest != null) {
-			return;
-		}
+	private void changeApp(LeftMenuChildItem item) {
+		cancelAllRequest();
 
 		mCurrentAppId = item.getValue();
 		PreferenceUtil.saveLastAppId(MessagesActivity.this, mCurrentAppId);
@@ -1679,17 +1772,24 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		mEmptyTextView.setVisibility(View.GONE);
 
 		// Now, connect to this app
-		reconnectWithAppToken(mCurrentAppId);
+		WebSocketHelper.reconnectWithAppToken(getApplicationContext(), mCurrentAppId, new WebSocketClientListener());
 		ChatCenter.registerDeviceToken(this, mCurrentAppId, null);
 
 		updateCurrentAppName();
+
+		// Request to recreate filter windows.
+		if (mChannelFilterWindow != null && mChannelFilterWindow.isShowing()) {
+			mChannelFilterWindow.dismiss();
+		}
+		mChannelFilterWindow = null;
+		requestGetFunnels();
 	}
 
-	private class MenuAppsAdapter extends ArrayAdapter<MessagesAgentMenuItem> {
+	private class MenuAppsAdapter extends ArrayAdapter<LeftMenuChildItem> {
 
-		private List<MessagesAgentMenuItem> mItems;
+		private List<LeftMenuChildItem> mItems;
 
-		public MenuAppsAdapter(Context context, int resource, List<MessagesAgentMenuItem> objects) {
+		public MenuAppsAdapter(Context context, int resource, List<LeftMenuChildItem> objects) {
 			super(context, resource, objects);
 			mItems = objects;
 		}
@@ -1698,13 +1798,13 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		public View getView(int position, View convertView, ViewGroup parent) {
 
 			TextView textView = new TextView(MessagesActivity.this);
-			ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+			AbsListView.LayoutParams layoutParams = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 					(int) convertDpToPixel(40, getContext()));
 
 			textView.setLayoutParams(layoutParams);
 
 
-			MessagesAgentMenuItem item = getItem(position);
+			LeftMenuChildItem item = getItem(position);
 
 			if (item.getApp().id == mCurrentApp.id) {
 				textView.setTypeface(null, Typeface.BOLD);
@@ -1720,7 +1820,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		}
 
 		@Override
-		public MessagesAgentMenuItem getItem(int position) {
+		public LeftMenuChildItem getItem(int position) {
 			return mItems.get(position);
 		}
 
@@ -1735,12 +1835,14 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 	 */
 	private void logout() {
 		ChatCenter.signOutAgent(MessagesActivity.this);
-		Intent intent = new Intent(MessagesActivity.this, ChatCenter.getTopActivity().getClass());
-		startActivity(intent);
+		if (ChatCenter.getTopActivity() != null) {
+			Intent intent = new Intent(MessagesActivity.this, ChatCenter.getTopActivity().getClass());
+			startActivity(intent);
+		}
 		finish();
 	}
 
-	private int getOrgPositionOnMenu(OrgItem org, List<MessagesAgentMenuItem> menuItems) {
+	private int getOrgPositionOnMenu(OrgItem org, List<LeftMenuChildItem> menuItems) {
 
 		if (menuItems != null && menuItems.size() > 0) {
 			for (int i = 0; i < menuItems.size(); i++) {
@@ -1761,5 +1863,60 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		}
 
 		return "";
+	}
+
+	private void changeOrg(LeftMenuChildItem menuItem) {
+		if (mCurrentOrgItem.uid.equals(menuItem.getValue())) {
+			return;
+		}
+
+		// Load new channel
+		mCurrentOrgItem = menuItem.getOrg();
+		PreferenceUtil.saveLastOrgUid(MessagesActivity.this, mCurrentOrgItem.uid);
+
+		mTvOrgName.setText(mCurrentOrgItem.name);
+		mTvFunnel.setEnabled(true);
+		requestGetChannels();
+
+		// Update the view to loading
+		mMenu.closeDrawers();
+		mListView.setVisibility(View.GONE);
+		mProgressBar.setVisibility(View.VISIBLE);
+		mEmptyTextView.setVisibility(View.GONE);
+		mMenuAdapter.setSelectedOrg(mCurrentOrgItem.uid);
+		mMenuAdapter.notifyDataSetChanged();
+	}
+
+	private void checkNetworkToStart() {
+		if (!isNetworkAvailable()) {
+			isInternetConnecting = false;
+			if (mHandler != null) {
+				mHandler.post(mShowNWErrorTask);
+			}
+			mProgressBar.setVisibility(View.GONE);
+		}
+	}
+
+	private void showNWErrorLabel(boolean isConnecting) {
+		if (isConnecting) {
+			mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_orange));
+			mNetworkErrorTextView.setText(R.string.connecting);
+		} else {
+			mNetworkErrorTextView.setBackgroundColor(getResources().getColor(R.color.color_chatcenter_text_red));
+			mNetworkErrorTextView.setText(R.string.chat_network_error_message);
+		}
+
+		mNetworkErrorTextView.setVisibility(View.VISIBLE);
+	}
+
+	public void showAboutChatCenter() {
+		Intent intent = new Intent(MessagesActivity.this, AboutActivity.class);
+		startActivity(intent);
+	}
+
+	public void openDashboard() {
+		Intent intent = new Intent(this, WebViewActivity.class);
+		intent.putExtra(ChatCenterConstants.Extra.URL, ChatCenterConstants.URL_DASHBOARD);
+		startActivity(intent);
 	}
 }

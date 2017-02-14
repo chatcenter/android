@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:custom="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:background="#fff"
-              android:paddingTop="4dp"
-              android:orientation="vertical">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#fff"
+    android:orientation="vertical"
+    android:paddingTop="4dp">
 
     <!-- タイムスタンプ -->
     <TextView
@@ -27,17 +28,17 @@
         android:textColor="@color/color_chatcenter_text"
         android:textSize="11sp"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:layout_below="@+id/chat_customer_listitem_timestamp_textview">
+        android:gravity="bottom"
+        android:orientation="horizontal">
 
         <RelativeLayout
+            android:id="@+id/user_ava_container"
             android:layout_width="@dimen/chat_list_user_ava_size"
-            android:layout_height="@dimen/chat_list_user_ava_size"
-            android:layout_alignParentBottom="true"
-            android:id="@+id/user_ava_container">
+            android:layout_height="@dimen/chat_list_user_ava_size">
             <!-- アイコンテキスト -->
             <TextView
                 android:id="@+id/chat_client_listitem_icon_textview"
@@ -59,9 +60,7 @@
 
         <LinearLayout
             android:id="@+id/chat_customer_listitem_message_container"
-            style="@style/common_customer_sticker_view"
-            android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/user_ava_container">
+            style="@style/common_customer_sticker_view">
             <!-- メッセージ -->
             <ly.appsocial.chatcenter.widgets.views.WidgetView
                 android:id="@+id/chat_client_listitem_sticker"
@@ -71,12 +70,12 @@
                 custom:actionTextColor="@drawable/selector_action_button_text_color"
                 custom:backgroundConfirmNegative="@drawable/selector_action_confirm_left"
                 custom:backgroundConfirmPositive="@drawable/selector_action_confirm_right"
+                custom:backgroundMain="@drawable/bg_client_common_sticker"
                 custom:backgroundSelect="@drawable/selector_action_select"
                 custom:backgroundSelectLast="@drawable/selector_action_select_last"
-                custom:textColor="@color/color_chatcenter_widget_text"
-                custom:backgroundMain="@drawable/bg_client_common_sticker">
+                custom:textColor="@color/color_chatcenter_widget_text">
             </ly.appsocial.chatcenter.widgets.views.WidgetView>
         </LinearLayout>
 
-    </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

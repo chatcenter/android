@@ -46,6 +46,7 @@
         android:background="@android:color/transparent"
         android:text="@string/cancel"
         android:textColor="@color/color_chatcenter_text_red"
+        android:textAllCaps="false"
         android:textStyle="bold"/>
 
 </LinearLayout>

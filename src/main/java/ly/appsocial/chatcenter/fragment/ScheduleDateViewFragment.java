@@ -33,6 +33,7 @@ public class ScheduleDateViewFragment extends Fragment implements ZoomableView.O
     private ListView mHouView;
 
     private ScheduleTimeViewListener mListener;
+    private ScheduleActivity.ScheduleDate mScheduleDate;
 
     private ScheduleDateViewFragment() {
     }
@@ -40,9 +41,10 @@ public class ScheduleDateViewFragment extends Fragment implements ZoomableView.O
     public static ScheduleDateViewFragment newInstance(ScheduleActivity.ScheduleDate date, ScheduleTimeViewListener listener) {
         ScheduleDateViewFragment fragment = new ScheduleDateViewFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_SCHEDULE_DATE, date);
+
         fragment.mListener = listener;
-        fragment.setArguments(args);
+        fragment.mCurrentSelectedDate = date;
+
         return fragment;
     }
 

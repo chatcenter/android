@@ -5,6 +5,8 @@ package ly.appsocial.chatcenter.constants;
  */
 public class ChatCenterConstants {
 
+	public static final String URL_DASHBOARD = "https://app.chatcenter.io";
+
 	/**
 	 * プリファレンスキー
 	 */
@@ -37,6 +39,7 @@ public class ChatCenterConstants {
 		public static final String APP = "app";
 		public static final String ACTIVITY_TITLE = "activity_title";
 		public static final String FUNNEL_LIST = "funnel_list";
+		public static final String CHAT_PARAM = "chat_param";
 	}
 
 	public static class StickerName {
@@ -74,6 +77,8 @@ public class ChatCenterConstants {
 	public static class LocationService {
 		public static final String START = "location_start";
 		public static final String STOP = "location_stop";
+		public static final String STOP_ALL = "location_stop_all";
+		public static final String UPDATE = "location_update";
 	}
 
 	public static class BroadcastAction {
@@ -83,4 +88,10 @@ public class ChatCenterConstants {
 	}
 
 	public static final String PUSH_CATEGORY = "chat message";
+
+	public static class QuestionWidget {
+		public static final int TITLE_MAX_LENGTH = 100;
+		public static final int QUESTION_MAX_LENGTH = 100;
+		public static final int MAX_CHOICE = 10;
+	}
 }

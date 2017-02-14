@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ly.appsocial.chatcenter.BuildConfig;
@@ -46,6 +47,7 @@ import ly.appsocial.chatcenter.ws.ApiRequest;
 import ly.appsocial.chatcenter.ws.CCWebSocketClient;
 import ly.appsocial.chatcenter.ws.CCWebSocketClientListener;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
+import ly.appsocial.chatcenter.ws.WebSocketHelper;
 
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_ACCEPT;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_HANGUP;
@@ -75,7 +77,6 @@ public class VideoChatActivity extends BaseActivity {
 	ProgressDialog progressDialog;
 
 	/** WebSocket */
-	private CCWebSocketClient mWebSocketClient;
 	private Handler mHandler = new Handler();
 
 
@@ -87,7 +88,7 @@ public class VideoChatActivity extends BaseActivity {
 		Intent intent = getIntent();
 		mIsCalling = intent.getBooleanExtra("isCalling", false);
 		mChannelUid = intent.getStringExtra(ChatCenterConstants.Extra.CHANNEL_UID);
-		mParamDto = getIntent().getParcelableExtra(ChatParamDto.class.getSimpleName());
+		mParamDto = getIntent().getParcelableExtra(ChatCenterConstants.Extra.CHAT_PARAM);
 		mMessageId = intent.getStringExtra("message_id");
 		mOnlyVoice = intent.getBooleanExtra("audioOnly", false);
 
@@ -95,10 +96,7 @@ public class VideoChatActivity extends BaseActivity {
 		String appToken = ApiUtil.getAppToken(this);
 		appToken = (appToken == null || appToken.isEmpty() ) ? mParamDto.appToken : appToken;
 
-		String url = ApiUtil.getWsUrl(this) + "/?authentication="
-				+ AuthUtil.getUserToken(getApplicationContext()) + "&app_token=" + appToken; //;
-		mWebSocketClient = new CCWebSocketClient(VideoChatActivity.this, url, new VideoChatActivity.WebSocketClientListener());
-		mWebSocketClient.connect();
+		WebSocketHelper.connectWithAppToken(getApplicationContext(), appToken, new WebSocketClientListener());
 
 
 		if ( mIsCalling ){
@@ -113,15 +111,6 @@ public class VideoChatActivity extends BaseActivity {
 	@Override
 	protected void onStop() {
 		super.onStop();
-
-		// WebSocket の切断
-		CCWebSocketClient.Listener listener;
-		if (mWebSocketClient != null && (listener = mWebSocketClient.getListener()) != null) {
-			((VideoChatActivity.WebSocketClientListener) listener).cancel();
-			// TODO: onError: java.net.SocketException: Socket closed になる。
-			mWebSocketClient.disconnect();
-		}
-
 		// API のキャンセル
 		mOkHttpClient.cancel(REQUEST_TAG);
 	}
@@ -376,7 +365,7 @@ public class VideoChatActivity extends BaseActivity {
 			// Request join channel
 			WsConnectChannelRequest wsConnectChannelRequest = new WsConnectChannelRequest();
 			wsConnectChannelRequest.channelUid = mChannelUid;
-			mWebSocketClient.send(wsConnectChannelRequest.toJson());
+			WebSocketHelper.send(wsConnectChannelRequest.toJson());
 		}
 
 		@Override
@@ -393,7 +382,8 @@ public class VideoChatActivity extends BaseActivity {
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					if (!mChannelUid.equals(response.channelUid)) {
+					if (response == null || !mChannelUid.equals(response.channelUid)
+							|| response.widget == null || !(response.widget instanceof VideoCallWidget)) {
 						/*
 						 * 自身の他のチャネルも送られるのでスキップします。
 						 */
@@ -407,10 +397,11 @@ public class VideoChatActivity extends BaseActivity {
 						int currentUserId = AuthUtil.getUserId(getApplicationContext());
 
 						for ( VideoCallWidget.VideoCallEvent event : widget.events){
-							if ( event.content != null ){
-								if ( (event.content.action.equals(VIDEO_CALL_ACTION_REJECT)
-										|| event.content.action.equals(VIDEO_CALL_ACTION_HANGUP))){
+							if ( event.content != null && event.content.action != null ){
+								if (event.content.action.equals(VIDEO_CALL_ACTION_REJECT)){
 									// Caller canceled call
+									handleReject(widget, event);
+								} else if (event.content.action.equals(VIDEO_CALL_ACTION_HANGUP)) {
 									closeActivity();
 									break;
 								} else if ( caller.userId != currentUserId
@@ -447,6 +438,36 @@ public class VideoChatActivity extends BaseActivity {
 			// Do nothing
 		}
 
+	}
+
+	private void handleReject(VideoCallWidget widget, VideoCallWidget.VideoCallEvent event) {
+		boolean needToCloseActivity = false;
+		int currentUserId = AuthUtil.getUserId(getApplicationContext());
+		VideoCallWidget.VideoCallUser caller = widget.caller;
+		VideoCallWidget.VideoCallUser rejectedUser = event.content.user;
+		List<VideoCallWidget.VideoCallUser> receivers = widget.receivers;
+
+		// case 1: if reject event from caller or current user -> close activity
+		if (caller == null || rejectedUser.userId == caller.userId
+				|| rejectedUser.userId == currentUserId || receivers == null) {
+			needToCloseActivity = true;
+		} else {
+			// Case 2: all receiver rejected
+			for (VideoCallWidget.VideoCallUser receiver: receivers) {
+				if (receiver.userId == rejectedUser.userId) {
+					receivers.remove(receiver);
+					break;
+				}
+			}
+
+			if (receivers.size() == 0) {
+				needToCloseActivity = true;
+			}
+		}
+
+		if (needToCloseActivity) {
+			closeActivity();
+		}
 	}
 
 }

@@ -79,17 +79,18 @@
             android:name=".activity.FixedPhraseActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
-            android:theme="@style/ChatCenterTheme.Slide"/>
+            android:theme="@style/ChatCenterTheme.PullUp"/>
         <activity
             android:name=".activity.ScheduleActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
-            android:theme="@style/ChatCenterTheme.Slide"/>
+            android:theme="@style/ChatCenterTheme.PullUp"/>
         <activity
             android:name=".activity.QuestionActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
-            android:theme="@style/ChatCenterTheme.Slide"/>
+            android:theme="@style/ChatCenterTheme.PullUp"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".activity.PreviewActivity"
             android:configChanges="orientation|screenSize"
@@ -133,7 +134,7 @@
             android:name=".activity.ShareLocationActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
-            android:theme="@style/ChatCenterTheme.Slide">
+            android:theme="@style/ChatCenterTheme.PullUp">
         </activity>
     </application>
 

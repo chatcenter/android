@@ -1,6 +1,7 @@
 package ly.appsocial.chatcenter.widgets;
 
 import android.content.Context;
+import android.os.Build;
 import android.view.View;
 
 import com.google.gson.annotations.SerializedName;
@@ -11,6 +12,8 @@ import java.util.List;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.dto.UserItem;
+import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
 
 /**
@@ -76,11 +79,21 @@ public class VideoCallWidget extends BasicWidget {
 	@Override
 	public void setupWidgetView(WidgetView widgetView, Context context){
 		StringBuilder text;
-		if ( this.receivers != null && this.receivers.size() > 0 && !this.receivers.get(0).displayName.isEmpty() ) {
+		String caller;
+		String receiver;
+		int currentUserId = AuthUtil.getUserId(context);
+		String callerName = this.caller.displayName + context.getString(R.string.person_name_suffix);
+		String receiverName = this.receivers.get(0).displayName;
+		String yourDisplayName = context.getString(R.string.you).replace(":", "");
+		if ( this.receivers != null && this.receivers.size() > 0
+				&& StringUtil.isNotBlank(this.receivers.get(0).displayName)) {
+			caller = this.caller.userId == currentUserId ? yourDisplayName : callerName;
+			receiver = this.receivers.get(0).userId == currentUserId ? yourDisplayName : receiverName;
 			text = new StringBuilder(String.format(context.getString(R.string.sticker_video_call_title),
-					this.caller.displayName, this.receivers.get(0).displayName ));
-		} else if ( this.caller.displayName != null && !this.caller.displayName.isEmpty() ){
-			text = new StringBuilder(String.format(context.getString(R.string.sticker_video_call_now), this.caller.displayName));
+					caller, receiver ));
+		} else if ( this.caller.displayName != null && StringUtil.isNotBlank(this.caller.displayName) ){
+			caller = this.caller.userId == currentUserId ? yourDisplayName : callerName;
+			text = new StringBuilder(String.format(context.getString(R.string.sticker_video_call_now), caller));
 		} else {
 			text = new StringBuilder();
 		}
@@ -105,11 +118,15 @@ public class VideoCallWidget extends BasicWidget {
 					int seconds = callingTime % 60;
 					text.append(String.format(context.getString(R.string.sticker_video_call_time), minutes, seconds));
 				}
+			} else if (content == null || StringUtil.isBlank(content.action)){
+				text.append(context.getString(R.string.sticker_video_call_missed));
 			}
+		} else if (this.events == null || this.events.size() == 0) {
+			text.append(context.getString(R.string.sticker_video_call_missed));
 		}
 
 		widgetView.setText(text.toString());
-		widgetView.getImageView().setVisibility(View.GONE);
+		widgetView.getWidgetImageView().setVisibility(View.GONE);
 		// Hide action first, it will be shown later
 		widgetView.showConfirmActions(false);
 		widgetView.showSelectActions(false);

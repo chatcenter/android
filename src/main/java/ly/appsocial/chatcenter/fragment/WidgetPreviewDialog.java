@@ -84,7 +84,7 @@ public class WidgetPreviewDialog extends DialogFragment implements View.OnClickL
         ChatItem chatItem = ChatItem.createTemporarySticker(widgetContent, "", 0);
         chatItem.type = ResponseType.STICKER;
 
-        mWidgetView.setupCustomerView(chatItem, null);
+        mWidgetView.setupCustomerView(chatItem, null,false);
 
         return v;
     }

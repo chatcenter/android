@@ -15,6 +15,7 @@ import java.util.List;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.adapter.AssigneeFollowerUsersAdapter;
+import ly.appsocial.chatcenter.activity.model.AssigneeFollowerListItem;
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.OrgItem;
 import ly.appsocial.chatcenter.dto.UserItem;
@@ -31,7 +32,7 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
     private boolean isAssigneeList;
     private ListView mLVUsers;
 
-    private List<ItemListAssigneeFollower> mItems;
+    private List<AssigneeFollowerListItem> mItems;
     private ChannelItem mCurrentChannel;
     private OrgItem mCurrentOrg;
     private AssigneeFollowerUsersAdapter mAdapter;
@@ -83,13 +84,13 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
         mAdapter.notifyDataSetChanged();
     }
 
-    private List<ItemListAssigneeFollower> getItems(ChannelItem channelItem, OrgItem orgItem) {
-        List<ItemListAssigneeFollower> items = new ArrayList<>();
+    private List<AssigneeFollowerListItem> getItems(ChannelItem channelItem, OrgItem orgItem) {
+        List<AssigneeFollowerListItem> items = new ArrayList<>();
 
         if (orgItem != null) {
             if (orgItem.users != null && orgItem.users.size() > 0) {
                 for (UserItem user : orgItem.users) {
-                    ItemListAssigneeFollower item = new ItemListAssigneeFollower();
+                    AssigneeFollowerListItem item = new AssigneeFollowerListItem();
                     item.setUser(user);
                     if(!isAssigneeList && mCurrentChannel.assignee != null && user.id.equals(mCurrentChannel.assignee.id)) {
                         // If is Followers list, do not add assignee
@@ -104,7 +105,7 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
             if (channelItem.users != null && channelItem.users.size() > 0) {
                 for (UserItem user : channelItem.users) {
                     if (user.admin) {
-                        ItemListAssigneeFollower item = new ItemListAssigneeFollower();
+                        AssigneeFollowerListItem item = new AssigneeFollowerListItem();
                         item.setUser(user);
 
                         if (isAssigneeList) {
@@ -137,7 +138,7 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
         return items;
     }
 
-    private int getAddedIndex(List<ItemListAssigneeFollower> items, UserItem user) {
+    private int getAddedIndex(List<AssigneeFollowerListItem> items, UserItem user) {
         if(items != null && items.size() > 0) {
             for (int i = 0; i < items.size(); i ++) {
                 UserItem userItem = items.get(i).getUser();
@@ -177,7 +178,7 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
     public List<UserItem> getListSelectedUser() {
         List<UserItem> users = new ArrayList<>();
 
-        for (ItemListAssigneeFollower item :
+        for (AssigneeFollowerListItem item :
                 mItems) {
             if (item.isSelected()) {
                 users.add(item.getUser());
@@ -185,27 +186,5 @@ public class AssigneeFollowersUsersActivity extends BaseActivity implements Adap
         }
 
         return users;
-    }
-
-    public static class ItemListAssigneeFollower implements Serializable {
-        private boolean isSelected;
-        private UserItem user;
-
-
-        public boolean isSelected() {
-            return isSelected;
-        }
-
-        public void setSelected(boolean selected) {
-            isSelected = selected;
-        }
-
-        public UserItem getUser() {
-            return user;
-        }
-
-        public void setUser(UserItem user) {
-            this.user = user;
-        }
     }
 }

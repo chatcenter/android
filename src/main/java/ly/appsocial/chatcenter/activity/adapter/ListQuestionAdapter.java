@@ -2,6 +2,7 @@ package ly.appsocial.chatcenter.activity.adapter;
 
 import android.app.Activity;
 import android.database.DataSetObserver;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -13,6 +14,8 @@ import android.widget.EditText;
 import java.util.ArrayList;
 
 import ly.appsocial.chatcenter.R;
+import ly.appsocial.chatcenter.constants.ChatCenterConstants;
+import ly.appsocial.chatcenter.util.DialogUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 
 /**
@@ -21,11 +24,11 @@ import ly.appsocial.chatcenter.util.StringUtil;
 
 public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.QuestionTitle> {
 
-    private Activity mOwner;
+    private AppCompatActivity mOwner;
     private int cellResource;
     private ArrayList<QuestionTitle> mTitles;
 
-    public ListQuestionAdapter(Activity activity, int res_id, ArrayList<QuestionTitle> objects) {
+    public ListQuestionAdapter(AppCompatActivity activity, int res_id, ArrayList<QuestionTitle> objects) {
         super(activity, res_id, objects);
         this.mOwner = activity;
         this.cellResource = res_id;
@@ -38,7 +41,7 @@ public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.Questi
 
         LayoutInflater inflater = this.mOwner.getLayoutInflater();
         view = inflater.inflate(cellResource, parent, false);
-        EditText editText = (EditText) view.findViewById(R.id.edit_text);
+        final EditText editText = (EditText) view.findViewById(R.id.edit_text);
 
         View removeButton = view.findViewById(R.id.remove_btn);
         removeButton.setOnClickListener(new View.OnClickListener() {
@@ -69,6 +72,17 @@ public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.Questi
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH) {
+                    /*
+                    String message = String.format(getContext().getString(R.string.alert_question_widget_title_too_long),
+                            ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH);
+                    DialogUtil.showAlertDialog(mOwner.getSupportFragmentManager(), DialogUtil.Tag.ALERT, null, message);
+                    */
+
+                    s = s.subSequence(0, ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH);
+                    editText.setText(s);
+                    editText.setSelection(s.length());
+                }
                 title.setContent(s.toString());
             }
 

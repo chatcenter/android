@@ -125,35 +125,35 @@ public class ChannelFilterView extends LinearLayout {
                 }
             }
         });
+
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.all), ChannelItem.ChannelStatus.CHANNEL_ALL, 0, true));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.unassigned_status), ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED, 0, false));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.assigned_status), ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME, 0, false));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.close_status), ChannelItem.ChannelStatus.CHANNEL_CLOSE, 0, false));
     }
 
     public void updateData(GetChannelsCountResponseDto count) {
 
-        if (mStatusItems.size() == 0) {
-            mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.all), ChannelItem.ChannelStatus.CHANNEL_ALL, count.all, true));
-            mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.unassigned_status), ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED, count.unassigned, false));
-            mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.assigned_status), ChannelItem.ChannelStatus.CHANNEL_ASSIGNED, count.mine, false));
-            mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.close_status), ChannelItem.ChannelStatus.CHANNEL_CLOSE, count.close, false));
-        } else {
-            for (MessageStatusItem item: mStatusItems) {
-                if (ChannelItem.ChannelStatus.CHANNEL_ALL == item.value) {
-                        item.count = count.all;
-                } else if (ChannelItem.ChannelStatus.CHANNEL_CLOSE == item.value) {
-                    item.count = count.close;
-                } else if (ChannelItem.ChannelStatus.CHANNEL_ASSIGNED == item.value) {
-                    item.count = count.mine;
-                } else if (ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED == item.value) {
-                    item.count = count.unassigned;
-                }
+        for (MessageStatusItem item: mStatusItems) {
+            if (ChannelItem.ChannelStatus.CHANNEL_ALL == item.value) {
+                    item.count = count.all;
+            } else if (ChannelItem.ChannelStatus.CHANNEL_CLOSE == item.value) {
+                item.count = count.close;
+            } else if (ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME == item.value) {
+                item.count = count.mine;
+            } else if (ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED == item.value) {
+                item.count = count.unassigned;
             }
         }
+
         mStatusAdapter.notifyDataSetChanged();
 
         if (mFunnelItems != null && count.funnels != null) {
             for (MessageFunnelItem item : mFunnelItems) {
                 JsonElement jsonElement;
                 if (item.funnel.id == -1) {
-                    jsonElement = count.funnels.get("");
+                    item.count = count.all;
+                    continue;
                 } else {
                     jsonElement = count.funnels.get(item.funnel.id + "");
                 }

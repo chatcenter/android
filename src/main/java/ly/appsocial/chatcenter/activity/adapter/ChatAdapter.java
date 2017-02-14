@@ -178,22 +178,21 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	 * @return 生成したビュー
 	 */
 	private View getCustomerView(int position, View convertView, ViewGroup parent) {
+
+		ChatItem item = getItem(position);
+		if (ResponseType.SUGGESTION.equals(item.type)) {
+			return getSuggestionBubble(parent, item);
+		}
+
 		CustomerViewHolder holder;
 		View view = convertView;
 //		if (view == null) {
-			holder = new CustomerViewHolder();
 			view = mInflater.inflate(R.layout.chat_customer_listitem, parent, false);
-			holder.timestampTextView = (TextView) view.findViewById(R.id.chat_customer_listitem_timestamp_textview);
-			holder.messageTextView = (TextView) view.findViewById(R.id.sticker_textview);
-			holder.messageStatusTextView = (TextView) view.findViewById(R.id.chat_customer_listitem_message_status_textview);
-			holder.widgetView = (WidgetView) view.findViewById(R.id.chat_customer_listitem_message_sticker);
+			holder = new CustomerViewHolder(view);
 			view.setTag(holder);
 //		} else {
 //            holder = (CustomerViewHolder) view.getTag();
 //        }
-
-
-		ChatItem item = getItem(position);
 
 		// 日付
 		if (position % 3 == 0) {
@@ -214,22 +213,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 			holder.messageStatusTextView.setText("");
 		}
 
-		// メッセージ
-		if (mCanMail) {
-			holder.messageTextView.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS | Linkify.EMAIL_ADDRESSES);
-		} else {
-			holder.messageTextView.setAutoLinkMask(Linkify.WEB_URLS | Linkify.PHONE_NUMBERS);
-		}
-		holder.messageTextView.setText(item.widget.text);
-
-		holder.widgetView.setupCustomerView(item, mStickerActionListener);
-
-		// Add sticker listener for action click
-		if (ResponseType.STICKER.equals(item.type) || ResponseType.CALL.equals(item.type)) {
-			holder.widgetView.setStickerActionListener(mStickerActionListener);
-		} else if (ResponseType.SUGGESTION.equals(item.type)) {
-			return getSuggestionBubble(parent, item);
-		}
+		holder.widgetView.setupCustomerView(item, mStickerActionListener, mCanMail);
 
 		return view;
 	}
@@ -242,21 +226,22 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	 * @return 生成したビュー
 	 */
 	private View getClientView(int position, View convertView, ViewGroup parent) {
+
+		ChatItem item = getItem(position);
+		if (ResponseType.SUGGESTION.equals(item.type)) {
+			return getSuggestionBubble(parent, item);
+		}
+
 		ClientViewHolder holder;
 		View view = convertView;
 //		if (view == null) {
-			holder = new ClientViewHolder();
 			view = mInflater.inflate(R.layout.chat_client_listitem, parent, false);
-			holder.timestampTextView = (TextView) view.findViewById(R.id.chat_client_listitem_timestamp_textview);
-			holder.nameTextView = (TextView) view.findViewById(R.id.chat_client_listitem_name_textview);
-			holder.iconTextView = (TextView) view.findViewById(R.id.chat_client_listitem_icon_textview);
-			holder.iconImageView = (ImageView) view.findViewById(R.id.chat_client_listitem_icon_imageview);
-			holder.widgetView = (WidgetView) view.findViewById(R.id.chat_client_listitem_sticker);
+			holder = new ClientViewHolder(view);
 			view.setTag(holder);
 //		} else {
 //            holder = (ClientViewHolder) view.getTag();
 //        }
-		ChatItem item = getItem(position);
+
 
 		// 日付
 		if (position % 3 == 0) {
@@ -287,18 +272,11 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		} else { // アイコン画像
 			holder.iconTextView.setVisibility(View.GONE);
 			holder.iconImageView.setVisibility(View.VISIBLE);
-
 			ViewUtil.loadImageCircle(holder.iconImageView, item.user.iconUrl);
 		}
 
-		holder.widgetView.setupClientView(mUserToken, item, mStickerActionListener);
+		holder.widgetView.setupClientView(mUserToken, item, mStickerActionListener, mCanMail);
 
-		// Add sticker listener for action click
-		if (ResponseType.STICKER.equals(item.type) || ResponseType.CALL.equals(item.type)) {
-			holder.widgetView.setStickerActionListener(mStickerActionListener);
-		} else if (ResponseType.SUGGESTION.equals(item.type)) {
-			return getSuggestionBubble(parent, item);
-		}
 
 		return view;
 	}
@@ -385,9 +363,18 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		/** メッセージ */
 		public TextView messageTextView;
 
+		/** To show message status */
 		public TextView messageStatusTextView;
 
+		/** Display a widget message*/
 		public WidgetView widgetView;
+
+		public CustomerViewHolder (View view) {
+			timestampTextView = (TextView) view.findViewById(R.id.chat_customer_listitem_timestamp_textview);
+			messageTextView = (TextView) view.findViewById(R.id.sticker_textview);
+			messageStatusTextView = (TextView) view.findViewById(R.id.chat_customer_listitem_message_status_textview);
+			widgetView = (WidgetView) view.findViewById(R.id.chat_customer_listitem_message_sticker);
+		}
 	}
 
 	/**
@@ -404,6 +391,14 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		public ImageView iconImageView;
 
 		public WidgetView widgetView;
+
+		public ClientViewHolder(View view) {
+			timestampTextView = (TextView) view.findViewById(R.id.chat_client_listitem_timestamp_textview);
+			nameTextView = (TextView) view.findViewById(R.id.chat_client_listitem_name_textview);
+			iconTextView = (TextView) view.findViewById(R.id.chat_client_listitem_icon_textview);
+			iconImageView = (ImageView) view.findViewById(R.id.chat_client_listitem_icon_imageview);
+			widgetView = (WidgetView) view.findViewById(R.id.chat_client_listitem_sticker);
+		}
 	}
 
 }

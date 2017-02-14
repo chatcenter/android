@@ -14,11 +14,14 @@
         android:background="@color/color_chatcenter_left_menu_background"
         android:orientation="vertical">
 
-        <ListView
+        <ExpandableListView
             android:id="@+id/menu_list_view"
             android:layout_width="@dimen/drawer_menu_width"
             android:layout_height="match_parent"
             android:dividerHeight="@dimen/widget_line_width"
+            android:groupIndicator="@null"
+            android:transcriptMode="disabled"
+            android:scrollbars="none"
             android:divider="@color/color_chatcenter_left_menu_divider"/>
     </RelativeLayout>
 

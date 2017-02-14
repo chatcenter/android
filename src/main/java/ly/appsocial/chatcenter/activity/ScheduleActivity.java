@@ -2,24 +2,22 @@ package ly.appsocial.chatcenter.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,16 +29,18 @@ import java.util.TimeZone;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.dto.ChatItem;
+import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
 import ly.appsocial.chatcenter.fragment.ScheduleDateViewFragment;
 import ly.appsocial.chatcenter.fragment.ScheduleWeekViewFragment;
 import ly.appsocial.chatcenter.fragment.WidgetPreviewDialog;
 import ly.appsocial.chatcenter.ui.LockableScrollView;
-import ly.appsocial.chatcenter.util.DateUtils;
+import ly.appsocial.chatcenter.util.DialogUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 
-public class ScheduleActivity extends BaseActivity implements View.OnClickListener,
+public class ScheduleActivity extends BaseActivity implements
 		WidgetPreviewDialog.WidgetPreviewListener,
-		ScheduleDateViewFragment.ScheduleTimeViewListener{
+		ScheduleDateViewFragment.ScheduleTimeViewListener,
+		AlertDialogFragment.DialogListener{
 
 	private final int HOURS_IN_DAY = 24; // There are 24 hours in day
 	private final int TIME_SESSION_PERIOD = 30; // 30 minutes
@@ -58,12 +58,6 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 
 	/** Display what is current date*/
 	private TextView mTvSelectedDate;
-
-	/** Cancel button*/
-	private ImageButton mButtonCancel;
-
-	/** Show preview for ScheduleWidget*/
-	private Button mButtonPreview;
 
 	/** ScrollView to hold Date's ViewPager*/
 	private LockableScrollView mScrollView;
@@ -84,15 +78,22 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 	public int mCurrentWeekIndex = -1;
 	public int mNextWeekOffset = 1;
 
+	private Toolbar mToolbar;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_schedule);
 
+		mToolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(mToolbar);
+		getSupportActionBar().setTitle(R.string.schedule_title);
+		getSupportActionBar().setDisplayShowHomeEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		setHomeAsUpIndicator(R.drawable.bt_close);
+
 		mTvSelectedDate = (TextView) findViewById(R.id.schedule_selected_date);
 		mWeekPager = (ViewPager) findViewById(R.id.schedule_date_selector);
-		mButtonCancel = (ImageButton) findViewById(R.id.schedule_cancel);
-		mButtonPreview = (Button) findViewById(R.id.schedule_preview);
 		mDatePager = (ViewPager) findViewById(R.id.schedule_time_selector);
 		mScrollView = (LockableScrollView) findViewById(R.id.scroll_view);
 
@@ -119,10 +120,27 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 		mDatePager.addOnPageChangeListener(mDatePageChangeListener);
 
 		mScrollView.setScrollingEnabled(true);
-		mButtonCancel.setOnClickListener(this);
-		mButtonPreview.setOnClickListener(this);
 
 		setUpHourView();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.next_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+
+		if (id == android.R.id.home) {
+			cancel();
+		} else if (id == R.id.next) {
+			previewSchedule();
+		}
+
+		return super.onOptionsItemSelected(item);
 	}
 
 	/**
@@ -233,21 +251,6 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 		}
 	};
 
-	/**
-	 * Called when a view has been clicked.
-	 *
-	 * @param v The view that was clicked.
-	 */
-	@Override
-	public void onClick(View v) {
-		int viewId = v.getId();
-		if (viewId == R.id.schedule_cancel) {
-			cancel();
-		} else if (viewId == R.id.schedule_preview) {
-			previewSchedule();
-		}
-	}
-
 	/** Preview Schedule Widget before send it*/
 	private void previewSchedule() {
 		ArrayList<BasicWidget.StickerAction.ActionData> actions = new ArrayList<>();
@@ -265,7 +268,14 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 		if (actions != null && actions.size() > 0) {
 			String widgetContent = ChatItem.createScheduleWidgetContent(actions, this);
 			showDialogWidgetPreview(widgetContent);
+		} else {
+			String message = getString(R.string.alert_schedule_select_schedule_slot);
+			showAlert(message);
 		}
+	}
+
+	private void showAlert(String message) {
+		DialogUtil.showAlertDialog(getSupportFragmentManager(), null, null, message);
 	}
 
 	/**
@@ -310,6 +320,26 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 		if (!mSelectedDates.contains(date)) {
 			mSelectedDates.add(date);
 		}
+	}
+
+	/**
+	 * ダイアログをキャンセルした際のコールバック。
+	 *
+	 * @param tag このフラグメントのタグ
+	 */
+	@Override
+	public void onDialogCancel(String tag) {
+
+	}
+
+	/**
+	 * ダイアログの肯定ボタンを押下した際のコールバック。
+	 *
+	 * @param tag このフラグメントのタグ
+	 */
+	@Override
+	public void onPositiveButtonClick(String tag) {
+
 	}
 
 	public class DatePagerAdapter extends FragmentStatePagerAdapter {
@@ -419,7 +449,7 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 		}
 	}
 
-	public class ScheduleDate implements Serializable{
+	public class ScheduleDate {
 		public Date mDate;
 		boolean isSelected;
 		public List<TimeSession> mTimeSessions;
@@ -444,11 +474,13 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 					BasicWidget.StickerAction.ActionData.Value value = new BasicWidget.StickerAction.ActionData.Value();
 
 					value.start = calendar.getTimeInMillis() / 1000;
-					if (i == (2 * HOURS_IN_DAY -1)) {
-						value.end = calendar.getTimeInMillis() / 1000 + (TIME_SESSION_PERIOD - 1) * 60; // 11:59 PM
-					} else {
-						value.end = calendar.getTimeInMillis() / 1000 + TIME_SESSION_PERIOD * 60;
-					}
+//					if (i == (2 * HOURS_IN_DAY -1)) {
+//						value.end = calendar.getTimeInMillis() / 1000 + (TIME_SESSION_PERIOD - 1) * 60; // 11:59 PM
+//					} else {
+//						value.end = calendar.getTimeInMillis() / 1000 + TIME_SESSION_PERIOD * 60;
+//					}
+
+					value.end = calendar.getTimeInMillis() / 1000 + TIME_SESSION_PERIOD * 60;
 
 					actionData.value = value;
 					actionData.label = getActionLabel(value.start, value.end);
@@ -525,14 +557,25 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 	private String getActionLabel (Long startTime, Long endTime) {
 		StringBuilder labelBuilder = new StringBuilder();
 
-		SimpleDateFormat sdf = new SimpleDateFormat(getString(R.string.date_format_short));
-		SimpleDateFormat sdfDate = new SimpleDateFormat(getString(R.string.date_format_date));
+		SimpleDateFormat fullDateFormat = new SimpleDateFormat(getString(R.string.schedule_date_format));
+		String startDate = fullDateFormat.format(new Date(startTime * 1000));
+		String endDate = fullDateFormat.format(new Date(endTime * 1000));
 
-		labelBuilder.append(sdfDate.format(new Date(startTime * 1000)));
-		labelBuilder.append(" ");
-		labelBuilder.append(sdf.format(new Date(startTime * 1000)));
-		labelBuilder.append(" - ");
-		labelBuilder.append(sdf.format(new Date(endTime * 1000)));
+		if (startDate.equals(endDate)) {
+			SimpleDateFormat sdf = new SimpleDateFormat(getString(R.string.date_format_short));
+			SimpleDateFormat sdfDate = new SimpleDateFormat(getString(R.string.date_format_date));
+
+			labelBuilder.append(sdfDate.format(new Date(startTime * 1000)));
+			labelBuilder.append(" ");
+			labelBuilder.append(sdf.format(new Date(startTime * 1000)));
+			labelBuilder.append(" - ");
+			labelBuilder.append(sdf.format(new Date(endTime * 1000)));
+		} else {
+			SimpleDateFormat sfd = new SimpleDateFormat(getString(R.string.date_format_date_time));
+			labelBuilder.append(sfd.format(new Date(startTime * 1000)));
+			labelBuilder.append(" - ");
+			labelBuilder.append(sfd.format(new Date(endTime * 1000)));
+		}
 
 		labelBuilder.append(String.format(" (%s)", TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)));
 
@@ -546,5 +589,11 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 	public static class SelectedSession {
 		public int endIndex;
 		public int startIndex;
+	}
+
+	@Override
+	public void finish() {
+		super.finish();
+		this.overridePendingTransition(0, R.anim.activity_close_exit);
 	}
 }

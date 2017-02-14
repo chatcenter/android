@@ -24,7 +24,7 @@ public class MessagesParamDto implements Parcelable {
 	/** Providerトークン */
 	public String providerToken;
 	/** Providerトークン作成タイムスタンプ(ms) */
-	public long providerTokenTimestamp;
+	public long providerTokenCreateAt;
 	/**  */
 	public long providerTokenExpires;
 	/** */
@@ -51,7 +51,7 @@ public class MessagesParamDto implements Parcelable {
 	protected MessagesParamDto(Parcel in) {
 		provider = in.readString();
 		providerToken = in.readString();
-		providerTokenTimestamp = in.readLong();
+		providerTokenCreateAt = in.readLong();
 		providerTokenExpires = in.readLong();
 		deviceToken = in.readString();
 
@@ -73,7 +73,7 @@ public class MessagesParamDto implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(provider);
 		dest.writeString(providerToken);
-		dest.writeLong(providerTokenTimestamp);
+		dest.writeLong(providerTokenCreateAt);
 		dest.writeLong(providerTokenExpires);
 		dest.writeString(deviceToken);
 		dest.writeInt(channelType == null ? -1 : channelType.ordinal());

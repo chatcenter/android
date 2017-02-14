@@ -30,7 +30,7 @@ import ly.appsocial.chatcenter.util.ViewUtil;
 /**
  * {@link MessagesActivity} adapter.
  */
-public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Item> {
+public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Channel> {
 
 	// //////////////////////////////////////////////////////////////////////////
 	// インスタンスフィールド
@@ -44,6 +44,7 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 	private int mUserId;
 	/** 編集モードか */
 	private boolean mIsEdit;
+	private boolean mIsAgent;
 
 	/**
 	 * コンストラクタ
@@ -52,11 +53,12 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 	 * @param items 項目
 	 * @param userId ユーザーID
 	 */
-	public MessagesAdapter(Context context, List<GetChannelsMineResponseDto.Item> items, int userId) {
+	public MessagesAdapter(Context context, List<GetChannelsMineResponseDto.Channel> items, int userId, boolean isAgent) {
 		super(context, 0, items);
 
 		mInflater = LayoutInflater.from(context);
 		mUserId = userId;
+		mIsAgent = isAgent;
 	}
 
 	// //////////////////////////////////////////////////////////////////////////
@@ -66,13 +68,16 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
-		View view = convertView;
-		if (view == null) {
-			view = mInflater.inflate(R.layout.messages_listitem, null);
+		MessageItemView itemView;
+		if (convertView == null) {
+			convertView = mInflater.inflate(R.layout.messages_listitem, parent, false);
+			itemView = (MessageItemView) convertView;
+			convertView.setTag(itemView);
+		} else {
+			itemView = (MessageItemView) convertView.getTag();
 		}
-		MessageItemView itemView = (MessageItemView) view;
 
-		GetChannelsMineResponseDto.Item item = getItem(position);
+		GetChannelsMineResponseDto.Channel item = getItem(position);
 
 		// 未読
 //		itemView.setUnread(item.unreadMessages > 0);
@@ -81,6 +86,7 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 		itemView.setCheckBoxVisibility(mIsEdit);
 
 		UserItem guestUser = new UserItem();
+		UserItem asignee = item.assignee;
 		for (UserItem user : item.users) {
 			if (!user.admin) {
 				guestUser = user;
@@ -90,20 +96,39 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 
 		// アイコン
 		int iconColor = ViewUtil.getIconColor(item.uid);
-		if (guestUser == null) {
-			itemView.setIconText(item.orgName, iconColor);
-		} else if(StringUtil.isNotBlank(guestUser.iconUrl)) {
-			itemView.setIconImage(guestUser.iconUrl);
+
+		UserItem displayUser;
+		if (mIsAgent) {
+			displayUser = guestUser;
 		} else {
-			itemView.setIconText(guestUser.displayName, iconColor);
+			displayUser = asignee;
 		}
 
-		// 名前
-		if (StringUtil.isBlank(guestUser.displayName)) {
-			itemView.setName(item.orgName);
+		String channelDisplayName;
+		if (mIsAgent) {
+			if (item.displayName != null && StringUtil.isNotBlank(item.displayName.admin)) {
+				channelDisplayName = item.displayName.admin;
+			} else if (StringUtil.isNotBlank(displayUser.displayName)) {
+				channelDisplayName = displayUser.displayName;
+			} else {
+				channelDisplayName = getContext().getString(R.string.guest);
+			}
 		} else {
-			itemView.setName(guestUser.displayName);
+			if (item.displayName != null && StringUtil.isNotBlank(item.displayName.guest)) {
+				channelDisplayName = item.displayName.guest;
+			} else {
+				channelDisplayName = item.orgName;
+			}
 		}
+
+		if(displayUser != null && StringUtil.isNotBlank(displayUser.iconUrl)) {
+			itemView.setIconImage(displayUser.iconUrl);
+		} else {
+			itemView.setIconText(channelDisplayName, iconColor);
+		}
+
+		// タイトル設定
+		itemView.setName(channelDisplayName);
 
 		// メッセージ
 		StringBuilder latestMessageBuilder = new StringBuilder();
@@ -112,6 +137,7 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 				latestMessageBuilder.append(getContext().getString(R.string.you));
 			} else {
 				latestMessageBuilder.append(item.latestMessage.user.displayName);
+				latestMessageBuilder.append(getContext().getString(R.string.person_name_suffix));
 				latestMessageBuilder.append(": ");
 			}
 		}
@@ -119,7 +145,7 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 		if (item.latestMessage == null) {
 			latestMessageBuilder.append(getContext().getString(R.string.no_message));
 		} else if (ResponseType.STICKER.equals(item.latestMessage.type)) {
-			latestMessageBuilder.append(getContext().getString(R.string.sent_a_sticker));
+			latestMessageBuilder.append(getContext().getString(R.string.sent_a_widget));
 		} else if (ResponseType.CALL.equals(item.latestMessage.type)) {
 			latestMessageBuilder.append(getContext().getString(R.string.called));
 		} else {
@@ -139,9 +165,13 @@ public class MessagesAdapter extends ArrayAdapter<GetChannelsMineResponseDto.Ite
 		itemView.setTvUnreadMessage(item.unreadMessages);
 
 		// Set show channel status
-		itemView.setTvChannelStatusShow(item.getChannelStatus() == ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED);
+		if (mIsAgent) {
+			itemView.setTvChannelStatusShow(item.getChannelStatus() == ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED);
+		} else {
+			itemView.setTvChannelStatusShow(false);
+		}
 
-		return view;
+		return convertView;
 	}
 
 	// //////////////////////////////////////////////////////////////////////////

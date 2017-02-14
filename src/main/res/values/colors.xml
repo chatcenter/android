@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<!-- ウィンドウ内の表示 -->
+
+    <!-- ウィンドウ内の表示 -->
     <color name="color_chatcenter_text">#293b54</color>
     <color name="color_chatcenter_text_light">#0067ff</color>
     <color name="color_chatcenter_background">#ffffff</color>
@@ -9,6 +10,7 @@
 	<!-- ウィンドウ タイトルバー -->
     <color name="color_chatcenter_title_text">#293b54</color>
     <color name="color_chatcenter_title_background">#ffffff</color>
+    <color name="color_chatcenter_title_background_dark">#cacaca</color>
 	<color name="color_chatcenter_title_button">#0067ff</color>
 	<color name="color_chatcenter_title_button_text">#ffffff</color>
 
@@ -40,8 +42,8 @@
     <color name="color_chatcenter_twitter">#00aced</color>
     <color name="color_chatcenter_facebook">#3b5998</color>
 
-	<color name="color_orange">#FF9900</color>
-	<color name="color_green">#009900</color>
+	<color name="color_orange">#fcb528</color>
+	<color name="color_green">#37cc37</color>
 	<color name="color_blue">#000099</color>
     <color name="color_chatcenter_left_menu_background">#D6D6D6</color>
     <color name="color_chatcenter_left_menu_divider">#ADADAD</color>

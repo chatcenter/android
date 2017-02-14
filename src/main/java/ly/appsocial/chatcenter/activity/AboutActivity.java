@@ -39,10 +39,10 @@ public class AboutActivity extends BaseActivity implements AdapterView.OnItemCli
 
     private void setupAboutListView() {
         mItems = new ArrayList<>();
-        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.about_header), "https://www.chatcenter.io/ja/"));
-        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.terms_of_service), "https://www.chatcenter.io/termsofservice/"));
-        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.privacy_policy), "https://www.chatcenter.io/privacypolicy/"));
-        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.service_level_agreement), "https://www.chatcenter.io/sla/"));
+        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.about_header), getString(R.string.about_ChatCenter_url)));
+        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.terms_of_service), getString(R.string.terms_of_service)));
+        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.privacy_policy), getString(R.string.privacy_policy_url)));
+        mItems.add(new AboutItem(AboutItem.TYPE_URL, getString(R.string.service_level_agreement), getString(R.string.service_level_agreement)));
         mItems.add(new AboutItem(AboutItem.TYPE_OPEN_LISTVIEW_ACTIVITY, getString(R.string.copyright), null));
 
         String[] itemsStr = new String[mItems.size()];

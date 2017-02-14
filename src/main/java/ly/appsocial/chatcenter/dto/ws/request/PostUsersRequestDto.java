@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ly.appsocial.chatcenter.R;
+import ly.appsocial.chatcenter.util.StringUtil;
 
 /**
  * [POST /api/users] request.
@@ -27,8 +28,12 @@ public class PostUsersRequestDto {
 	public String provider;
 	/** Providerトークン */
 	public String providerToken;
+
+	public String providerTokenSecret;
+
+	public String providerRefreshToken;
 	/** Providerトークン作成日時(yyyy/MM/dd HH:mm:ss) */
-	public String providerTokenTimeStamp;
+	public String providerTokenCreatedAt;
 	/** Providerトークン作成日時(yyyy/MM/dd HH:mm:ss) */
 	public String providerTokenExpires;
 	/** KISコード */
@@ -51,9 +56,9 @@ public class PostUsersRequestDto {
 	 */
 	public void setProviderTokenCreateAt(Context context, long timestamp) {
 		if (timestamp < 1) {
-			providerTokenTimeStamp = null;
+			providerTokenCreatedAt = null;
 		} else {
-			providerTokenTimeStamp = new SimpleDateFormat(context.getString(R.string.datetime_format_full))
+			providerTokenCreatedAt = new SimpleDateFormat(context.getString(R.string.datetime_format_full))
 					.format(new Date(timestamp));
 		}
 	}
@@ -86,17 +91,32 @@ public class PostUsersRequestDto {
 			}
 		}
 
-		// Login by provider
-		if (provider != null) {
+		// Login by provide
+		if (StringUtil.isNotBlank(provider)) {
 			params.put("provider", provider);
-			params.put("provider_token", providerToken);
-			if (providerTokenTimeStamp != null) {
-				params.put("provider_created_at", String.valueOf(providerTokenTimeStamp));
+
+			if (StringUtil.isNotBlank(providerToken)) {
+				params.put("provider_token", providerToken);
 			}
-			if (providerTokenExpires != null) {
+
+			if (StringUtil.isNotBlank(providerTokenSecret)) {
+				params.put("provider_token_secret", providerTokenSecret);
+			}
+
+			if (StringUtil.isNotBlank(providerRefreshToken)) {
+				params.put("provider_refresh_token", providerRefreshToken);
+			}
+
+			if (StringUtil.isNotBlank(providerTokenCreatedAt)) {
+				params.put("provider_created_at", String.valueOf(providerTokenCreatedAt));
+			}
+
+			if (StringUtil.isNotBlank(providerTokenExpires)) {
 				params.put("provider_expires_at", String.valueOf(providerTokenExpires));
 			}
+
 		}
+
 
 		// For push notification
 		if (deviceToken != null) {
