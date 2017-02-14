@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Fabric.with(this, new Crashlytics());
 
         setContentView(R.layout.activity_main);
-        ChatCenter.initChatCenter(this);
+        // ChatCenter.initChatCenter(this);
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -149,6 +149,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Map<String, String> info = new HashMap<>();
                 ChatCenter.showChat(MainActivity.this, TEAM_ID, firstName,
                         lastName, email, info);
+
+                mEdtEmail.setText("");
+                mEdtFirstName.setText("");
+                mEdtLastName.setText("");
             }
 
             @Override
