@@ -3,8 +3,7 @@
 ## 目次
 * [Getting Started](#GettingStarted)
 	* [1. サンプルプロジェクトをダウンロード](#DLSample)
-	* [2. アプリトークンとチームIDを設定](#SetAppOrg)
-	* [3. アプリケーションを起動](#LaunchApp)
+	* [2. アプリケーションを起動](#LaunchApp)
 * [SDKをアプリに組み込む](#InstallYourApp)
 	* [1. AndroidStudioでの設定](#SettingOfAndroidStudio)
 	* [2. アプリトークンとチームIDのセット](#SetAppToken)
@@ -20,15 +19,8 @@
 [こちら](https://github.com/chatcenter/android)よりChatCenterSDKをダウンロードします。
 Sampleプロジェクトが含まれています。
 
-<a id="SetAppOrg"></a>
-#### 2. アプリトークンとチームIDを設定
-サンプルプロジェクトを開き、AndroidManifest.xmlにアプリトークンを、MainActivity.javaにチームIDを設定してください。
-アプリトークンとチームIDはダッシュボードから確認できます。
-<p align="center"><img src="InstallationImages/sample1.png"></p>
-<p align="center"><img src="InstallationImages/sample1_2.png"></p>
-
 <a id="LaunchApp"></a>
-#### 3. アプリケーションを起動
+#### 2. アプリケーションを起動
 <p align="center"><img src="InstallationImages/sample2.png" width="320"></p>
 
 <a id="InstallYourApp"></a>
