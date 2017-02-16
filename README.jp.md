@@ -76,6 +76,12 @@ ChatCenter SDKでは各ウィジェットの送信時に、ユーザーの情報
 			android:value="[YOUR_APP_TOKEN_HERE]"/>
 
 
+続いて、Google play serviceを`<application></application>`内に記述します。
+
+    <meta-data
+            android:name="com.google.android.geo.API_KEY"
+           android:value="[YOUR_GOOGLE_API_KEY]"/>
+
 次に、先ほどコピーしたServiceを含む必要な項目を`<application></application>`内に追加します。
 
 		<receiver
