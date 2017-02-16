@@ -76,6 +76,14 @@ Next, describe AppToken in `<application> </ application>` as done in Sample.
             android:name="ly.appsocial.chatcenter.AppToken"
             android:value="[YOUR_APP_TOKEN_HERE]"/>
 
+Next, describe Google play service in `<application> </ application>` as done in Sample.
+
+
+
+    <meta-data
+            android:name="com.google.android.geo.API_KEY"
+           android:value="[YOUR_GOOGLE_API_KEY]"/>
+           
 
 Next, add necessary items including the Service you just copied into `<application> </ application>`.
 
