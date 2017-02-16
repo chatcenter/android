@@ -476,6 +476,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	protected void onResume() {
 		super.onResume();
 		checkNetworkToStart();
+		WebSocketHelper.setListener(new WebSocketClientListener());
 	}
 
 	@Override
@@ -2013,6 +2014,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			}
 
 			requestGetMessages(null);
+
+			// Set enable for video call
+			UserItem currentUser = mCurrentChannelItem.getCurrentUser(AuthUtil.getUserId(ChatActivity.this));
+			if (currentUser != null && currentUser.isCanUseVideoChat) {
+				mBtVideoCall.setVisibility(View.VISIBLE);
+				mBtPhoneCall.setVisibility(View.VISIBLE);
+			}
 		}
 	}
 
@@ -2795,9 +2803,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_PHONE_CALL,
 							R.drawable.icon_widget_phonecall,
 							getString(R.string.sticker_label_phone_call)));
-					*/
+
 					mBtVideoCall.setVisibility(View.VISIBLE);
 					mBtPhoneCall.setVisibility(View.VISIBLE);
+					*/
 				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE)) {
 					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE,
 							R.drawable.icon_widget_image,

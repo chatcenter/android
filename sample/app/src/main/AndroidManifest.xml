@@ -28,6 +28,10 @@
 			android:name="ly.appsocial.chatcenter.AppToken"
 			android:value="j4KmracFAqvaMpALRuSz"/>
 
+		<meta-data
+			android:name="com.google.android.geo.API_KEY"
+			android:value="AIzaSyCca3_WdLpyINyOyz5RzhJM-3torPNx21s"/>
+
 		<activity android:name=".MainActivity"
 			android:windowSoftInputMode="stateHidden">
 			<intent-filter>

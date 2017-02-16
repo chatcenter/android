@@ -44,6 +44,8 @@ public class UserItem implements Parcelable, Serializable {
     public String twitterID;
     @SerializedName("twitter_url")
     public String twitterURL;
+    @SerializedName("can_use_video_chat")
+    public boolean isCanUseVideoChat;
 
     public UserItem() {
 
@@ -65,6 +67,7 @@ public class UserItem implements Parcelable, Serializable {
         facebookURL = in.readString();
         twitterID = in.readString();
         twitterURL = in.readString();
+        isCanUseVideoChat = in.readByte() != 0;
     }
 
     @Override
@@ -84,6 +87,7 @@ public class UserItem implements Parcelable, Serializable {
         dest.writeString(facebookURL);
         dest.writeString(twitterID);
         dest.writeString(twitterURL);
+        dest.writeByte((byte) (isCanUseVideoChat ? 1 : 0));
     }
 
     @Override

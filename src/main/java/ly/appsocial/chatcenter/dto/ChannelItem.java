@@ -104,6 +104,15 @@ public class ChannelItem implements Serializable {
         return user != null && user.online;
     }
 
+    public UserItem getCurrentUser(int userId) {
+        for (UserItem userItem: users) {
+            if (userItem.id == userId) {
+                return userItem;
+            }
+        }
+        return null;
+    }
+
     public ChannelStatus getChannelStatus() {
         if (statusString.equals(CHANNEL_UNASSIGNED)) {
             return ChannelStatus.CHANNEL_UNASSIGNED;

@@ -4,4 +4,5 @@
 	<padding android:left="2dp" android:top="2dp"
 			 android:right="2dp" android:bottom="2dp" />
 	<corners android:radius="5dp" />
+	<solid android:color="@color/color_chatcenter_background"/>
 </shape>

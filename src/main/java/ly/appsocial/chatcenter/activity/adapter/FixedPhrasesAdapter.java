@@ -7,6 +7,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
@@ -60,7 +61,7 @@ public class FixedPhrasesAdapter extends ArrayAdapter<FixedPhraseActivity.FPList
 
             FixedPhraseActivity.FPListItemSessionEmptyLabel labelItem = (FixedPhraseActivity.FPListItemSessionEmptyLabel) item;
             TextView textView = new TextView(getContext());
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            AbsListView.LayoutParams params = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.MATCH_PARENT);
             textView.setLayoutParams(params);
             textView.setText(labelItem.getLabel());
             textView.setTextColor(getContext().getResources().getColor(R.color.color_chatcenter_text));

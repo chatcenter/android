@@ -16,6 +16,6 @@
     <string name="product_gcm_notification_sender" translatable="false">99433242024</string>
 
     <!-- Google API Key-->
-    <string name="google_api_key">AIzaSyBbEP1GaeYV-chH7nWrDJKFUV8EJd65vWM</string>
+    <!--<string name="google_api_key">AIzaSyBbEP1GaeYV-chH7nWrDJKFUV8EJd65vWM</string>-->
 
 </resources>

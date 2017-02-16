@@ -89,8 +89,6 @@ public class VideoCallFragment extends Fragment {
 			// TODO place holder
 		}
 
-		boolean isAudioOnly = intent.getBooleanExtra("audioOnly", false);
-
 		View hangup = layout.findViewById(R.id.hangup);
 		hangup.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -100,16 +98,13 @@ public class VideoCallFragment extends Fragment {
 		});
 
 		View answerVideo = layout.findViewById(R.id.answer_video);
-		if ( isAudioOnly ){
-			answerVideo.setVisibility(View.INVISIBLE);
-		} else {
-			answerVideo.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					mVideoChatActivity.acceptCall(false);
-				}
-			});
-		}
+
+		answerVideo.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mVideoChatActivity.acceptCall(false);
+			}
+		});
 
 		View answerAudio = layout.findViewById(R.id.answer_audio);
 		answerAudio.setOnClickListener(new View.OnClickListener() {

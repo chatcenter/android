@@ -4,4 +4,6 @@
     <stroke android:color="@color/color_chatcenter_widget_divider"
             android:width="1px"/>
 
+    <solid android:color="@color/color_chatcenter_widget_menu"/>
+
 </shape>

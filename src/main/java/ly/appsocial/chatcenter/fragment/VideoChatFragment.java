@@ -35,7 +35,7 @@ import ly.appsocial.chatcenter.util.CircleTransformation;
  * VideoChatFragment.
  */
 public class VideoChatFragment extends Fragment implements Session.SessionListener,
-		Publisher.PublisherListener, Subscriber.VideoListener{
+		Publisher.PublisherListener, Subscriber.VideoListener, SubscriberKit.SubscriberListener{
 
 	private VideoChatActivity mVideoChatActivity;
 
@@ -103,7 +103,7 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 		mCameraSwitch = layout.findViewById(R.id.switch_camera);
 		if (mIsAudioOnly) {
 			mCameraSwitch.setVisibility(View.INVISIBLE);
-			mPublisherViewContainer.setVisibility(View.INVISIBLE);
+			// mPublisherViewContainer.setVisibility(View.INVISIBLE);
 		}
 		mCameraSwitch.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -126,7 +126,7 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 
 		if ( mIsAudioOnly ){
 			mMuteVideo = true;
-			mVideoButton.setVisibility(View.INVISIBLE);
+			// mVideoButton.setVisibility(View.INVISIBLE);
 		}
 
 		mAudioButton = (ImageView)layout.findViewById(R.id.mute_audio);
@@ -224,11 +224,17 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 
 	@Override
 	public void onConnected(Session session) {
-		mPublisher = new Publisher(getActivity(), "publisher", true,  !mIsAudioOnly);
+		mPublisher = new Publisher(getActivity(), "publisher", true, true);
 		mPublisher.setPublisherListener(this);
 		mPublisher.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);
 		mPublisherViewContainer.addView(mPublisher.getView());
 		mSession.publish(mPublisher);
+
+		// if is voice chat, hide video
+		if ( mPublisher != null ) {
+			mPublisher.setPublishVideo(!mMuteVideo);
+			updateButtonState();
+		}
 	}
 
 	@Override
@@ -266,8 +272,8 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 	@Override
 	public void onStreamCreated(PublisherKit publisherKit, Stream stream) {
 		//subscribeToStream(stream);
-		mRingingLabel.setVisibility(View.INVISIBLE);
-		if (mIsAudioOnly) {
+		if (mIsAudioOnly && !mIsCalling) {
+			mRingingLabel.setVisibility(View.INVISIBLE);
 			mOtherVideoOffLabel.setVisibility(View.VISIBLE);
 		}
 	}
@@ -288,6 +294,7 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 		mIsStartChatting = true;
 		mSubscriber.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);
 		mSubscriberViewContainer.addView(mSubscriber.getView());
+		mOtherVideoOffLabel.setVisibility(View.INVISIBLE);
 	}
 
 	@Override
@@ -319,6 +326,7 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 	private void subscribeToStream(Stream stream) {
 		mSubscriber = new Subscriber(getActivity(), stream);
 		mSubscriber.setVideoListener(this);
+		mSubscriber.setSubscriberListener(this);
 		mSession.subscribe(mSubscriber);
 	}
 
@@ -341,5 +349,21 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 			mPublisher = null;
 		}
 		mSession.disconnect();
+	}
+
+	@Override
+	public void onConnected(SubscriberKit subscriberKit) {
+		mRingingLabel.setVisibility(View.INVISIBLE);
+		mOtherVideoOffLabel.setVisibility(View.VISIBLE);
+	}
+
+	@Override
+	public void onDisconnected(SubscriberKit subscriberKit) {
+
+	}
+
+	@Override
+	public void onError(SubscriberKit subscriberKit, OpentokError opentokError) {
+
 	}
 }

@@ -1019,6 +1019,14 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		if (mMenuListView == null) {
 			return;
 		}
+
+		LayoutInflater inflater = getLayoutInflater();
+		mMenuHeader = inflater.inflate(R.layout.menu_header, mMenuListView, false);
+		mMenuFooter = inflater.inflate(R.layout.menu_footer, mMenuListView, false);
+
+		mMenuListView.addFooterView(mMenuFooter);
+		mMenuListView.addHeaderView(mMenuHeader);
+
 		mMenuListView.setAdapter(mMenuAdapter);
 
 		// Expand Inbox group
@@ -1033,13 +1041,6 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		});
 
 		mMenu = (DrawerLayout) findViewById(R.id.messages_drawer);
-
-		LayoutInflater inflater = getLayoutInflater();
-		mMenuHeader = inflater.inflate(R.layout.menu_header, mMenuListView, false);
-		mMenuFooter = inflater.inflate(R.layout.menu_footer, mMenuListView, false);
-
-		mMenuListView.addFooterView(mMenuFooter);
-		mMenuListView.addHeaderView(mMenuHeader);
 
 		Button btSwitchApp = (Button) mMenuHeader.findViewById(R.id.btn_switch_app);
 		btSwitchApp.setOnClickListener(new View.OnClickListener() {
@@ -1798,7 +1799,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 		public View getView(int position, View convertView, ViewGroup parent) {
 
 			TextView textView = new TextView(MessagesActivity.this);
-			AbsListView.LayoutParams layoutParams = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+			AbsListView.LayoutParams layoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,
 					(int) convertDpToPixel(40, getContext()));
 
 			textView.setLayoutParams(layoutParams);
