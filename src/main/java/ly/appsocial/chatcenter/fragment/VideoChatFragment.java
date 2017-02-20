@@ -94,6 +94,10 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 		mIsCalling = intent.getBooleanExtra("isCalling", false);
 		mIsAudioOnly = intent.getBooleanExtra("audioOnly", false);
 
+		if (mIsAudioOnly && !mMuteVideo) {
+			mIsAudioOnly = false;
+		}
+
 		mRingingLabel = layout.findViewById(R.id.ringing);
 
 		if ( !mIsCalling ){
@@ -123,11 +127,6 @@ public class VideoChatFragment extends Fragment implements Session.SessionListen
 				updateButtonState();
 			}
 		});
-
-		if ( mIsAudioOnly ){
-			mMuteVideo = true;
-			// mVideoButton.setVisibility(View.INVISIBLE);
-		}
 
 		mAudioButton = (ImageView)layout.findViewById(R.id.mute_audio);
 		mAudioButton.setOnClickListener(new View.OnClickListener() {

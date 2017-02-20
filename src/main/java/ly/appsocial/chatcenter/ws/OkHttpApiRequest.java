@@ -165,6 +165,7 @@ public class OkHttpApiRequest<T> implements ApiRequest<T> {
 		newHeaders.put("App-Version", BuildConfig.VERSION_NAME);
 		newHeaders.put("Dev-Version", "" + BuildConfig.VERSION_CODE);
 		newHeaders.put("Accept-Language", Locale.getDefault().getLanguage());
+		newHeaders.put("Supports-Video-Chat", "true");
 
 		return newHeaders;
 	}

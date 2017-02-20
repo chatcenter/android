@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.JsonElement;
 
@@ -77,45 +78,9 @@ public class ChannelFilterView extends LinearLayout {
 
         mStatusAdapter = new MessageStatusAdapter(getContext(), R.layout.item_channel_filter, mStatusItems);
         mLvChannelStatus.setAdapter(mStatusAdapter);
-        mLvChannelStatus.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                for (int i = 0; i < mStatusItems.size(); i++) {
-                    if (i == position) {
-                        mStatusItems.get(i).isSelected = true;
-                    } else {
-                        mStatusItems.get(i).isSelected = false;
-                    }
-                }
-
-                mStatusAdapter.notifyDataSetChanged();
-
-                if (mListener != null) {
-                    mListener.onStatusItemSelected(mStatusItems.get(position));
-                }
-            }
-        });
 
         mFunnelAdapter = new MessageFunnelAdapter(getContext(), R.layout.item_channel_filter, mFunnelItems);
         mLvFunnel.setAdapter(mFunnelAdapter);
-        mLvFunnel.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                for (int i = 0; i < mFunnelItems.size(); i++) {
-                    if (i == position) {
-                        mFunnelItems.get(i).funnel.isSelected = true;
-                    } else {
-                        mFunnelItems.get(i).funnel.isSelected = false;
-                    }
-                }
-
-                mFunnelAdapter.notifyDataSetChanged();
-
-                if (mListener != null) {
-                    mListener.onFunnelItemSelected(mFunnelItems.get(position));
-                }
-            }
-        });
 
         mRootView.setOnClickListener(new OnClickListener() {
             @Override
@@ -214,7 +179,7 @@ public class ChannelFilterView extends LinearLayout {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_channel_filter, parent, false);
 
             MessageStatusItem item = getItem(position);
@@ -222,6 +187,25 @@ public class ChannelFilterView extends LinearLayout {
             (convertView.findViewById(R.id.checkbox)).setSelected(item.isSelected);
             ((TextView)convertView.findViewById(R.id.tv_filter_option)).setText(item.name);
             ((TextView)convertView.findViewById(R.id.tv_channel_matching_count)).setText(item.count + "");
+
+            convertView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    for (int i = 0; i < mStatusItems.size(); i++) {
+                        if (i == position) {
+                            mStatusItems.get(i).isSelected = true;
+                        } else {
+                            mStatusItems.get(i).isSelected = false;
+                        }
+                    }
+
+                    mStatusAdapter.notifyDataSetChanged();
+
+                    if (mListener != null) {
+                        mListener.onStatusItemSelected(mStatusItems.get(position));
+                    }
+                }
+            });
 
             return convertView;
         }
@@ -244,7 +228,7 @@ public class ChannelFilterView extends LinearLayout {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_channel_filter, parent, false);
 
             MessageFunnelItem item = getItem(position);
@@ -252,6 +236,25 @@ public class ChannelFilterView extends LinearLayout {
             (convertView.findViewById(R.id.checkbox)).setSelected(item.funnel.isSelected);
             ((TextView)convertView.findViewById(R.id.tv_filter_option)).setText(item.funnel.name);
             ((TextView)convertView.findViewById(R.id.tv_channel_matching_count)).setText(item.count + "");
+
+            convertView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    for (int i = 0; i < mFunnelItems.size(); i++) {
+                        if (i == position) {
+                            mFunnelItems.get(i).funnel.isSelected = true;
+                        } else {
+                            mFunnelItems.get(i).funnel.isSelected = false;
+                        }
+                    }
+
+                    mFunnelAdapter.notifyDataSetChanged();
+
+                    if (mListener != null) {
+                        mListener.onFunnelItemSelected(mFunnelItems.get(position));
+                    }
+                }
+            });
 
             return convertView;
         }

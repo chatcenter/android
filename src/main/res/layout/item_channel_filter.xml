@@ -9,12 +9,11 @@
     android:paddingRight="@dimen/margin10dp"
     android:descendantFocusability="blocksDescendants">
 
-    <CheckBox
+    <ImageView
         android:id="@+id/checkbox"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:button="@drawable/btn_selected"
-        android:clickable="false"/>
+        android:src="@drawable/btn_selected"/>
 
     <TextView
         android:id="@+id/tv_filter_option"

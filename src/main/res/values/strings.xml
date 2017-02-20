@@ -257,5 +257,6 @@
     <string name="alert_question_widget_question_too_long">質問文は%d文字以内にしてください。</string>
     <string name="alert_question_widget_choice_too_many">選択肢は%d個までにしてください</string>
     <string name="guest">ゲスト</string>
+    <string name="alert_can_not_send_without_message">インターネット接続がないためメッセージを送信できません。</string>
 
 </resources>

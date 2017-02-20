@@ -7,12 +7,13 @@ package ly.appsocial.chatcenter.dto.ws.request;
 import java.util.HashMap;
 import java.util.Map;
 
+import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.util.StringUtil;
 
 public class GetChannelsRequestDto {
     /** Channels per page */
-    private int mLimit = 20;
+    private int mLimit = ChatCenterConstants.MAX_CHANNEL_ON_LOAD;
     /** Page starts from (epoch timestamp) */
     private int mLastUpdatedAt;
     /** 0:unassigned, 1:assigned, 2:closed */

@@ -163,8 +163,15 @@ public class FixedPhraseActivity extends BaseActivity implements
         } else {
             if (item != null
                     && item.getChatItem() != null
+                    && item.getChatItem().widget != null
+                    && item.getChatItem().widget.content != null) {
+                String content = item.getChatItem().widget.content.toString();
+                intent.putExtra(SELECTED_CONTENT, content);
+            } else if (item != null
+                    && item.getChatItem() != null
                     && item.getChatItem().widget != null) {
-                intent.putExtra(SELECTED_CONTENT, gson.toJson(item.getChatItem().widget).toString());
+                String content = gson.toJson(item.getChatItem().widget).toString();
+                intent.putExtra(SELECTED_CONTENT, content);
             }
         }
 

@@ -150,8 +150,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 	private static final String TAG = ChatActivity.class.getSimpleName();
 
-	private static final Integer MAX_LOADITEM = 10;
-
 	private static final int PERMISSIONS_REQUEST_GALLERY = 3000;
 	private static final int PERMISSIONS_REQUEST_CAMERA = 3001;
 	private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 3002;
@@ -207,6 +205,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 	private boolean mNoPreviousMessage = false;
 	private boolean mLoadFromFirst;
+	private boolean mMessagesLoading = false;
 
 	/** スチッカーを送信ボタン*/
 	private ImageButton mIbtSendSticker;
@@ -326,6 +325,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		Log.i("ChatActivity", "getInstance");
 		return instance;
 	}
+
 	// //////////////////////////////////////////////////////////////////////////
 	// イベントメソッド
 	// //////////////////////////////////////////////////////////////////////////
@@ -371,7 +371,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		mAdapter = new ChatAdapter(this, mMessagesList, this, new ChatAdapter.ViewPositionChangedListener() {
 			@Override
 			public void onChanged(int itemViewType, int position) {
-				if ( !mNoPreviousMessage && position <= 5 ){
+				if ( !mNoPreviousMessage && position <= 5 && !mMessagesLoading){
 					ChatItem item = mAdapter.getItem(0);
 					requestGetMessages(item.id);
 				}
@@ -730,7 +730,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
-		mGetChannelsRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.GET, path, null, headers, new PostChannelsCallback(), new PostChannelsParser());
+		mGetChannelsRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.GET, path, null, headers,
+				new PostChannelsCallback(), new PostChannelsParser());
 		if (mParamDto.appToken != null) {
 			mGetChannelsRequest.setApiToken(mParamDto.appToken);
 		}
@@ -755,7 +756,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		postChannelsRequestDto.channelInformation = mParamDto.channelInformations;
 		Map<String, String> params = postChannelsRequestDto.toParams();
 
-		mPostChannelsRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, params, headers, new PostChannelsCallback(), new PostChannelsParser());
+		mPostChannelsRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, params, headers,
+				new PostChannelsCallback(), new PostChannelsParser());
 		if (mParamDto.appToken != null) {
 			mPostChannelsRequest.setApiToken(mParamDto.appToken);
 		}
@@ -770,13 +772,15 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			return;
 		}
 
+		mMessagesLoading = true;
+
 		String path = "channels/" + mChannelUid + "/messages";
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
 		GetMessagesRequestDto getMessagesRequestDto = new GetMessagesRequestDto();
-		getMessagesRequestDto.maxLoadNum = MAX_LOADITEM;
+		getMessagesRequestDto.maxLoadNum = ChatCenterConstants.MAX_MESSAGE_ON_LOAD;
 		if ( lastId != null ){
 			mLoadFromFirst = false;
 			getMessagesRequestDto.lastId = lastId;
@@ -784,7 +788,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			mLoadFromFirst = true;
 		}
 
-		mGetMessagesRequest = new OkHttpApiRequest<>(getApplicationContext(), ApiRequest.Method.GET, path, getMessagesRequestDto.toParams(), headers, new GetMessagesCallback(), new GetMessagesParser());
+		mGetMessagesRequest = new OkHttpApiRequest<>(getApplicationContext(), ApiRequest.Method.GET,
+				path, getMessagesRequestDto.toParams(), headers, new GetMessagesCallback(), new GetMessagesParser());
 		if (mParamDto.appToken != null) {
 			mGetMessagesRequest.setApiToken(mParamDto.appToken);
 		}
@@ -795,7 +800,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	 * POST /api/channels/:channel_uid/messages
 	 */
 	private void requestPostMessages(String message) {
-		if (!isInternetConnecting || mPostMessagesRequest != null) {
+		if (!isInternetConnecting) {
+			showNWErrorDialog();
 			return;
 		}
 
@@ -830,7 +836,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	 * POST /api/channels/:channel_uid/messages
 	 */
 	private void requestPostSticker(String content) {
-		if (!isInternetConnecting || mPostMessagesRequest != null || content == null) {
+		if (!isInternetConnecting) {
+			showNWErrorDialog();
+		}
+
+		if (!isInternetConnecting || content == null) {
 			return;
 		}
 
@@ -880,7 +890,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	private void requestStartVideoChat(boolean audioOnly, List<String> userIds) {
-		if (!isInternetConnecting || mPostMessagesRequest != null) {
+		if (!isInternetConnecting) {
+			showNWErrorDialog();
 			return;
 		}
 
@@ -892,7 +903,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
-		mStartVideoChatRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new StartVideoChatCallback(), new StartVideoChatParser());
+		mStartVideoChatRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers,
+				new StartVideoChatCallback(), new StartVideoChatParser());
 		if (mParamDto.appToken != null) {
 			mStartVideoChatRequest.setApiToken(mParamDto.appToken);
 		}
@@ -998,7 +1010,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	 * POST /api/channels/:channel_uid/messages Reply sticker
 	 */
 	private void sendMessageResponseForChannel(BasicWidget.StickerAction.ActionData answer, String replyTo) {
-		if (!isInternetConnecting || mPostMessagesRequest != null) {
+		if (!isInternetConnecting) {
+			showNWErrorDialog();
 			return;
 		}
 
@@ -1032,7 +1045,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	private void sendCheckboxResponseForChannel(List<BasicWidget.StickerAction.ActionData> answers, String replyTo) {
-		if (!isInternetConnecting || mPostMessagesRequest != null) {
+		if (!isInternetConnecting) {
+			showNWErrorDialog();
 			return;
 		}
 
@@ -1069,7 +1083,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	 * @param messageIds 既読にするメッセージIDリスト
 	 */
 	private void requestPostMessagesRead(List<Integer> messageIds) {
-		if (!isInternetConnecting || mPostMessagesRequest != null) {
+		if (!isInternetConnecting) {
 			return;
 		}
 
@@ -1128,7 +1142,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	private void requestUploadFile(String picturePath, MediaType mediaType) {
-		if (!isInternetConnecting || mPostMessagesRequest != null) {
+		if (!isInternetConnecting) {
+			showNWErrorDialog();
 			return;
 		}
 
@@ -1847,7 +1862,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		if (selectedContentType.equals(ResponseType.MESSAGE)) {
 			requestPostMessages(content);
 		} else if (selectedContentType.equals(ResponseType.STICKER)) {
-			requestPostSticker(content);
+			// requestPostSticker(content);
+			openWidgetPreview(content);
 		}
 	}
 
@@ -2016,8 +2032,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			requestGetMessages(null);
 
 			// Set enable for video call
-			UserItem currentUser = mCurrentChannelItem.getCurrentUser(AuthUtil.getUserId(ChatActivity.this));
-			if (currentUser != null && currentUser.isCanUseVideoChat) {
+			if (mCurrentChannelItem != null && mCurrentChannelItem.canUseVideoCall(mIsAgent)) {
 				mBtVideoCall.setVisibility(View.VISIBLE);
 				mBtPhoneCall.setVisibility(View.VISIBLE);
 			}
@@ -2038,16 +2053,19 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				// エラー表示＆再接続
 				// errorWithReconnect();
 			}
+			mMessagesLoading = false;
 		}
 
 		@Override
 		public void onSuccess(GetMessagesResponseDto responseDto) {
+			mMessagesLoading = false;
 			mGetMessagesRequest = null;
 
 			if (responseDto == null || responseDto.items == null) {
 				mProgressBar.setVisibility(View.GONE);
 				// エラー表示＆再接続
 				// errorWithReconnect();
+				return;
 			}
 
 			int userId = AuthUtil.getUserId(ChatActivity.this);
@@ -2057,7 +2075,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				mAdapter.clear();
 			}
 
-			if ( responseDto.items.size() < MAX_LOADITEM ){
+			if ( responseDto.items.size() < ChatCenterConstants.MAX_MESSAGE_ON_LOAD ){
 				mNoPreviousMessage = true;
 			} else {
 				mNoPreviousMessage = false;
@@ -2126,7 +2144,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		@Override
 		public void onError(OkHttpApiRequest.Error error) {
 			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
-			mPostMessagesRequest = null;
 
 			if (!isAuthErrorWithAlert(error)) {
 				// メッセージ送信エラーダイアログの表示
@@ -2141,7 +2158,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 		@Override
 		public void onSuccess(PostMessagesResponseDto responseDto) {
-			mPostMessagesRequest = null;
 			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
 			// テキストボックスのクリア
 			mEditText.setText("");
@@ -2254,7 +2270,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		 */
 		@Override
 		public void onSuccess(PostMessagesResponseDto responseDto) {
-			mPostMessagesRequest = null;
 
 			for ( int i = 0; i < mAdapter.getCount(); i++ ){
 				ChatItem item = mAdapter.getItem(i);
@@ -2273,7 +2288,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		 */
 		@Override
 		public void onError(ApiRequest.Error error) {
-			mPostMessagesRequest = null;
 
 			if (!isAuthErrorWithAlert(error)) {
 				// 共通エラーダイアログの表示
@@ -2299,7 +2313,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		 */
 		@Override
 		public void onSuccess(PostMessagesResponseDto responseDto) {
-			mPostMessagesRequest = null;
 
 			for ( int i = 0; i < mAdapter.getCount(); i++ ){
 				ChatItem item = mAdapter.getItem(i);
@@ -2318,7 +2331,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		 */
 		@Override
 		public void onError(ApiRequest.Error error) {
-			mPostMessagesRequest = null;
 
 			if (!isAuthErrorWithAlert(error)) {
 				// 共通エラーダイアログの表示
@@ -3107,5 +3119,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		}
 
 		mNetworkErrorTextView.setVisibility(View.VISIBLE);
+	}
+
+	private void showNWErrorDialog() {
+		DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ALERT, "", getString(R.string.alert_can_not_send_without_message));
 	}
 }

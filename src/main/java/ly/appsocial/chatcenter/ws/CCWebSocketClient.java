@@ -51,7 +51,9 @@ public class CCWebSocketClient {
                         @Override
                         public void run() {
                             try {
-                                mWebSocket.sendPing(null);
+                                if (mWebSocket != null) {
+                                    mWebSocket.sendPing(null);
+                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

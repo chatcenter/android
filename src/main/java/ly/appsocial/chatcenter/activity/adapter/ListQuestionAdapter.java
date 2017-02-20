@@ -59,7 +59,7 @@ public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.Questi
 
         final QuestionTitle title = getItem(position);
         if (StringUtil.isBlank(title.getContent())) {
-            editText.setHint(title.getHintString());
+            editText.setHint(String.format(getContext().getString(R.string.option), position + 1));
         } else {
             editText.setText(title.getContent());
         }
@@ -72,16 +72,20 @@ public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.Questi
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH) {
+                if (s.length() == 0) {
+                    editText.setHint(String.format(getContext().getString(R.string.option), position + 1));
+                } else {
+                    if (s.length() > ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH) {
                     /*
                     String message = String.format(getContext().getString(R.string.alert_question_widget_title_too_long),
                             ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH);
                     DialogUtil.showAlertDialog(mOwner.getSupportFragmentManager(), DialogUtil.Tag.ALERT, null, message);
                     */
 
-                    s = s.subSequence(0, ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH);
-                    editText.setText(s);
-                    editText.setSelection(s.length());
+                        s = s.subSequence(0, ChatCenterConstants.QuestionWidget.QUESTION_MAX_LENGTH);
+                        editText.setText(s);
+                        editText.setSelection(s.length());
+                    }
                 }
                 title.setContent(s.toString());
             }
@@ -113,9 +117,6 @@ public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.Questi
 
     private void removeItem(int position) {
         mTitles.remove(position);
-        for (int i = 0; i < mTitles.size(); i++) {
-            mTitles.get(i).setHintString(String.format(getContext().getString(R.string.option), i + 1));
-        }
         notifyDataSetChanged();
     }
 
@@ -132,10 +133,10 @@ public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.Questi
 
     public static class QuestionTitle {
         private String mContent;
-        private String mHintString;
+        // private String mHintString;
 
-        public QuestionTitle(String hintString) {
-            mHintString = hintString;
+        public QuestionTitle() {
+            // mHintString = hintString;
         }
 
         public String getContent() {
@@ -144,14 +145,6 @@ public class ListQuestionAdapter extends ArrayAdapter<ListQuestionAdapter.Questi
 
         public void setContent(String content) {
             mContent = content;
-        }
-
-        public String getHintString() {
-            return mHintString;
-        }
-
-        public void setHintString(String hintString) {
-            mHintString = hintString;
         }
     }
 

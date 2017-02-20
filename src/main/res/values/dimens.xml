@@ -43,5 +43,7 @@
 	<dimen name="video_activity_btn_call_size">50dp</dimen>
 	<dimen name="left_menu_app_icon_radius">4dp</dimen>
 	<dimen name="live_location_time_button">40dp</dimen>
+	<dimen name="yes_no_height">35dp</dimen>
+	<dimen name="yes_no_width">50dp</dimen>
 
 </resources>

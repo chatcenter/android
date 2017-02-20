@@ -21,6 +21,9 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:button="@drawable/btn_selected"
-        android:clickable="false"/>
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"
+        android:enabled="false"/>
 
 </LinearLayout>

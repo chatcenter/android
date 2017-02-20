@@ -6,6 +6,8 @@ package ly.appsocial.chatcenter.constants;
 public class ChatCenterConstants {
 
 	public static final String URL_DASHBOARD = "https://app.chatcenter.io";
+	public static final int MAX_MESSAGE_ON_LOAD = 20;
+	public static final int MAX_CHANNEL_ON_LOAD = 20;
 
 	/**
 	 * プリファレンスキー

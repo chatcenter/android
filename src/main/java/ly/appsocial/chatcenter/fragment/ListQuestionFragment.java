@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ScrollView;
 
 import java.util.ArrayList;
@@ -34,7 +35,8 @@ public abstract class ListQuestionFragment extends Fragment {
 		View footer = inflater.inflate(R.layout.question_cell_footer, null);
 		lv.addFooterView(footer);
 
-		footer.setOnClickListener(new View.OnClickListener() {
+		Button addButton = (Button) footer.findViewById(R.id.btn_add);
+		addButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				addNewOption();
@@ -42,7 +44,7 @@ public abstract class ListQuestionFragment extends Fragment {
 		});
 
 		mTitles = new ArrayList<>();
-		mTitles.add(new ListQuestionAdapter.QuestionTitle(String.format(getContext().getString(R.string.option), mLastItemId)));
+		mTitles.add(new ListQuestionAdapter.QuestionTitle());
 
 		mAdapter = new ListQuestionAdapter(activity, res_id, mTitles);
 
@@ -51,8 +53,8 @@ public abstract class ListQuestionFragment extends Fragment {
 	}
 
 	private void addNewOption(){
-		if (mLastItemId < ChatCenterConstants.QuestionWidget.MAX_CHOICE) {
-			mTitles.add(new ListQuestionAdapter.QuestionTitle(String.format(getContext().getString(R.string.option), ++mLastItemId)));
+		if (mTitles.size() < ChatCenterConstants.QuestionWidget.MAX_CHOICE) {
+			mTitles.add(new ListQuestionAdapter.QuestionTitle());
 			mAdapter.notifyDataSetChanged();
 			mScrollView.fullScroll(View.FOCUS_DOWN);
 		} else {

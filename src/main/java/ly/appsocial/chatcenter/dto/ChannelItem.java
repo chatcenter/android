@@ -104,13 +104,25 @@ public class ChannelItem implements Serializable {
         return user != null && user.online;
     }
 
-    public UserItem getCurrentUser(int userId) {
-        for (UserItem userItem: users) {
-            if (userItem.id == userId) {
-                return userItem;
+    public boolean canUseVideoCall(boolean isAgent) {
+        if (users == null || users.size() == 0) {
+            return false;
+        }
+        if (isAgent) {
+            // If there is one guest can use video chat, return true
+            for (UserItem user: users) {
+                if (!user.admin && user.isCanUseVideoChat) {
+                    return true;
+                }
+            }
+        } else {
+            for (UserItem user: users) {
+                if (user.admin && user.isCanUseVideoChat) {
+                    return true;
+                }
             }
         }
-        return null;
+        return false;
     }
 
     public ChannelStatus getChannelStatus() {

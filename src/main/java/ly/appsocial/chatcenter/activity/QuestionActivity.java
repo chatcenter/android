@@ -2,6 +2,7 @@ package ly.appsocial.chatcenter.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -579,5 +580,52 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
     public void finish() {
         super.finish();
         this.overridePendingTransition(0, R.anim.activity_close_exit);
+    }
+
+    private void hideSoftKeyboard() {
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(
+                    getCurrentFocus().getWindowToken(), 0);
+        }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+
+        boolean handleReturn = super.dispatchTouchEvent(ev);
+
+        View view = getCurrentFocus();
+
+        int x = (int) ev.getX();
+        int y = (int) ev.getY();
+
+        if(view instanceof EditText){
+            View innerView = getCurrentFocus();
+
+            if (ev.getAction() == MotionEvent.ACTION_UP &&
+                    !getLocationOnScreen(innerView).contains(x, y)) {
+
+                InputMethodManager input = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
+                input.hideSoftInputFromWindow(getWindow().getCurrentFocus()
+                        .getWindowToken(), 0);
+            }
+        }
+
+        return handleReturn;
+    }
+
+    protected Rect getLocationOnScreen(View view) {
+        Rect mRect = new Rect();
+        int[] location = new int[2];
+
+        view.getLocationOnScreen(location);
+
+        mRect.left = location[0];
+        mRect.top = location[1];
+        mRect.right = location[0] + view.getWidth();
+        mRect.bottom = location[1] + view.getHeight();
+
+        return mRect;
     }
 }
