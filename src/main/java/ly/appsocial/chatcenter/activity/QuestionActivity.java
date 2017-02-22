@@ -32,6 +32,8 @@ import java.util.ArrayList;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
+import ly.appsocial.chatcenter.dto.ChannelItem;
+import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
 import ly.appsocial.chatcenter.fragment.ListQuestionFragment;
 import ly.appsocial.chatcenter.fragment.WidgetPreviewDialog;

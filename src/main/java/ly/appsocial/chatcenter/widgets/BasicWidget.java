@@ -197,7 +197,11 @@ public class BasicWidget extends Widget {
 
 		Log.d(TAG, "setChatItem: actionType: " + this.stickerAction.actionType);
 		if (WIDGET_TYPE_CONFIRM.equals(this.stickerAction.actionType)) {
-			if (this.stickerAction.actionData.size() == 2) {
+
+			if ( this.stickerAction.viewInfo != null && this.stickerAction.viewInfo.type != null
+					&& this.stickerAction.viewInfo.type.equals(ChatCenterConstants.ViewType.LINEAR) ) {
+				widgetView.showLinearActions(this.stickerAction);
+			} else if (this.stickerAction.actionData.size() == 2) {
 				widgetView.showConfirmActions(this.stickerAction);
 			} else {
 				widgetView.showSelectActions(this.stickerAction);

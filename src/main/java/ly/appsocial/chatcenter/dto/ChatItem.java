@@ -12,7 +12,9 @@ import com.google.gson.annotations.SerializedName;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import ly.appsocial.chatcenter.R;
@@ -333,6 +335,11 @@ public class ChatItem {
 				count++;
 		}
 		return count;
+	}
+
+	public String getSimpleFormatedCreatedDate() {
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd");
+		return simpleDateFormat.format(new Date(created * 1000));
 	}
 
 }

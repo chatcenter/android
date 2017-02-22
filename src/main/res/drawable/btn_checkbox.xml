@@ -6,4 +6,6 @@
 		android:height="20dp"/>
 	<stroke android:width="2dp"
 			android:color="@color/color_chatcenter_widget_border"/>
+
+	<solid android:color="@android:color/transparent"/>
 </shape>

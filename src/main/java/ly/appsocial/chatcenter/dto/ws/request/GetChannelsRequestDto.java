@@ -24,6 +24,8 @@ public class GetChannelsRequestDto {
     private String mOrgUid;
     /** Funnel ID*/
     private int mFunnelID;
+    /** Assignee ID*/
+    private int mAssigneeID;
     /**
      * リクストパラメータを生成します。
      *
@@ -46,6 +48,9 @@ public class GetChannelsRequestDto {
         }
         if (mFunnelID > 0) {
             params.put("funnel_id", mFunnelID + "");
+        }
+        if (mAssigneeID > 0) {
+            params.put("assignee_id", mAssigneeID + "");
         }
         return params;
     }
@@ -96,5 +101,13 @@ public class GetChannelsRequestDto {
 
     public void setFunnelID(int funnelID) {
         mFunnelID = funnelID;
+    }
+
+    public int getAssigneeID() {
+        return mAssigneeID;
+    }
+
+    public void setAssigneeID(int assigneeID) {
+        mAssigneeID = assigneeID;
     }
 }

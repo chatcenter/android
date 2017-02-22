@@ -604,10 +604,18 @@ public class WidgetView extends FrameLayout {
 
 				LinearLayout.LayoutParams lp = new
 						LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-				lp.weight = 1;
+				// lp.weight = 1;
 
 				// Add view to container
 				linearLayout.addView(item, lp);
+
+				if (i < actions.size() - 1) {
+					View view = new View(getContext());
+					LinearLayout.LayoutParams layoutParams = new
+							LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+					layoutParams.weight = 1;
+					linearLayout.addView(view, layoutParams);
+				}
 			}
 		}
 		showLinearActions(true);

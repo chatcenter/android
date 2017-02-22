@@ -2500,8 +2500,15 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 									responseAction.actionOld = answer;
 									responseAction.actionDataList = answers;
 
-									oldItem.widget.stickerAction.responseActions.clear();
-									oldItem.widget.stickerAction.responseActions.add(responseAction);
+									if (oldItem.widget.stickerAction != null) {
+										if (oldItem.widget.stickerAction.responseActions != null) {
+											oldItem.widget.stickerAction.responseActions.clear();
+											oldItem.widget.stickerAction.responseActions.add(responseAction);
+										} else {
+											oldItem.widget.stickerAction.responseActions = new ArrayList<>();
+											oldItem.widget.stickerAction.responseActions.add(responseAction);
+										}
+									}
 
 								} catch (JSONException e) {
 									e.printStackTrace();

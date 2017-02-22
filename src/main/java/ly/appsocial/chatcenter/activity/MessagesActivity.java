@@ -950,17 +950,17 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
             }
 
 
-            if (mCurrentStatus != null
-                    && mCurrentStatus.value == ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME) {
-                // add channels that assigned to me
-                for (GetChannelsMineResponseDto.Channel channel : items) {
-                    if (channel.assignee.id.intValue() == AuthUtil.getUserId(MessagesActivity.this)) {
-                        mChannelItems.add(channel);
-                    }
-                }
-            } else {
-                mChannelItems.addAll(items);
-            }
+//            if (mCurrentStatus != null
+//                    && mCurrentStatus.value == ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME) {
+//                // add channels that assigned to me
+//                for (GetChannelsMineResponseDto.Channel channel : items) {
+//                    if (channel.assignee.id.intValue() == AuthUtil.getUserId(MessagesActivity.this)) {
+//                        mChannelItems.add(channel);
+//                    }
+//                }
+//            } else {
+            mChannelItems.addAll(items);
+//            }
 
             if (mCurrentOrgItem == null) {
                 mCurrentOrgItem = new OrgItem();
@@ -1301,6 +1301,10 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
         request.setLastUpdatedAt(lastUpdatedDate);
         request.setOrgUid(mCurrentOrgItem.uid);
         request.setFunnelID(mParamDto.funnelId);
+
+        if (mParamDto.channelStatus == ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME) {
+            request.setAssigneeID(AuthUtil.getUserId(this));
+        }
 
         Map<String, String> params = request.toParams();
 

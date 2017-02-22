@@ -195,7 +195,11 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 //        }
 
 		// 日付
-		if (position % 3 == 0) {
+		ChatItem prevItem = null;
+		if (position > 0) {
+			prevItem = getItem(position - 1);
+		}
+		if (prevItem == null || !item.getSimpleFormatedCreatedDate().equals(prevItem.getSimpleFormatedCreatedDate())) {
 			holder.timestampTextView.setVisibility(View.VISIBLE);
 			holder.timestampTextView.setText(getDateStr(item.created * 1000));
 		} else {
@@ -244,7 +248,11 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 
 
 		// 日付
-		if (position % 3 == 0) {
+		ChatItem prevItem = null;
+		if (position > 0) {
+			prevItem = getItem(position - 1);
+		}
+		if (prevItem == null || !item.getSimpleFormatedCreatedDate().equals(prevItem.getSimpleFormatedCreatedDate())) {
 			holder.timestampTextView.setVisibility(View.VISIBLE);
 			holder.timestampTextView.setText(getDateStr(item.created * 1000));
 		} else {
@@ -325,7 +333,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 			retVal = getContext().getString(R.string.datetime_2_days_ago) + " ";
 			retVal += new SimpleDateFormat(getContext().getString(R.string.datetime_format_time), Locale.JAPAN).format(new Date(time));
 		} else {
-			return new SimpleDateFormat(getContext().getString(R.string.datetime_format_full), Locale.JAPAN).format(new Date(time));
+			return new SimpleDateFormat(getContext().getString(R.string.datetime_format_default), Locale.JAPAN).format(new Date(time));
 		}
 		return retVal;
 	}
