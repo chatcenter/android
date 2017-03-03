@@ -63,14 +63,19 @@
 
             <TextView
                 android:id="@+id/bt_live"
-                android:layout_width="38dp"
-                android:layout_height="25dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="5dp"
                 android:background="@drawable/live_button"
                 android:gravity="center"
                 android:text="@string/location_live"
+                android:textSize="10sp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:textColor="#fff"
                 android:visibility="gone"/>
 

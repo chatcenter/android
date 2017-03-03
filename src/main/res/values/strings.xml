@@ -46,7 +46,7 @@
 
     <string name="location_dialog_title">どの位置情報を共有しますか？</string>
     <string name="location_title">位置情報</string>
-    <string name="location_live_title">ライブ位置情報を共有</string>
+    <string name="location_live_title">ライブ位置情報</string>
     <string name="location_select_map">地図から選択</string>
     <string name="location_select_live">ライブ位置情報</string>
     <string name="sending_location">位置情報共有中</string>

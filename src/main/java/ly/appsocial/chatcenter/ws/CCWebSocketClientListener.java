@@ -62,7 +62,8 @@ public abstract class CCWebSocketClientListener implements CCWebSocketClient.Lis
 
     @Override
     public void onMessage(String message) {
-        if (isCancelled()) {
+		Log.e(TAG, "onMessage: " + message);
+		if (isCancelled()) {
             return;
         }
 

@@ -59,6 +59,7 @@ import ly.appsocial.chatcenter.activity.model.LeftMenuGroupItem;
 import ly.appsocial.chatcenter.activity.receivers.NetworkStateReceiver;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChannelItem;
+import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.FunnelItem;
 import ly.appsocial.chatcenter.dto.OrgItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
@@ -328,6 +329,11 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
     private boolean isChannelsLoading = false;
     private boolean isCanLoadMore = false;
+
+    private int mLastFunnellId;
+    private ChannelItem.ChannelStatus mLastChannelStatus;
+    private String mLastChannelFilterString;
+    private  TextView mTvNotiNewMessage;
     // //////////////////////////////////////////////////////////////////////////
     // イベントメソッド
     // //////////////////////////////////////////////////////////////////////////
@@ -336,9 +342,16 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mLastChannelStatus = PreferenceUtil.getLastChannelStatus(this);
+        mLastFunnellId = PreferenceUtil.getLastFunnelId(this);
+        mLastChannelFilterString = PreferenceUtil.getLastChannelFilterString(this);
+
         // パラメータの取得
         mParamDto = getIntent().getExtras().getParcelable(MessagesParamDto.class.getCanonicalName());
         mIsAgent = mParamDto.isAgent;
+        mParamDto.channelStatus = mLastChannelStatus;
+        mParamDto.funnelId = mLastFunnellId;
+
 
         // Set the content view accordingly
         setContentView(mIsAgent ? R.layout.messages_agent : R.layout.messages);
@@ -373,6 +386,10 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
         mNetworkErrorTextView.setVisibility(View.GONE);
         checkNetworkToStart();
 
+        // 新着メッセージが追加された際に通知ラベルを表示します。
+        mTvNotiNewMessage = (TextView) findViewById(R.id.tv_notification_new_message);
+        mTvNotiNewMessage.setOnClickListener(this);
+
         // ListView
         mListView = (ListView) findViewById(R.id.messages_listview);
         mChannelItems = new ArrayList<>();
@@ -385,6 +402,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
         mTvFunnel = (TextView) findViewById(R.id.tv_header_funnel);
         mTvOrgName = (TextView) findViewById(R.id.tv_org_name);
         mTvFunnel.setEnabled(false);
+        mTvFunnel.setText(mLastChannelFilterString);
         if (!mIsAgent) {
             mTvFunnel.setVisibility(View.GONE);
         }
@@ -539,6 +557,9 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
 
                 mChannelFilterWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
                 mChannelFilterWindow.setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
+
+                mCurrentStatus = contentView.getCurrentStatus();
+                mCurrentFunnel = contentView.getCurrentFunnel();
             }
 
             if (mChannelFilterWindow.isShowing()) {
@@ -548,6 +569,12 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
                     PopupWindowCompat.showAsDropDown(mChannelFilterWindow, mToolbar, 0, 0, Gravity.CENTER_HORIZONTAL);
                     requestGetChannelCount(mCurrentOrgItem.uid);
                 }
+            }
+        } else if (view.equals(mTvNotiNewMessage)) {
+            if (mListView != null) {
+                // 最新項目を表示します。
+                mListView.setSelection(0);
+                mTvNotiNewMessage.setVisibility(View.GONE);
             }
         }
     }
@@ -828,6 +855,12 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
         } else {
             mTvFunnel.setText(mCurrentFunnel.funnel.name + ", " + mCurrentStatus.name);
         }
+
+        PreferenceUtil.saveLastChannelStatus(this, mCurrentStatus == null
+                ? ChannelItem.ChannelStatus.CHANNEL_ALL : mCurrentStatus.value);
+
+        PreferenceUtil.saveLastFunnelId(this, mCurrentFunnel == null ? -1 : mCurrentFunnel.funnel.id);
+        PreferenceUtil.saveLastChannelFilterString(this, mTvFunnel.getText().toString());
     }
 
     @Override
@@ -923,11 +956,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
             if (responseDto.items == null || responseDto.items.size() == 0) {
                 isCanLoadMore = false;
             } else {
-                if (responseDto.items.size() < ChatCenterConstants.MAX_CHANNEL_ON_LOAD) {
-                    isCanLoadMore = false;
-                } else {
-                    isCanLoadMore = true;
-                }
+                isCanLoadMore = true;
                 for (GetChannelsMineResponseDto.Channel item : responseDto.items) {
                     if (mCurrentStatus != null
                             && mCurrentStatus.value != ChannelItem.ChannelStatus.CHANNEL_CLOSE
@@ -1078,12 +1107,17 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
             // At the end of scroll
             if (!isChannelsLoading && isCanLoadMore && lastItem > 0) {
                 if (mIsAgent) {
-
                     requestGetChannels((int) Math.floor(mAdapter.getItem(lastItem - 1).lastUpdatedAt));
                 } else {
                     requestGetChannelsMine((int) Math.floor(mAdapter.getItem(lastItem - 1).lastUpdatedAt));
                 }
             }
+
+        }
+
+        // 最新項目が表示された際には通知ラベルを未表示するようにします。
+        if (firstVisibleItem == 0) {
+            mTvNotiNewMessage.setVisibility(View.GONE);
         }
     }
 
@@ -1284,6 +1318,7 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
      * GET /api/channels
      */
     private void requestGetChannels(int lastUpdatedDate) {
+        Log.e(TAG, "requestGetChannelsMine: " + lastUpdatedDate);
         if (!isInternetConnecting || mGetChannelsRequest != null || mCurrentOrgItem == null) {
             return;
         }
@@ -1631,9 +1666,6 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
                         if (!item.uid.equals(response.channelUid)) {
                             continue;
                         }
-
-                        mChannelItems.remove(item);
-                        mChannelItems.add(0, item);
                         found = item;
                         break;
                     }
@@ -1654,7 +1686,14 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
                         found.latestMessage.created = response.created;
                         found.latestMessage.user = response.user;
                         found.unreadMessages += 1;
+
+                        mChannelItems.remove(found);
+                        mChannelItems.add(0, found);
+
                         mAdapter.notifyDataSetChanged();
+
+                        // Smooth scroll to top when received new message
+                        showNotifiNewMessage(found.latestMessage);
                     }
                 }
             });
@@ -2024,5 +2063,43 @@ public class MessagesActivity extends ly.appsocial.chatcenter.activity.BaseActiv
         Intent intent = new Intent(this, WebViewActivity.class);
         intent.putExtra(ChatCenterConstants.Extra.URL, ChatCenterConstants.URL_DASHBOARD);
         startActivity(intent);
+    }
+
+    /**
+     * ユーザーは古いチャンネルを検索する中に新しいメッセージが追加されると
+     * 通知ラベルを表示するようにします、
+     * @param chatItem
+     */
+    private void showNotifiNewMessage(ChatItem chatItem) {
+        if (chatItem == null || chatItem.user.id == AuthUtil.getUserId(this)) {
+            return;
+        }
+
+        int lastPosition = mAdapter.getCount() + mListView.getHeaderViewsCount() + mListView.getFooterViewsCount() - 1;
+        int lastVisiblePosition = mListView.getLastVisiblePosition();
+        if (lastVisiblePosition < lastPosition - 1) {
+            // Show a notification instead of scrolling to last position
+            mTvNotiNewMessage.setVisibility(View.VISIBLE);
+
+            StringBuilder latestMessageBuilder = new StringBuilder();
+            if (chatItem != null && chatItem.user != null) {
+                latestMessageBuilder.append(chatItem.user.displayName);
+                latestMessageBuilder.append(getString(R.string.person_name_suffix));
+                latestMessageBuilder.append(": ");
+            }
+
+            if (ResponseType.STICKER.equals(chatItem.type)) {
+                latestMessageBuilder.append(getString(R.string.sent_a_widget));
+            } else if (ResponseType.CALL.equals(chatItem.type)) {
+                latestMessageBuilder.append(getString(R.string.called));
+            } else {
+                latestMessageBuilder.append(chatItem.widget == null || StringUtil.isBlank(chatItem.widget.text) ?
+                        getString(R.string.no_message) : chatItem.widget.text);
+            }
+
+            mTvNotiNewMessage.setText(latestMessageBuilder.toString());
+        } else {
+            mTvNotiNewMessage.setVisibility(View.GONE);
+        }
     }
 }

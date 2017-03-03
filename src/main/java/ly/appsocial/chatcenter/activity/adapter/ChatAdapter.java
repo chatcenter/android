@@ -6,13 +6,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.support.annotation.Nullable;
-import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -24,14 +21,13 @@ import java.util.Locale;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.ChatActivity;
-import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.UserItem;
-import ly.appsocial.chatcenter.widgets.views.WidgetView;
 import ly.appsocial.chatcenter.util.AuthUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.util.ViewUtil;
+import ly.appsocial.chatcenter.widgets.views.WidgetView;
 
 /**
  * {@link ChatActivity} adapter.
@@ -51,6 +47,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	public static final int VIEW_TYPE_INFORMATION = 2;
 	/** View種類数*/
 	public static final int NUMBER_OF_VIEW_TYPE = 3;
+	private final int mUserId;
 
 	// //////////////////////////////////////////////////////////////////////////
 	// インスタンスフィールド
@@ -60,8 +57,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	private Context mContext;
 	/** インフレーター */
 	private LayoutInflater mInflater;
-	/** ユーザーID */
-	private int mUserId;
+
 	/** チャネルUID */
 	private String mChannelUid;
 	/** メーラー起動可能かどうか */
@@ -70,12 +66,10 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	private String mUserToken;
 	/** カスタマーアクションのクリック*/
 	private WidgetView.StickerActionListener mStickerActionListener;
-	/* メッセージが表示された時のコールバック */
-	private ViewPositionChangedListener	mViewPositionListener;
 
-	public interface ViewPositionChangedListener {
-		void onChanged(int itemViewType, int position);
-	}
+
+	/* このユーザーはAgentですか？Guestですか？*/
+	private boolean isAgent;
 
 
 	/**
@@ -84,15 +78,17 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	 * @param context コンテキスト
 	 * @param items 項目リスト
 	 */
-	public ChatAdapter(Context context, List<ChatItem> items, WidgetView.StickerActionListener listener, @Nullable ViewPositionChangedListener viewPosListener) {
+	public ChatAdapter(Context context, List<ChatItem> items, WidgetView.StickerActionListener listener,
+					   boolean isAgent) {
 		super(context, 0, items);
 
 		mContext = context;
 		mStickerActionListener = listener;
-		mViewPositionListener = viewPosListener;
 		mInflater = LayoutInflater.from(context);
 		mCanMail = canMail(getContext());
 		mUserToken = AuthUtil.getUserToken(context);
+		this.isAgent = isAgent;
+		mUserId = AuthUtil.getUserId(context);
 	}
 
 	// //////////////////////////////////////////////////////////////////////////
@@ -102,9 +98,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		int itemViewType = getItemViewType(position);
-		if ( mViewPositionListener != null ){
-			mViewPositionListener.onChanged(itemViewType, position);
-		}
+
 		if (itemViewType == VIEW_TYPE_CUSTOMER) { // client
 			return getCustomerView(position, convertView, parent);
 		} else if (itemViewType == VIEW_TYPE_CLIENT) { // customer
@@ -119,8 +113,13 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		ChatItem item = getItem(position);
 		if (item.user == null) {
 			return VIEW_TYPE_INFORMATION;
+		} else {
+			if (isAgent) {
+				return item.user.admin || item.user.id == mUserId? VIEW_TYPE_CUSTOMER : VIEW_TYPE_CLIENT;
+			} else {
+				return item.user.admin ? VIEW_TYPE_CLIENT : VIEW_TYPE_CUSTOMER;
+			}
 		}
-		return (item.user.id == mUserId) ? VIEW_TYPE_CUSTOMER : VIEW_TYPE_CLIENT;
 	}
 
 	@Override
@@ -144,12 +143,9 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	 * </p>
 	 *
 	 * @param channelUid チャネルUID
-	 * @param userId ユーザーID
 	 */
-	public void setChatInfo(String channelUid, int userId) {
+	public void setChatInfo(String channelUid) {
 		mChannelUid = channelUid;
-		mUserId = userId;
-
 	}
 
 	@Override
@@ -187,9 +183,9 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		CustomerViewHolder holder;
 		View view = convertView;
 //		if (view == null) {
-			view = mInflater.inflate(R.layout.chat_customer_listitem, parent, false);
-			holder = new CustomerViewHolder(view);
-			view.setTag(holder);
+        view = mInflater.inflate(R.layout.chat_customer_listitem, parent, false);
+        holder = new CustomerViewHolder(view);
+        view.setTag(holder);
 //		} else {
 //            holder = (CustomerViewHolder) view.getTag();
 //        }
@@ -205,6 +201,15 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		} else {
 			holder.timestampTextView.setVisibility(View.GONE);
 		}
+
+		// 担当者名
+		/*UserItem user = position > 0 ? getItem(position - 1).user : null;
+		if (position > 0 && user != null && user.id.equals(item.user.id)) {
+			holder.nameTextView.setVisibility(View.GONE);
+		} else {*/
+			holder.nameTextView.setVisibility(View.VISIBLE);
+			holder.nameTextView.setText(getTimeString(item.created * 1000) + "  " + item.user.displayName);
+		/*}*/
 
 		// Message status
 		String statusStr = item.getStatusString(getContext());
@@ -239,9 +244,9 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		ClientViewHolder holder;
 		View view = convertView;
 //		if (view == null) {
-			view = mInflater.inflate(R.layout.chat_client_listitem, parent, false);
-			holder = new ClientViewHolder(view);
-			view.setTag(holder);
+        view = mInflater.inflate(R.layout.chat_client_listitem, parent, false);
+        holder = new ClientViewHolder(view);
+        view.setTag(holder);
 //		} else {
 //            holder = (ClientViewHolder) view.getTag();
 //        }
@@ -260,13 +265,13 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		}
 
 		// 担当者名
-		UserItem user = position > 0 ? getItem(position - 1).user : null;
+		/*UserItem user = position > 0 ? getItem(position - 1).user : null;
 		if (position > 0 && user != null && user.id.equals(item.user.id)) {
 			holder.nameTextView.setVisibility(View.GONE);
-		} else {
+		} else {*/
 			holder.nameTextView.setVisibility(View.VISIBLE);
-			holder.nameTextView.setText(item.user.displayName);
-		}
+			holder.nameTextView.setText(item.user.displayName + "  " + getTimeString(item.created * 1000));
+		/*}*/
 
 		// アイコン
 		if (item.user.iconUrl == null || item.user.iconUrl.isEmpty()) { // アイコンテキスト
@@ -311,7 +316,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	 * @return 日付文字列
 	 */
 	private String getDateStr(long time) {
-		Calendar cal = Calendar.getInstance();
+		/*Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -335,7 +340,22 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		} else {
 			return new SimpleDateFormat(getContext().getString(R.string.datetime_format_default), Locale.JAPAN).format(new Date(time));
 		}
-		return retVal;
+		return retVal;*/
+		String dateTimeString;
+
+		SimpleDateFormat messageDateFormat = new SimpleDateFormat(getContext().getString(R.string.schedule_date_format));
+		dateTimeString = messageDateFormat.format(new Date(time));
+
+		return dateTimeString;
+	}
+
+	private String getTimeString(long time) {
+		String dateTimeString;
+
+		SimpleDateFormat messageDateFormat = new SimpleDateFormat(getContext().getString(R.string.datetime_format_time), Locale.JAPAN);
+		dateTimeString = messageDateFormat.format(new Date(time));
+
+		return dateTimeString;
 	}
 
 	/**
@@ -368,6 +388,10 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	public static class CustomerViewHolder {
 		/** タイムスタンプ */
 		public TextView timestampTextView;
+
+		/** 担当者名 */
+		public TextView nameTextView;
+
 		/** メッセージ */
 		public TextView messageTextView;
 
@@ -379,6 +403,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 
 		public CustomerViewHolder (View view) {
 			timestampTextView = (TextView) view.findViewById(R.id.chat_customer_listitem_timestamp_textview);
+			nameTextView = (TextView) view.findViewById(R.id.chat_customer_listitem_name_textview);
 			messageTextView = (TextView) view.findViewById(R.id.sticker_textview);
 			messageStatusTextView = (TextView) view.findViewById(R.id.chat_customer_listitem_message_status_textview);
 			widgetView = (WidgetView) view.findViewById(R.id.chat_customer_listitem_message_sticker);

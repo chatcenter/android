@@ -2,9 +2,7 @@ package ly.appsocial.chatcenter.ws;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
-import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
@@ -17,6 +15,7 @@ import java.io.IOException;
 
 import ly.appsocial.chatcenter.di.InjectorHelper;
 import ly.appsocial.chatcenter.di.NetworkUtilitiesWrapper;
+import ly.appsocial.chatcenter.util.CCLog;
 import okio.Buffer;
 
 /**
@@ -37,7 +36,7 @@ public class CCWebSocketClient {
     private WebSocketListener mWSListener = new WebSocketListener() {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
-            Log.d(TAG, "onOpen: " + webSocket);
+            CCLog.d(TAG, "onOpen: " + webSocket);
             mWebSocket = webSocket;
             mIsDisconnected = false;
             if (mListener != null) {
@@ -66,7 +65,7 @@ public class CCWebSocketClient {
 
         @Override
         public void onFailure(IOException e, Response response) {
-            Log.d(TAG, "onFailure: ");
+            CCLog.d(TAG, "onFailure: ");
 
             if (mListener != null) {
                 mListener.onError(e);
@@ -75,7 +74,7 @@ public class CCWebSocketClient {
 
         @Override
         public void onMessage(ResponseBody message) throws IOException {
-            Log.d(TAG, "onMessage: ");
+            CCLog.d(TAG, "onMessage: ");
             if (mListener != null) {
                 mListener.onMessage(message.string());
             }
@@ -94,7 +93,7 @@ public class CCWebSocketClient {
 
         @Override
         public void onClose(int code, String reason) {
-            Log.d(TAG, "onClose: " + code + " " + reason);
+            CCLog.d(TAG, "onClose: " + code + " " + reason);
             mWebSocket = null;
             mIsDisconnected = true;
             if (mListener != null) {
@@ -120,7 +119,7 @@ public class CCWebSocketClient {
         if (mWebSocket == null) {
             return;
         }
-        Log.e(TAG, "Sending message: " + message);
+        CCLog.d(TAG, "Sending message: " + message);
         try {
             mWebSocket.sendMessage(RequestBody.create(WebSocket.TEXT, message));
         } catch (IOException e) {
@@ -151,7 +150,7 @@ public class CCWebSocketClient {
     }
 
     public boolean isConnected() {
-        Log.d(TAG, "isConnected: " + mWebSocket + " " + mIsDisconnected);
+        CCLog.d(TAG, "isConnected: " + mWebSocket + " " + mIsDisconnected);
         return mWebSocket != null && !mIsDisconnected;
     }
 

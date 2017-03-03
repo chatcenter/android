@@ -49,6 +49,7 @@ public class LiveLocationActivity extends WebViewActivity {
 	private TextView mButtonLabel;
 	private TextView mTimerLabel;
 	private WebView mWebView;
+	private TextView mTvLive;
 
 	private UpdateReceiver mReceiver;
 	private IntentFilter mIntentFilter;
@@ -73,6 +74,8 @@ public class LiveLocationActivity extends WebViewActivity {
 		setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		setTitle(R.string.location_title);
+
+		mTvLive = (TextView) findViewById(R.id.bt_live);
 
 		mWebView = (WebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);
@@ -312,9 +315,11 @@ public class LiveLocationActivity extends WebViewActivity {
 			mTimerLabel.setVisibility(View.VISIBLE);
 			mTimerLabel.setText(secStr);
 			mButtonLabel.setText(R.string.location_stop);
+			mTvLive.setVisibility(View.VISIBLE);
 		} else {
 			mTimerLabel.setVisibility(View.GONE);
 			mButtonLabel.setText(R.string.location_share_mylive);
+			mTvLive.setVisibility(View.GONE);
 		}
 		mSharingLocation = sharing;
 	}

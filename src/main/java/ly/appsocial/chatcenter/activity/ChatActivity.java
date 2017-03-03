@@ -38,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -187,6 +188,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private ViewGroup mRootLayout;
 	/** タイトル */
 	private TextView mTitleTextView;
+	/** 新着メッセージ追加された際にListViewが最終項目が表示されていない場合はラベルを表示する*/
+	private TextView mTvNotiNewMessage;
 
 	/** プログレスバー */
 	private ProgressBar mProgressBar;
@@ -320,6 +323,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private UpdateReceiver mReceiver;
 	private NetworkStateReceiver mNetworkStateReceiver;
 	private boolean isInternetConnecting = true;
+	private boolean isVideoCallEnabledForApp = false;
 
 	public static ChatActivity getInstance() {
 		Log.i("ChatActivity", "getInstance");
@@ -335,6 +339,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.chat);
 		instance = this;
+
+		mIsAgent = getIntent().getBooleanExtra(ChatCenterConstants.Extra.IS_AGENT, false);
+		mCurrentOrgItem = getIntent().getParcelableExtra(ChatCenterConstants.Extra.ORG);
+		mCurrentApp = (GetAppsResponseDto.App) getIntent().getSerializableExtra(ChatCenterConstants.Extra.APP);
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
@@ -362,21 +370,43 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		mNetworkErrorTextView.setVisibility(View.GONE);
 		checkNetworkToStart();
 
+		// 通知ラベル
+		mTvNotiNewMessage = (TextView) findViewById(R.id.tv_notification_new_message);
+		mTvNotiNewMessage.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				scrollToLast(true, false);
+			}
+		});
+
 		// ListView
 		mListView = (ListView) findViewById(R.id.chat_listview);
-		mListView.addHeaderView(ViewUtil.getSpaceView(this, ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.chat_list_space_top_padding)), null, false);
 		mListView.addFooterView(ViewUtil.getSpaceView(this, ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.chat_list_space_top_padding)), null, false);
-
-		mMessagesList = new ArrayList<>();
-		mAdapter = new ChatAdapter(this, mMessagesList, this, new ChatAdapter.ViewPositionChangedListener() {
+		mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
 			@Override
-			public void onChanged(int itemViewType, int position) {
-				if ( !mNoPreviousMessage && position <= 5 && !mMessagesLoading){
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+			}
+
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+				int lastVisiblePosition = firstVisibleItem + visibleItemCount;
+				if ((totalItemCount - 1) == lastVisiblePosition) {
+					// If the last item is been displaying, hide notification
+					mTvNotiNewMessage.setVisibility(View.GONE);
+				}
+
+				// Load old message
+				if ( !mNoPreviousMessage && firstVisibleItem <= 5 && !mMessagesLoading
+						&& mAdapter != null && mAdapter.getCount() > 0 && mAdapter.getItem(0) != null){
 					ChatItem item = mAdapter.getItem(0);
 					requestGetMessages(item.id);
 				}
 			}
 		});
+
+		mMessagesList = new ArrayList<>();
+		mAdapter = new ChatAdapter(this, mMessagesList, this, mIsAgent);
 		mListView.setAdapter(mAdapter);
 		final GestureDetector gestureDetector = new GestureDetector(this, new MyGestureDetector());
 		mListView.setOnTouchListener(new View.OnTouchListener() {
@@ -411,9 +441,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 		// setupParentAutoHideSoftKeyboard(mRootLayout);
 
-		mIsAgent = getIntent().getBooleanExtra(ChatCenterConstants.Extra.IS_AGENT, false);
-		mCurrentOrgItem = getIntent().getParcelableExtra(ChatCenterConstants.Extra.ORG);
-		mCurrentApp = (GetAppsResponseDto.App) getIntent().getSerializableExtra(ChatCenterConstants.Extra.APP);
+
 
 		// List users in this channel
 		mChannelUsers = new ArrayList<>();
@@ -477,6 +505,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		super.onResume();
 		checkNetworkToStart();
 		WebSocketHelper.setListener(new WebSocketClientListener());
+
 	}
 
 	@Override
@@ -640,7 +669,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			/*
 			 * ソフトキーボードが表示されたらメッセージの最後にスクロールします。
 			 */
-			scrollToLast(false);
+			scrollToLast(true, false);
 		}
 	}
 
@@ -670,7 +699,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			mChannelUid = mParamDto.channelUid;
 
 			// channels->message
-			requestGetChannel(mChannelUid);
+			if (mCurrentChannelItem == null) {
+				requestGetChannel(mChannelUid);
+			}
 		} else { // 詳細から
 			if (mParamDto.providerTokenCreatedAt != AuthUtil.getProviderTokenTimestamp(this)
 					|| StringUtil.isBlank(AuthUtil.getUserToken(this))) { // Userトークンが無い
@@ -813,7 +844,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		ChatItem item = ChatItem.createTemporaryMessage(message, tmpUid, currentUserId);
 		mAdapter.add(item);
 		mAdapter.notifyDataSetChanged();
-		scrollToLast(false);
+		scrollToLast(true, false);
 
 		String path = "channels/" + mChannelUid + "/messages";
 
@@ -854,7 +885,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		item.type = type;
 		mAdapter.add(item);
 		mAdapter.notifyDataSetChanged();
-		scrollToLast(false);
+		scrollToLast(true, false);
 
 		String path = "channels/" + mChannelUid + "/messages";
 
@@ -938,6 +969,22 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 //		String progMsg = getResources().getString(R.string.processing);
 //		DialogUtil.showProgressDialog(getSupportFragmentManager(), progMsg, DialogUtil.Tag.PROGRESS);
 
+		// Getting data
+		int currentUserId = AuthUtil.getUserId(getApplicationContext());
+		String tmpUid = mChannelUid + "-" + currentUserId + "" + System.currentTimeMillis();
+		// Add the temporary message
+		ChatItem item = ChatItem.createTemporarySticker(ChatItem.createLiveLocationStickerContent(location, this),
+				tmpUid, currentUserId);
+		item.type = ResponseType.STICKER;
+		mAdapter.add(item);
+		mAdapter.notifyDataSetChanged();
+		mListView.post(new Runnable() {
+			@Override
+			public void run() {
+				scrollToLast(true, false);
+			}
+		});
+
 		String path = "channels/" + mChannelUid + "/messages";
 
 		Map<String, String> headers = new HashMap<>();
@@ -1001,6 +1048,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		PostStickerRequestDto requestDto = new PostStickerRequestDto();
 		requestDto.content = new Gson().toJson(widget).toString();
 		requestDto.type = "sticker";
+		requestDto.tmpUid = tmpUid;
 
 		mLiveLocationRequest.setJsonBody(requestDto.toJson());
 		NetworkQueueHelper.enqueue(mLiveLocationRequest, REQUEST_TAG);
@@ -1105,6 +1153,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 	/**
 	 * GET /api/apps
+	 *
+	 * To get current app.
 	 */
 	private void requestGetApps() {
 		if (!isInternetConnecting || mGetAppsRequest != null) {
@@ -1116,8 +1166,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
 
-		mGetAppsRequest = new OkHttpApiRequest<>(getApplicationContext(), OkHttpApiRequest.Method.GET, path, null, headers, new GetAppsCallback(), new GetAppsParser());
-		mGetAppsRequest.setApiToken(""); // Do not pass AppToken
+		mGetAppsRequest = new OkHttpApiRequest<>(getApplicationContext(), OkHttpApiRequest.Method.GET,
+				path, null, headers, new GetAppsCallback(), new GetAppsParser());
+
+		// mGetAppsRequest.setApiToken(""); // Do not pass AppToken
 
 		NetworkQueueHelper.enqueue(mGetAppsRequest, REQUEST_TAG);
 	}
@@ -1161,7 +1213,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		item.type = ResponseType.STICKER;
 		mAdapter.add(item);
 		mAdapter.notifyDataSetChanged();
-		scrollToLast(false);
+		scrollToLast(true, false);
 
 		String path = "channels/" + mChannelUid + "/messages/upload_files";
 
@@ -1208,16 +1260,55 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	/**
+	 *
 	 * リストを最後までスクロールします。
 	 *
-	 * @param isSmooth スムースするかどうか
-	 */
-	private void scrollToLast(boolean isSmooth) {
-		int scrollPosition = mAdapter.getCount() + mListView.getHeaderViewsCount() + mListView.getFooterViewsCount() - 1;
-		if (isSmooth) {
-			mListView.smoothScrollToPosition(scrollPosition);
+	 * @param force 強制にリストを最後までスクロール
+	 * @param isSmooth
+     */
+	private void scrollToLast(boolean force, boolean isSmooth) {
+		int lastPosition = mAdapter.getCount() + mListView.getHeaderViewsCount() + mListView.getFooterViewsCount() - 1;
+		int lastVisiblePosition = mListView.getLastVisiblePosition();
+		if (lastVisiblePosition >= lastPosition - 1 || force) {
+			mTvNotiNewMessage.setVisibility(View.GONE);
+			if (isSmooth) {
+				mListView.smoothScrollToPosition(lastPosition);
+			} else {
+				mListView.setSelectionFromTop(lastPosition, 0);
+			}
+		}
+	}
+
+	private void showNotifiNewMessage(ChatItem chatItem) {
+		if (chatItem == null || chatItem.user.id == AuthUtil.getUserId(this)) {
+			return;
+		}
+
+		int lastPosition = mAdapter.getCount() + mListView.getHeaderViewsCount() + mListView.getFooterViewsCount() - 1;
+		int lastVisiblePosition = mListView.getLastVisiblePosition();
+		if (lastVisiblePosition < lastPosition - 1) {
+			// Show a notification instead of scrolling to last position
+			mTvNotiNewMessage.setVisibility(View.VISIBLE);
+
+			StringBuilder latestMessageBuilder = new StringBuilder();
+			if (chatItem != null && chatItem.user != null) {
+				latestMessageBuilder.append(chatItem.user.displayName);
+				latestMessageBuilder.append(getString(R.string.person_name_suffix));
+				latestMessageBuilder.append(": ");
+			}
+
+			if (ResponseType.STICKER.equals(chatItem.type)) {
+				latestMessageBuilder.append(getString(R.string.sent_a_widget));
+			} else if (ResponseType.CALL.equals(chatItem.type)) {
+				latestMessageBuilder.append(getString(R.string.called));
+			} else {
+				latestMessageBuilder.append(chatItem.widget == null || StringUtil.isBlank(chatItem.widget.text) ?
+						getString(R.string.no_message) : chatItem.widget.text);
+			}
+
+			mTvNotiNewMessage.setText(latestMessageBuilder.toString());
 		} else {
-			mListView.setSelectionFromTop(scrollPosition, 0);
+			mTvNotiNewMessage.setVisibility(View.GONE);
 		}
 	}
 
@@ -2032,7 +2123,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			requestGetMessages(null);
 
 			// Set enable for video call
-			if (mCurrentChannelItem != null && mCurrentChannelItem.canUseVideoCall(mIsAgent)) {
+			if (isVideoCallEnabledForApp && mCurrentChannelItem != null && mCurrentChannelItem.canUseVideoCall(mIsAgent)) {
 				mBtVideoCall.setVisibility(View.VISIBLE);
 				mBtPhoneCall.setVisibility(View.VISIBLE);
 			}
@@ -2111,13 +2202,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			int yOffset = mListView.getChildAt(0).getTop();
 
 			// アダプタに項目設定
-			mAdapter.setChatInfo(mChannelUid, userId);
+			mAdapter.setChatInfo(mChannelUid);
 			mAdapter.notifyDataSetChanged();
 
 			// スクロール位置を末尾に
-			if ( mLoadFromFirst ){
+			if ( mLoadFromFirst ) {
 				connectWS();
-				scrollToLast(false /*!isScroll*/);
+				scrollToLast(true, false /*!isScroll*/);
 			} else {
 				mListView.setSelectionFromTop(position + nAdd, yOffset);
 			}
@@ -2234,8 +2325,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				for (GetAppsResponseDto.App item : responseDto.items) {
 					if (appToken.equals(item.token)) {
 						mCurrentApp = item;
-						mIbtSendSticker.setVisibility(View.VISIBLE);
-						setupWidgetMenu();
+						if (mCurrentApp.stickers != null && mCurrentApp.stickers.size() > 0) {
+							mIbtSendSticker.setVisibility(View.VISIBLE);
+							setupWidgetMenu();
+						}
 						break;
 					}
 				}
@@ -2395,7 +2488,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	boolean mIsWebSocketInited;
 	private void connectWS() {
 		String appToken = getAppToken();
-		WebSocketHelper.connectWithAppToken(getApplicationContext(), appToken, new WebSocketClientListener());
+		mIsWebSocketInited = WebSocketHelper.connectWithAppToken(getApplicationContext(), appToken,
+				new WebSocketClientListener());
 		if (WebSocketHelper.isConnected()) {
 			// ネットワークエラーの非表示
 			runOnUiThread(new Runnable() {
@@ -2406,6 +2500,12 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				}
 			});
 			mHandler.postDelayed(mHideNWErrorTask, 1000);
+
+			WsConnectChannelRequest wsConnectChannelRequest = new WsConnectChannelRequest();
+
+			wsConnectChannelRequest.channelUid = mChannelUid;
+			WebSocketHelper.send(wsConnectChannelRequest.toJson());
+
 		}
 	}
 
@@ -2548,7 +2648,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 							if (!ResponseType.SUGGESTION.equals(lastItem.type)) {
 								mAdapter.add(item);
 								mAdapter.notifyDataSetChanged();
-								scrollToLast(false);
+								scrollToLast(false, false);
+								showNotifiNewMessage(item);
 							}
 						}
 					} else if (messageType.equals(ResponseType.CALLINVITE)) {
@@ -2612,7 +2713,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 						mAdapter.notifyDataSetChanged();
 
 						if (!processed) {
-							scrollToLast(false);
+							scrollToLast(false, false);
+							showNotifiNewMessage(item);
 						}
 
 						if (AuthUtil.getUserId(ChatActivity.this) != item.user.id) {
@@ -2826,6 +2928,14 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					mBtVideoCall.setVisibility(View.VISIBLE);
 					mBtPhoneCall.setVisibility(View.VISIBLE);
 					*/
+
+					isVideoCallEnabledForApp = true;
+
+					if (isVideoCallEnabledForApp && mCurrentChannelItem != null && mCurrentChannelItem.canUseVideoCall(mIsAgent)) {
+						mBtVideoCall.setVisibility(View.VISIBLE);
+						mBtPhoneCall.setVisibility(View.VISIBLE);
+					}
+
 				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE)) {
 					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE,
 							R.drawable.icon_widget_image,

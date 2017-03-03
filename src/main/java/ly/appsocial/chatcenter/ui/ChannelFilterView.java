@@ -26,6 +26,7 @@ import ly.appsocial.chatcenter.dto.ws.response.GetChannelsCountResponseDto;
 
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.FunnelItem;
+import ly.appsocial.chatcenter.util.PreferenceUtil;
 
 public class ChannelFilterView extends LinearLayout {
 
@@ -41,8 +42,17 @@ public class ChannelFilterView extends LinearLayout {
 
     private ChannelFilterDialogListener mListener;
 
+    private int mLastFunnellId;
+    private ChannelItem.ChannelStatus mLastChannelStatus;
+
+    private ChannelFilterView.MessageStatusItem mCurrentStatus;
+    private ChannelFilterView.MessageFunnelItem mCurrentFunnel;
+
     public ChannelFilterView(Context context, ArrayList<FunnelItem> items) {
         super(context);
+
+        mLastChannelStatus = PreferenceUtil.getLastChannelStatus(context);
+        mLastFunnellId = PreferenceUtil.getLastFunnelId(context);
 
         if (items != null && items.size() > 0) {
             for (FunnelItem item: items) {
@@ -52,8 +62,15 @@ public class ChannelFilterView extends LinearLayout {
         FunnelItem allItem = new FunnelItem();
         allItem.name = context.getString(R.string.all);
         allItem.id = -1;
-        allItem.isSelected = true;
         mFunnelItems.add(0, new MessageFunnelItem(allItem, 0));
+
+        for (MessageFunnelItem item: mFunnelItems) {
+            if (item.funnel.id == mLastFunnellId) {
+                item.funnel.isSelected = true;
+                mCurrentFunnel = item;
+                break;
+            }
+        }
 
         setupView();
     }
@@ -91,10 +108,18 @@ public class ChannelFilterView extends LinearLayout {
             }
         });
 
-        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.all), ChannelItem.ChannelStatus.CHANNEL_ALL, 0, true));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.all), ChannelItem.ChannelStatus.CHANNEL_ALL, 0, false));
         mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.unassigned_status), ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED, 0, false));
         mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.assigned_status), ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME, 0, false));
         mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.close_status), ChannelItem.ChannelStatus.CHANNEL_CLOSE, 0, false));
+
+        for (MessageStatusItem item: mStatusItems) {
+            if (item.value.equals(mLastChannelStatus)) {
+                item.isSelected = true;
+                mCurrentStatus = item;
+                break;
+            }
+        }
     }
 
     public void updateData(GetChannelsCountResponseDto count) {
@@ -137,6 +162,14 @@ public class ChannelFilterView extends LinearLayout {
 
     public void setFilterDialogListener(ChannelFilterDialogListener listener) {
         mListener = listener;
+    }
+
+    public MessageStatusItem getCurrentStatus() {
+        return mCurrentStatus;
+    }
+
+    public MessageFunnelItem getCurrentFunnel() {
+        return mCurrentFunnel;
     }
 
     public static class MessageStatusItem {
