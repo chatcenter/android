@@ -16,6 +16,7 @@
         android:layout_marginTop="@dimen/margin8dp"
         android:layout_marginBottom="@dimen/margin8dp"
         android:layout_marginRight="@dimen/margin10dp">
+
         <!-- アイコンテキスト -->
         <TextView
             android:id="@+id/chat_client_listitem_icon_textview"
@@ -23,9 +24,10 @@
             android:layout_height="match_parent"
             android:background="@drawable/shape_chat_client_icon_textview"
             android:gravity="center"
+            android:layout_centerInParent="true"
             android:includeFontPadding="false"
             android:textColor="@android:color/white"
-            android:textSize="20sp"/>
+            android:textSize="24sp"/>
 
         <!-- アイコン画像 -->
         <ImageView
@@ -42,14 +44,10 @@
         android:layout_weight="1"
         android:textColor="@color/color_chatcenter_text"/>
 
-    <CheckBox
+    <ImageView
         android:id="@+id/cb_selected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:button="@drawable/btn_selected"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:clickable="false"/>
+        android:src="@drawable/btn_selected"/>
 
 </LinearLayout>

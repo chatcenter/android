@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 
@@ -20,7 +21,7 @@ import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.ws.response.GetFixedPhraseResponseDto;
 import ly.appsocial.chatcenter.fragment.ProgressDialogFragment;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.DialogUtil;
 import ly.appsocial.chatcenter.util.NetworkQueueHelper;
 import ly.appsocial.chatcenter.ws.ApiRequest;
@@ -33,6 +34,7 @@ public class FixedPhraseActivity extends BaseActivity implements
 
     public static final String ORG_UID = "org_uid";
     public static final String API_TOKEN = "api_token";
+    public static final String IS_AGENT = "is_agent";
 
     /**
      * リクエストタグ
@@ -56,6 +58,8 @@ public class FixedPhraseActivity extends BaseActivity implements
 
     private Toolbar mToolbar;
 
+    private boolean isAgent;
+
     /**
      * GET /api/fixed_phrases/
      */
@@ -67,6 +71,7 @@ public class FixedPhraseActivity extends BaseActivity implements
 
         mOrgUid = getIntent().getStringExtra(ORG_UID);
         mApiToken = getIntent().getStringExtra(API_TOKEN);
+        isAgent = getIntent().getBooleanExtra(IS_AGENT, false);
 
         setContentView(R.layout.activity_fixed_phrase);
 
@@ -90,6 +95,7 @@ public class FixedPhraseActivity extends BaseActivity implements
 
         mSegmentController = (RadioGroup) findViewById(R.id.segment_controller);
         mSegmentController.setOnCheckedChangeListener(this);
+        mSegmentController.setVisibility(isAgent ? View.VISIBLE : View.GONE);
 
         requestGetFixedPhrase();
     }
@@ -127,9 +133,12 @@ public class FixedPhraseActivity extends BaseActivity implements
         String path = "fixed_phrases?org_uid=" + mOrgUid;
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+        headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
-        mGetFixedPhraseRequest = new OkHttpApiRequest<>(getApplicationContext(), ApiRequest.Method.GET, path, null, headers, new GetFixedPhraseCallback(), new GetFixedPhraseParser());
+        mGetFixedPhraseRequest = new OkHttpApiRequest<>(getApplicationContext(),
+                ApiRequest.Method.GET, path, null, headers, new GetFixedPhraseCallback(),
+                new GetFixedPhraseParser());
+
         mGetFixedPhraseRequest.setApiToken(mApiToken);
 
         NetworkQueueHelper.enqueue(mGetFixedPhraseRequest, REQUEST_TAG);
@@ -220,53 +229,112 @@ public class FixedPhraseActivity extends BaseActivity implements
             mGetFixedPhraseRequest = null;
             DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
 
-            if (responseDto == null || responseDto.orgFixedPhrases == null) {
+            if (responseDto == null) {
                 return;
             }
 
-            // APPの定型ステッカー
-            mListEveryoneItems.clear();
-            if (responseDto.appFixedPhrases != null && responseDto.appFixedPhrases.size() > 0) {
-                for (ChatItem item : responseDto.appFixedPhrases) {
-                    FPListItemSticker itemSticker = new FPListItemSticker(item);
-                    itemSticker.setContentType(item.type);
-                    item.type = ResponseType.STICKER;
-                    mListEveryoneItems.add(itemSticker);
-                }
+            if (isAgent) {
+                updateAgentView(responseDto);
             } else {
-                mListEveryoneItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_app_fixed_phrases)));
+                updateGuestView(responseDto);
             }
 
-            // ORGの定型ステッカー
-            mListTeamItems.clear();
-            if (responseDto.orgFixedPhrases != null && responseDto.orgFixedPhrases.size() > 0) {
-                for (ChatItem item : responseDto.orgFixedPhrases) {
-                    FPListItemSticker itemSticker = new FPListItemSticker(item);
-                    itemSticker.setContentType(item.type);
-                    item.type = ResponseType.STICKER;
-                    mListTeamItems.add(itemSticker);
-                }
-            } else {
-                mListTeamItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_org_fixed_phrases)));
-            }
 
-            // ユーザーの定型ステッカー
-            mListMineItems.clear();
-            if (responseDto.userFixedPhrases != null && responseDto.userFixedPhrases.size() > 0) {
-                for (ChatItem item : responseDto.userFixedPhrases) {
-                    FPListItemSticker itemSticker = new FPListItemSticker(item);
-                    itemSticker.setContentType(item.type);
-                    item.type = ResponseType.STICKER;
-                    mListMineItems.add(itemSticker);
-                }
-            } else {
-                mListMineItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_myphrase_empty)));
-            }
-
-            mListItems.clear();
-            mListItems.addAll(mListMineItems);
-            mFixedPhrasesAdapter.notifyDataSetChanged();
         }
+    }
+
+    /**
+     * Add all fixed phrases into one list
+     * @param responseDto
+     */
+    private void updateGuestView(GetFixedPhraseResponseDto responseDto) {
+        mListItems.clear();
+
+        // APPの定型ステッカー
+        if (responseDto.appFixedPhrases != null && responseDto.appFixedPhrases.size() > 0) {
+            for (ChatItem item : responseDto.appFixedPhrases) {
+                FPListItemSticker itemSticker = new FPListItemSticker(item);
+                itemSticker.setContentType(item.type);
+                item.type = ResponseType.STICKER;
+                mListItems.add(itemSticker);
+            }
+        }
+
+        // ORGの定型ステッカー
+        if (responseDto.orgFixedPhrases != null && responseDto.orgFixedPhrases.size() > 0) {
+            for (ChatItem item : responseDto.orgFixedPhrases) {
+                FPListItemSticker itemSticker = new FPListItemSticker(item);
+                itemSticker.setContentType(item.type);
+                item.type = ResponseType.STICKER;
+                mListItems.add(itemSticker);
+            }
+        }
+
+        // ユーザーの定型ステッカー
+        if (responseDto.userFixedPhrases != null && responseDto.userFixedPhrases.size() > 0) {
+            for (ChatItem item : responseDto.userFixedPhrases) {
+                FPListItemSticker itemSticker = new FPListItemSticker(item);
+                itemSticker.setContentType(item.type);
+                item.type = ResponseType.STICKER;
+                mListItems.add(itemSticker);
+            }
+        }
+
+        if (mListItems == null || mListItems.size() == 0) {
+            mListItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_myphrase_empty)));
+        }
+
+        mFixedPhrasesAdapter.notifyDataSetChanged();
+
+    }
+
+    /**
+     * If is agent divide fixed phrases into three tabs(Mine/Team/EveryOne)
+     * @param responseDto
+     */
+    private void updateAgentView(GetFixedPhraseResponseDto responseDto) {
+        // APPの定型ステッカー
+        mListEveryoneItems.clear();
+        if (responseDto.appFixedPhrases != null && responseDto.appFixedPhrases.size() > 0) {
+            for (ChatItem item : responseDto.appFixedPhrases) {
+                FPListItemSticker itemSticker = new FPListItemSticker(item);
+                itemSticker.setContentType(item.type);
+                item.type = ResponseType.STICKER;
+                mListEveryoneItems.add(itemSticker);
+            }
+        } else {
+            mListEveryoneItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_app_fixed_phrases)));
+        }
+
+        // ORGの定型ステッカー
+        mListTeamItems.clear();
+        if (responseDto.orgFixedPhrases != null && responseDto.orgFixedPhrases.size() > 0) {
+            for (ChatItem item : responseDto.orgFixedPhrases) {
+                FPListItemSticker itemSticker = new FPListItemSticker(item);
+                itemSticker.setContentType(item.type);
+                item.type = ResponseType.STICKER;
+                mListTeamItems.add(itemSticker);
+            }
+        } else {
+            mListTeamItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_no_org_fixed_phrases)));
+        }
+
+        // ユーザーの定型ステッカー
+        mListMineItems.clear();
+        if (responseDto.userFixedPhrases != null && responseDto.userFixedPhrases.size() > 0) {
+            for (ChatItem item : responseDto.userFixedPhrases) {
+                FPListItemSticker itemSticker = new FPListItemSticker(item);
+                itemSticker.setContentType(item.type);
+                item.type = ResponseType.STICKER;
+                mListMineItems.add(itemSticker);
+            }
+        } else {
+            mListMineItems.add(new FPListItemSessionEmptyLabel(getString(R.string.fixed_phrases_myphrase_empty)));
+        }
+
+        mListItems.clear();
+        mListItems.addAll(mListMineItems);
+        mFixedPhrasesAdapter.notifyDataSetChanged();
     }
 
     /**

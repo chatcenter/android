@@ -25,12 +25,13 @@ import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.fragment.WidgetPreviewDialog;
-import ly.appsocial.chatcenter.util.PreferenceUtil;
+import ly.appsocial.chatcenter.util.CCPrefUtils;
 
 public class ShareLocationActivity extends BaseActivity implements OnMapReadyCallback, WidgetPreviewDialog.WidgetPreviewListener{
 
 	private final static int SHARE_TIME_MIN = 15; // 15 minutes
-	private final static int SHARE_TIME_DEFAULT = 60; // 60 minutes
+	private final static int SHARE_TIME_MAX = 60; // Max time for sharing location is 60 minutes
+	private final static int SHARE_TIME_DEFAULT = SHARE_TIME_MIN; // 15 minutes
 	private final static int ONE_HOUR = 60;
 	private final static int QUARTER_HOUR = 15;
 
@@ -49,7 +50,7 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 		Intent intent = getIntent();
 		mDontShowPreview = !intent.getBooleanExtra("show_preview", true);
 
-		SharedPreferences pref = PreferenceUtil.getPreferences(this);
+		SharedPreferences pref = CCPrefUtils.getPreferences(this);
 
 		String json = pref.getString(ChatCenterConstants.Preference.LAST_LOCATION, null);
 		mLocation = json == null ? null : new Gson().fromJson(json, Location.class);
@@ -63,7 +64,7 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		setHomeAsUpIndicator(R.drawable.bt_close);
 
-		setTitle(R.string.location_live_title);
+		setTitle(R.string.share_location_live_title);
 
 		View minusBtn = findViewById(R.id.minus_btn);
 		minusBtn.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +103,7 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 		if ( id == R.id.next ){
 			if ( mLocation != null ) {
 				String widgetContent = ChatItem.createLiveLocationStickerContent(mLocation, this);
-				showDialogWidgetPreview(widgetContent);
+				showDialogWidgetPreview(widgetContent,this);
 				return true;
 			}
 		} else if ( id == R.id.done ){
@@ -139,7 +140,7 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 				LatLng curr = new LatLng(loc.getLatitude(), loc.getLongitude());
 				mMap.animateCamera(CameraUpdateFactory.newLatLng(curr));
 
-				final SharedPreferences.Editor editor = PreferenceUtil.getPreferences(ShareLocationActivity.this).edit();
+				final SharedPreferences.Editor editor = CCPrefUtils.getPreferences(ShareLocationActivity.this).edit();
 				String json = new Gson().toJson(mLocation);
 				editor.putString(ChatCenterConstants.Preference.LAST_LOCATION, json).apply();
 			}
@@ -147,16 +148,16 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 	}
 
 	private void updateShareTime(){
-		if (mShareTime >= SHARE_TIME_DEFAULT) {
+		if (mShareTime >= ONE_HOUR) {
 			if (mShareTime > 12 * ONE_HOUR) {
 				mShareTimeLabel.setText(getString(R.string.infinite));
 			} else {
 				int shareTimeInHour = mShareTime / ONE_HOUR;
 				String text = String.format(getString(R.string.share_time_format_hour), shareTimeInHour);
 
-				if (shareTimeInHour == 1) {
+				/*if (shareTimeInHour == 1) {
 					text = text.substring(0, text.length() - 1);
-				}
+				}*/
 				mShareTimeLabel.setText(text);
 			}
 		} else {
@@ -165,30 +166,35 @@ public class ShareLocationActivity extends BaseActivity implements OnMapReadyCal
 	}
 
 	private void increaseTime(){
+		if (mShareTime >= SHARE_TIME_MAX) {
+			return;
+		}
+
+		/*
 		if (mShareTime >= SHARE_TIME_DEFAULT) {
 			if (mShareTime >= 12 * ONE_HOUR) {
 				mShareTime = Integer.MAX_VALUE;
 			} else {
 				mShareTime += ONE_HOUR;
 			}
-		} else {
-			mShareTime += QUARTER_HOUR;
-		}
+		} else {*/
+		mShareTime += QUARTER_HOUR;
+		/*}*/
 
 		updateShareTime();
 	}
 
 	private void decreaseTime(){
 		if ( mShareTime > SHARE_TIME_MIN ){
-			if (mShareTime > SHARE_TIME_DEFAULT) {
+			/*if (mShareTime > SHARE_TIME_DEFAULT) {
 				if (mShareTime > 12 * ONE_HOUR) {
 					mShareTime = 12 * ONE_HOUR;
 				} else {
 					mShareTime -= ONE_HOUR;
 				}
-			} else {
-				mShareTime -= QUARTER_HOUR;
-			}
+			} else {*/
+			mShareTime -= QUARTER_HOUR;
+			/*}*/
 		}
 		updateShareTime();
 	}

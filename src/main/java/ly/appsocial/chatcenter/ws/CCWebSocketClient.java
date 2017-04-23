@@ -12,6 +12,8 @@ import com.squareup.okhttp.ws.WebSocketCall;
 import com.squareup.okhttp.ws.WebSocketListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import ly.appsocial.chatcenter.di.InjectorHelper;
 import ly.appsocial.chatcenter.di.NetworkUtilitiesWrapper;
@@ -24,7 +26,7 @@ import okio.Buffer;
 public class CCWebSocketClient {
     private static final String TAG = CCWebSocketClient.class.getSimpleName();
 
-    private Listener mListener;
+    private List<Listener> mListeners = new ArrayList<>();
     private WebSocket mWebSocket;
 
     private NetworkUtilitiesWrapper mWrapper;
@@ -36,11 +38,13 @@ public class CCWebSocketClient {
     private WebSocketListener mWSListener = new WebSocketListener() {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
-            CCLog.d(TAG, "onOpen: " + webSocket);
+            // CCLog.d(TAG, "onOpen: " + webSocket);
             mWebSocket = webSocket;
             mIsDisconnected = false;
-            if (mListener != null) {
-                mListener.onConnect();
+            if (mListeners != null) {
+                for (Listener listener : mListeners) {
+                    listener.onConnect();
+                }
             }
 
             mHandler.postDelayed(new Runnable() {
@@ -65,18 +69,23 @@ public class CCWebSocketClient {
 
         @Override
         public void onFailure(IOException e, Response response) {
-            CCLog.d(TAG, "onFailure: ");
+            // CCLog.d(TAG, "onFailure: ");
 
-            if (mListener != null) {
-                mListener.onError(e);
+            if (mListeners != null) {
+                for (Listener listener : mListeners) {
+                    listener.onError(e);
+                }
             }
         }
 
         @Override
         public void onMessage(ResponseBody message) throws IOException {
-            CCLog.d(TAG, "onMessage: ");
-            if (mListener != null) {
-                mListener.onMessage(message.string());
+            // CCLog.d(TAG, "onMessage: ");
+            if (mListeners != null) {
+                String messageString = message.string();
+                for (Listener listener : mListeners) {
+                    listener.onMessage(messageString);
+                }
             }
         }
 
@@ -93,11 +102,13 @@ public class CCWebSocketClient {
 
         @Override
         public void onClose(int code, String reason) {
-            CCLog.d(TAG, "onClose: " + code + " " + reason);
+            // CCLog.d(TAG, "onClose: " + code + " " + reason);
             mWebSocket = null;
             mIsDisconnected = true;
-            if (mListener != null) {
-                mListener.onDisconnect(code, reason);
+            if (mListeners != null) {
+                for (Listener listener : mListeners) {
+                    listener.onDisconnect(code, reason);
+                }
             }
         }
     };
@@ -107,7 +118,7 @@ public class CCWebSocketClient {
 
     public CCWebSocketClient(Context context, String endpoint, Listener listener) {
         this.setEndPoint(endpoint);
-        this.setListener(listener);
+        this.addListener(listener);
 
         mWrapper = new NetworkUtilitiesWrapper();
         InjectorHelper.getInstance().injectNetworkModule(context, mWrapper);
@@ -161,12 +172,16 @@ public class CCWebSocketClient {
         mWebSocketCall.enqueue(mWSListener);
     }
 
-    public Listener getListener() {
-        return mListener;
+    public void removeListener(Listener listener) {
+        if (mListeners != null) {
+            mListeners.remove(listener);
+        }
     }
 
-    public void setListener(Listener listener) {
-        mListener = listener;
+    public void addListener(Listener listener) {
+        if (mListeners != null && !mListeners.contains(listener)) {
+            mListeners.add(listener);
+        }
     }
 
     public String getEndPoint() {

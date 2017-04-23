@@ -39,8 +39,7 @@ import ly.appsocial.chatcenter.activity.ChatActivity;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ws.request.PostStickerRequestDto;
 import ly.appsocial.chatcenter.dto.ws.response.LiveLocationResponseDto;
-import ly.appsocial.chatcenter.util.AuthUtil;
-import ly.appsocial.chatcenter.util.DialogUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.NetworkQueueHelper;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
@@ -307,7 +306,7 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 			String path = "channels/" + mChannelUid + "/messages";
 
 			Map<String, String> headers = new HashMap<>();
-			headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+			headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
 			mLiveLocationRequest = new OkHttpApiRequest<>(CSLocationService.this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
 				@Override
@@ -378,7 +377,7 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 			String path = "channels/" + mChannelUid + "/messages";
 
 			Map<String, String> headers = new HashMap<>();
-			headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+			headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
 			mLiveLocationRequest = new OkHttpApiRequest<>(CSLocationService.this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
 

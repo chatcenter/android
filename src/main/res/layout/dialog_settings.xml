@@ -26,7 +26,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/widget_line_width"
-            android:background="@color/color_chatcenter_widget_divider"/>
+            android:background="@color/color_chatcenter_title_divider"/>
 
         <Button
             android:id="@+id/btn_open_dashboard"
@@ -36,12 +36,12 @@
             android:gravity="center"
             android:text="@string/open_dashboard"
             android:textAllCaps="false"
-            android:textColor="@color/color_chatcenter_text_light"/>
+            android:textColor="@color/color_chatcenter_text_link"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/widget_line_width"
-            android:background="@color/color_chatcenter_widget_divider"/>
+            android:background="@color/color_chatcenter_title_divider"/>
 
         <Button
             android:id="@+id/btn_about"
@@ -51,12 +51,12 @@
             android:gravity="center"
             android:text="@string/about_header"
             android:textAllCaps="false"
-            android:textColor="@color/color_chatcenter_text_light"/>
+            android:textColor="@color/color_chatcenter_text_link"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/widget_line_width"
-            android:background="@color/color_chatcenter_widget_divider"/>
+            android:background="@color/color_chatcenter_title_divider"/>
 
         <Button
             android:id="@+id/btn_logout"
@@ -83,5 +83,5 @@
         android:textAllCaps="false"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@color/color_chatcenter_text_light"/>
+        android:textColor="@color/color_chatcenter_text_link"/>
 </LinearLayout>

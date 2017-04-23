@@ -67,7 +67,7 @@
             android:background="@android:color/transparent"
             android:padding="@dimen/margin10dp"
             android:src="@drawable/icon_videochat_widget"
-            android:tint="@color/color_chatcenter_title_button"
+            android:tint="@color/color_chatcenter_title_button_image"
             android:visibility="gone"/>
 
         <ImageButton
@@ -78,7 +78,7 @@
             android:background="@android:color/transparent"
             android:padding="@dimen/margin10dp"
             android:src="@drawable/icon_phonecall_widget"
-            android:tint="@color/color_chatcenter_title_button"
+            android:tint="@color/color_chatcenter_title_button_image"
             android:visibility="gone"/>
 
         <TextView
@@ -101,7 +101,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/widget_line_width"
         android:layout_below="@id/toolbar"
-        android:background="@color/color_chatcenter_separator_light"/>
+        android:background="@color/color_chatcenter_title_divider"/>
 
     <!-- リスト -->
     <RelativeLayout
@@ -123,6 +123,7 @@
             android:id="@+id/chat_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_above="@+id/tv_user_typing"
             android:divider="@null"
             android:dividerHeight="3dp"
             android:transcriptMode="disabled"/>
@@ -154,8 +155,8 @@
             android:maxLines="1"
             android:padding="4dp"
             android:textColor="@android:color/white"
-            android:visibility="gone"
-            android:textSize="10sp"/>
+            android:textSize="10sp"
+            android:visibility="gone"/>
     </RelativeLayout>
 
 

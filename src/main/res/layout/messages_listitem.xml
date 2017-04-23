@@ -1,4 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ly.appsocial.chatcenter.ui.MessageItemView xmlns:android="http://schemas.android.com/apk/res/android"
-											android:layout_width="match_parent"
-											android:layout_height="wrap_content"/>
+
+<com.daimajia.swipe.SwipeLayout
+    android:id="@+id/swipe"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    app:clickToClose="true">
+
+    <LinearLayout
+        android:id="@+id/bottom_wrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:tag="Bottom">
+
+        <LinearLayout
+            android:id="@+id/bt_assign"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="#F5A623"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/history_item_action_menu_height"
+                android:src="@drawable/ic_conversation_assign"
+                android:scaleType="centerInside"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/assign"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bt_close"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="#7ED321"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/bt_close_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/history_item_action_menu_height"
+                android:src="@drawable/ic_conversation_close"
+                android:scaleType="centerInside"/>
+
+            <TextView
+                android:id="@+id/bt_close_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bt_delete"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="#FE3F35"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/history_item_action_menu_height"
+                android:src="@drawable/ic_conversation_delete"
+                android:scaleType="centerInside"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/delete"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ly.appsocial.chatcenter.ui.MessageItemView
+        android:id="@+id/mv_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:tag="Hover"/>
+
+
+</com.daimajia.swipe.SwipeLayout>
+

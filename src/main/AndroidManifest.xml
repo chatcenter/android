@@ -36,7 +36,8 @@
         <activity
             android:name=".activity.MessagesActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/ChatCenterTheme.Slide"/>
+            android:theme="@style/ChatCenterTheme.Slide"
+            android:launchMode="singleTask"/>
 
         <!-- チャット -->
         <activity
@@ -91,11 +92,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/ChatCenterTheme.PullUp"
             android:windowSoftInputMode="stateHidden"/>
-        <activity
-            android:name=".activity.PreviewActivity"
-            android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait"
-            android:theme="@style/ChatCenterTheme.Slide"/>
         <activity
             android:name=".activity.VideoChatActivity"
             android:configChanges="orientation|screenSize"

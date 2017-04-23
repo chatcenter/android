@@ -1,10 +1,15 @@
 package ly.appsocial.chatcenter.dto;
 
+import android.content.Context;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import ly.appsocial.chatcenter.R;
+import ly.appsocial.chatcenter.util.StringUtil;
 
 public class ChannelItem implements Serializable {
 
@@ -26,46 +31,52 @@ public class ChannelItem implements Serializable {
      */
     @SerializedName("uid")
     public String uid;
-    /**
-     * 店舗名
-     */
+    /** 作成日 */
+    @SerializedName("created")
+    public long created;
+    /** KISSコード */
+    @SerializedName("org_uid")
+    public String orgUid;
+    /** 店舗名 */
     @SerializedName("org_name")
     public String orgName;
-    /**
-     * Assignee
-     */
-    @SerializedName("assignee")
-    public UserItem assignee;
-    /**
-     * Status
-     */
+    /** ステータス */
     @SerializedName("status")
-    public String statusString;
-    /**
-     * Users
-     */
+    public String status;
+    /** Users */
     @SerializedName("users")
     public List<UserItem> users;
-    /**
-     * IconUrl
-     */
+    /** 未読メッセージ数 */
+    @SerializedName("unread_messages")
+    public int unreadMessages;
+    @SerializedName("display_name")
+    public DisplayName displayName;
+    /** 最新メッセージ */
+    @SerializedName("latest_message")
+    public LatestMessage latestMessage;
+    /** Channel's last updated at */
+    @SerializedName("last_updated_at")
+    public double lastUpdatedAt;
+    /** Assignee */
+    @SerializedName("assignee")
+    public UserItem assignee;
+    /** IconUrl*/
     @SerializedName("icon_url")
     public String iconUrl;
-
-    /**
-     * Funnel id
-     */
+    /** Funnel id*/
     @SerializedName("funnel_id")
     public int funnel_id;
-
-    /**
-     * Note
-     */
+    /** Note */
     @SerializedName("note")
     public Note note;
 
-    @SerializedName("display_name")
-    public DisplayName displayName;
+    public int localId;
+
+    /**
+     * 最新メッセージ
+     */
+    public static class LatestMessage extends ChatItem {
+    }
 
     public UserItem getAssignee() {
         if(assignee != null) {
@@ -79,6 +90,7 @@ public class ChannelItem implements Serializable {
         return null;
     }
 
+    /** Get list of guest user in channel*/
     public List<UserItem> getGuests() {
         List<UserItem> guests = new ArrayList<>();
         for (UserItem user : users) {
@@ -87,6 +99,16 @@ public class ChannelItem implements Serializable {
             }
         }
         return guests;
+    }
+
+    /** Get first Guest user in list of guests*/
+    public UserItem getFirstGuest() {
+        List<UserItem> guest = getGuests();
+        if (guest != null && guest.size() > 0) {
+            return guest.get(0);
+        }
+
+        return null;
     }
 
     public boolean isAdmin(Integer userId) {
@@ -126,11 +148,11 @@ public class ChannelItem implements Serializable {
     }
 
     public ChannelStatus getChannelStatus() {
-        if (statusString.equals(CHANNEL_UNASSIGNED)) {
+        if (status.equals(CHANNEL_UNASSIGNED)) {
             return ChannelStatus.CHANNEL_UNASSIGNED;
-        } else if (statusString.equals(CHANNEL_ASSIGNED)) {
+        } else if (status.equals(CHANNEL_ASSIGNED)) {
             return ChannelStatus.CHANNEL_ASSIGNED_TO_ME;
-        } else if (statusString.equals(CHANNEL_CLOSED)) {
+        } else if (status.equals(CHANNEL_CLOSED)) {
             return ChannelStatus.CHANNEL_CLOSE;
         } else {
             return ChannelStatus.CHANNEL_ALL;
@@ -161,5 +183,37 @@ public class ChannelItem implements Serializable {
         /** The name that will display on agent's UI*/
         @SerializedName("admin")
         public String admin;
+    }
+
+    /** Get of channel to display*/
+    public String getDisplayName(Context context, boolean isAgent) {
+        String channelDisplayName;
+        UserItem guest = getUserToDisplay(isAgent);
+        if (isAgent) {
+            if (displayName != null && StringUtil.isNotBlank(displayName.admin)) {
+                channelDisplayName = displayName.admin;
+            } else if (guest != null && StringUtil.isNotBlank(guest.displayName)) {
+                channelDisplayName = guest.displayName;
+            } else {
+                channelDisplayName = context.getString(R.string.guest);
+            }
+        } else {
+            if (displayName != null && StringUtil.isNotBlank(displayName.guest)) {
+                channelDisplayName = displayName.guest;
+            } else {
+                channelDisplayName = orgName;
+            }
+        }
+
+        return channelDisplayName;
+    }
+
+    /** Get user information to display on list*/
+    public UserItem getUserToDisplay(boolean isAgentApp) {
+        if (isAgentApp) {
+            return getFirstGuest();
+        } else {
+            return assignee;
+        }
     }
 }

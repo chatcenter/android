@@ -167,7 +167,7 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
             } else {
                 String content = makeContentString();
                 if (content != null) {
-                    showDialogWidgetPreview(content);
+                    showDialogWidgetPreview(content,this);
                 } else {
                     DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ERROR, null, getString(R.string.widget_create_error));
                 }
@@ -323,6 +323,8 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
                 break;
             }
         }
+
+        widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_SELECT;
 
         return new Gson().toJson(widget).toString();
     }

@@ -31,7 +31,7 @@ public class ChatItem {
 
 
 	public enum ChatItemStatus {
-		READ, SENDING, SENT, SEND_FAILED
+		READ, SENDING, SENT, SEND_FAILED, DEFAULT, DRAFT
 	}
 
 	public ChatItem() {
@@ -57,10 +57,10 @@ public class ChatItem {
 				return context.getString(R.string.message_status_read);
 			case SENDING:
 				return context.getString(R.string.message_status_sending);
-			case SENT:
-				return context.getString(R.string.message_status_sent);
 			case SEND_FAILED:
 				return context.getString(R.string.message_status_send_failed);
+			case SENT:
+			case DEFAULT:
 			default:
 				return null;
 		}
@@ -71,22 +71,18 @@ public class ChatItem {
 	 *
 	 * @return
 	 */
-	private boolean isRead() {
+	public boolean isRead() {
 		if (usersReadMessage == null) {
 			return false;
 		}
 
 		for (UserItem user : usersReadMessage) {
-			if (user.id.equals(this.user.id)) {
+			if (user == null || (this.user != null && user.id.equals(this.user.id)) || user.admin) {
 				// Check only other users
 				continue;
 			}
 
-			if (user.admin != this.user.admin) {
-				// Either admin has read guest's message or guest has read admin's
-				// Admin read admin's doesn't count
-				return true;
-			}
+			return true;
 		}
 		return false;
 	}
@@ -121,6 +117,11 @@ public class ChatItem {
 	@SerializedName("users_read_message")
 	public List<UserItem> usersReadMessage;
 
+	public String rawContent = "";
+	public String stickerType = "";
+
+	public int localId;
+
 
 	public transient ArrayList<LiveLocationUser> mLiveLocationUsers = new ArrayList<>();
 	private transient boolean mIsInitLocation = false;
@@ -154,38 +155,41 @@ public class ChatItem {
 		}
 	}
 
-	private static ChatItem createTemporaryMessage(BasicWidget widget, int userId) {
+	private static ChatItem createTemporaryMessage(BasicWidget widget, UserItem sender) {
 		ChatItem item = new ChatItem();
 		item.widget =  widget;
 		item.localStatus = ChatItemStatus.SENDING;
-		item.user = new UserItem();
-		item.user.id = userId;
+		if (sender != null) {
+			item.user = sender;
+		} else {
+			item.user = new UserItem();
+		}
 		item.created = System.currentTimeMillis() / 1000;
 		return item;
 	}
 
-	private static ChatItem createTemporaryMessage(JSONObject content, int userId) {
+	private static ChatItem createTemporaryMessage(JSONObject content, UserItem sender) {
 		BasicWidget widget =  new Gson().fromJson(content.toString(), BasicWidget.class);
-		return createTemporaryMessage(widget, userId);
+		return createTemporaryMessage(widget, sender);
 	}
 
-	public static ChatItem createTemporaryMessage(String text, String tmpUid, int userId) {
+	public static ChatItem createTemporaryMessage(String text, String tmpUid, UserItem sender) {
 		JSONObject content = new JSONObject();
 		try {
 			content.put("text", text);
 			content.put("uid", tmpUid);
 		} catch (JSONException e) {
 		}
-		return createTemporaryMessage(content, userId);
+		return createTemporaryMessage(content, sender);
 	}
 
-	public static ChatItem createTemporarySticker(String contentString, String tmpUid, int userId) {
+	public static ChatItem createTemporarySticker(String contentString, String tmpUid, UserItem sender) {
 		BasicWidget widget = new Gson().fromJson(contentString, BasicWidget.class);
 		widget.uid = tmpUid;
-		return createTemporaryMessage(widget, userId);
+		return createTemporaryMessage(widget, sender);
 	}
 
-	public static ChatItem createTemporaryImageSticker(final String imagePath, String tmpUid, int userId) {
+	public static ChatItem createTemporaryImageSticker(final String imagePath, String tmpUid, UserItem sender) {
 		BasicWidget widget = new BasicWidget();
 		widget.uid = tmpUid;
 
@@ -196,7 +200,9 @@ public class ChatItem {
 			add(imagePath);
 		}};
 
-		return createTemporaryMessage(widget, userId);
+		widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE;
+
+		return createTemporaryMessage(widget, sender);
 	}
 
 	public static String createLocationStickerContent(Place place, Context context) {
@@ -219,6 +225,7 @@ public class ChatItem {
 		String address = place.getAddress().toString();
 		widget.message.text = StringUtil.isNotBlank(placeName)
 				&& StringUtil.isNotBlank(address) ? placeName : context.getString(R.string.venue_widget_title);
+		widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_LOCATION;
 
 		return new Gson().toJson(widget).toString();
 	}
@@ -262,6 +269,8 @@ public class ChatItem {
 		actionData.action = new ArrayList<String>() {{
 			add(WidgetAction.OPEN_CALENDAR);
 		}};
+
+		widget.stickerType = ChatCenterConstants.StickerName.STICKER_TYPE_SCHEDULE;
 
 		widget.stickerAction.actionData.add(actionData);
 
@@ -313,7 +322,8 @@ public class ChatItem {
 			if ( user.mId.equals(newItem.user.id) ){
 				bFound = true;
 				if ( newItem.widget.stickerContent != null && newItem.widget.stickerContent.stickerData != null
-						&& newItem.widget.stickerContent.stickerData.type != null && "stop".equals(newItem.widget.stickerContent.stickerData.type) ){
+						&& newItem.widget.stickerContent.stickerData.type != null
+						&& "stop".equals(newItem.widget.stickerContent.stickerData.type) ){
 					user.stopTimer();
 				} else {
 					user.updateTimer();
@@ -340,6 +350,21 @@ public class ChatItem {
 	public String getSimpleFormatedCreatedDate() {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd");
 		return simpleDateFormat.format(new Date(created * 1000));
+	}
+
+	/** If sticker with message only, show as a normal message*/
+	public ChatItem rebuildChatItem() {
+		if (!ResponseType.MESSAGE.equals(type)
+				&& widget != null && widget.message != null
+				&& StringUtil.isNotBlank(widget.message.text)
+				&& widget.stickerAction == null
+				&& widget.stickerContent == null) {
+
+			type = ResponseType.MESSAGE;
+			widget.text = widget.message.text;
+		}
+
+		return this;
 	}
 
 }

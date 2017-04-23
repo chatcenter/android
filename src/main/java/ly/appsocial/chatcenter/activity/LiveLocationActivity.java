@@ -34,7 +34,7 @@ import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ws.request.PostStickerRequestDto;
 import ly.appsocial.chatcenter.dto.ws.response.LiveLocationResponseDto;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.NetworkQueueHelper;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
@@ -73,7 +73,7 @@ public class LiveLocationActivity extends WebViewActivity {
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		setTitle(R.string.location_title);
+		setTitle(R.string.location_live_title);
 
 		mTvLive = (TextView) findViewById(R.id.bt_live);
 
@@ -197,7 +197,7 @@ public class LiveLocationActivity extends WebViewActivity {
 		String path = "channels/" + mChannelUid + "/messages";
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
 		mLiveLocationRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<LiveLocationResponseDto>() {
 			@Override

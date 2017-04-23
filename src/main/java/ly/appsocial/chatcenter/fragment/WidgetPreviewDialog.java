@@ -1,6 +1,5 @@
 package ly.appsocial.chatcenter.fragment;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -12,7 +11,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import ly.appsocial.chatcenter.R;
-import ly.appsocial.chatcenter.activity.ScheduleActivity;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
@@ -81,7 +79,7 @@ public class WidgetPreviewDialog extends DialogFragment implements View.OnClickL
 
         mWidgetView = (WidgetView) v.findViewById(R.id.schedule_widget);
         String widgetContent = getArguments().getString(KEY_STICKERS);
-        ChatItem chatItem = ChatItem.createTemporarySticker(widgetContent, "", 0);
+        ChatItem chatItem = ChatItem.createTemporarySticker(widgetContent, "", null);
         chatItem.type = ResponseType.STICKER;
 
         mWidgetView.setupCustomerView(chatItem, null,false);
@@ -101,12 +99,8 @@ public class WidgetPreviewDialog extends DialogFragment implements View.OnClickL
         super.onResume();
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (activity instanceof WidgetPreviewListener) {
-            mListener = (WidgetPreviewListener) activity;
-        }
+    public void setListener(WidgetPreviewListener listener) {
+        mListener = listener;
     }
 
     public interface WidgetPreviewListener {

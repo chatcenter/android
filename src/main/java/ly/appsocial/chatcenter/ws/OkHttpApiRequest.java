@@ -226,6 +226,10 @@ public class OkHttpApiRequest<T> implements ApiRequest<T> {
 			}
 			if (mMethod == Method.PATCH) {
 				builder.patch(body);
+			} else if (mMethod ==  Method.DELETE) {
+				builder.delete(body);
+			} else if (mMethod ==  Method.PUT) {
+				builder.put(body);
 			} else {
 				builder.post(body);
 			}

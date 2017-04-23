@@ -7,12 +7,10 @@ import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import ly.appsocial.chatcenter.BuildConfig;
-import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
-import ly.appsocial.chatcenter.dto.ws.response.WsChannelJoinMessageDto;
+import ly.appsocial.chatcenter.dto.ws.response.WsChannelResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
@@ -39,10 +37,12 @@ public abstract class CCWebSocketClientListener implements CCWebSocketClient.Lis
     public abstract void onWSDisconnect(int code, String reason);
     public abstract void onWSError(Exception exception);
     public abstract void onWSMessage(WsMessagesResponseDto response, String messageType);
-    public abstract void onWSChannelJoin(WsChannelJoinMessageDto response);
+    public abstract void onWSChannelJoin(WsChannelResponseDto response);
 	public abstract void onWSRecieveAnswer(Integer messageId, Integer answerType);
 	public abstract void onWSRecieveOnline(String channelUid, JSONObject user, String orgUid, Boolean online);
 	public abstract void onWSReceiveReceipt(String channelUid, JSONArray messages, JSONObject user);
+	public abstract void onWSChannelClosed(WsChannelResponseDto response);
+	public abstract void onWSChannelDeleted(WsChannelResponseDto response);
 
 	public void didReceiveInviteCallCallback(Number uid){}
 
@@ -62,7 +62,7 @@ public abstract class CCWebSocketClientListener implements CCWebSocketClient.Lis
 
     @Override
     public void onMessage(String message) {
-		Log.e(TAG, "onMessage: " + message);
+		// Log.e(TAG, "onMessage: " + message);
 		if (isCancelled()) {
             return;
         }
@@ -149,7 +149,7 @@ public abstract class CCWebSocketClientListener implements CCWebSocketClient.Lis
 	            argument.setupContent(VideoCallWidget.class, jsonObject);
 	            this.onWSMessage(argument, ResponseType.CALLINVITE);
             } else if ("channel:join".equals(type)) {
-                WsChannelJoinMessageDto wsChannelJoinMessageDto = new Gson().fromJson(rawData, WsChannelJoinMessageDto.class);
+                WsChannelResponseDto wsChannelJoinMessageDto = new Gson().fromJson(rawData, WsChannelResponseDto.class);
                 this.onWSChannelJoin(wsChannelJoinMessageDto);
 			} else if ("channel:online".equals(type)) {
 				String channelUid;
@@ -218,19 +218,31 @@ public abstract class CCWebSocketClientListener implements CCWebSocketClient.Lis
 			} else if ("message:link".equals(type)) {
 				///TODO: This may not be used but I remain just incase
 			} else if ("channel:assigned".equals(type)) {
-				// TODO
+				WsChannelResponseDto wsChannelJoinMessageDto = new Gson().fromJson(rawData, WsChannelResponseDto.class);
+				this.onWSChannelJoin(wsChannelJoinMessageDto);
 			} else if ("channel:unassigned".equals(type)) {
-				// TODO
+				WsChannelResponseDto wsChannelJoinMessageDto = new Gson().fromJson(rawData, WsChannelResponseDto.class);
+				this.onWSChannelJoin(wsChannelJoinMessageDto);
 			} else if ("channel:followed".equals(type)) {
 				// TODO
 			} else if ("channel:unfollowed".equals(type)) {
 				// TODO
 			} else if ("channel:deleted".equals(type)) {
+				WsChannelResponseDto wsChannelDeletedMessageDto = new Gson().fromJson(rawData, WsChannelResponseDto.class);
+				this.onWSChannelDeleted(wsChannelDeletedMessageDto);
+			} else if ("channel:closed".equals(type)) {
+				WsChannelResponseDto wsChannelClosedMessageDto = new Gson().fromJson(rawData, WsChannelResponseDto.class);
+				this.onWSChannelClosed(wsChannelClosedMessageDto);
+			} else if ("channel:opened".equals(type)) {
 				// TODO
+			} else if ("message:typing".equals(type)) {
+				WsMessagesResponseDto argument = new Gson().fromJson(rawData, WsMessagesResponseDto.class);
+				argument.setupContent(VideoCallWidget.class, jsonObject);
+				this.onWSMessage(argument, ResponseType.TYPING);
 			} else if (type != null && type.contains("message:") ) {
 				// TODO
             }
-        } catch (Exception e) {
+		} catch (Exception e) {
             if (BuildConfig.DEBUG) {
                 Log.e("###", e.getMessage(), e);
             }

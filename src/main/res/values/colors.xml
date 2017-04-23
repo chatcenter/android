@@ -1,30 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="color_chatcenter_base">#0067ff</color>
+
     <!-- ウィンドウ内の表示 -->
     <color name="color_chatcenter_text">#293b54</color>
-    <color name="color_chatcenter_text_light">#0067ff</color>
     <color name="color_chatcenter_background">#ffffff</color>
-	<color name="color_chatcenter_separator">#80000000</color>
+    <color name="color_chatcenter_text_link">@color/color_chatcenter_base</color>
 
 	<!-- ウィンドウ タイトルバー -->
     <color name="color_chatcenter_title_text">#293b54</color>
     <color name="color_chatcenter_title_background">#ffffff</color>
     <color name="color_chatcenter_title_background_dark">#cacaca</color>
-	<color name="color_chatcenter_title_button">#0067ff</color>
-	<color name="color_chatcenter_title_button_text">#ffffff</color>
+    <color name="color_chatcenter_title_divider">#666666</color>
+    <color name="color_chatcenter_title_button_image">#0067ff</color>
+	<color name="color_chatcenter_title_button_text">#0067ff</color>
 
 	<!-- ウィジェット -->
-	<color name="color_chatcenter_widget_text">#0067ff</color>
-    <color name="color_chatcenter_widget_border">#0067ff</color>
+	<color name="color_chatcenter_widget_text">@color/color_chatcenter_base</color>
+    <color name="color_chatcenter_widget_border">@color/color_chatcenter_base</color>
 	<color name="color_chatcenter_widget_background">#ffffff</color>
     <color name="color_chatcenter_widget_select">#200067ff</color>
+
+    <!-- ウィジェット メーニュー -->
     <color name="color_chatcenter_widget_menu">#f2f2f2</color>
-    <color name="color_chatcenter_widget_divider">#e3e3e3</color>
+    <color name="color_chatcenter_widget_menu_divider">#e3e3e3</color>
+    <color name="color_chatcenter_widget_menu_button">@color/color_chatcenter_base</color>
 
 	<!-- お客様からのメッセージ (バブル) -->
-    <color name="color_chatcenter_customer_bubble">#0067ff</color>
-    <color name="color_chatcenter_customer_bubble_text">#ffffff</color>
+    <color name="color_chatcenter_sent_msg_bubble">@color/color_chatcenter_base</color>
+    <color name="color_chatcenter_sent_msg_text">#ffffff</color>
 
 	<!-- オペレーターからのメッセージ (バブル) -->
 	<color name="color_chatcenter_operator_bubble">#200067ff</color>
@@ -42,10 +47,15 @@
     <color name="color_chatcenter_twitter">#00aced</color>
     <color name="color_chatcenter_facebook">#3b5998</color>
 
-	<color name="color_orange">#fcb528</color>
-	<color name="color_green">#37cc37</color>
-	<color name="color_blue">#000099</color>
+    <!-- Left side menu -->
     <color name="color_chatcenter_left_menu_background">#D6D6D6</color>
     <color name="color_chatcenter_left_menu_divider">#ADADAD</color>
+    <color name="color_chatcenter_gg_calendar_background">#dadada</color>
+    <color name="color_chatcenter_gg_calendar_border">#f5f5f5</color>
+
+    <!-- Swipe To Refresh Animation-->
+    <color name="color_orange">#fcb528</color>
+    <color name="color_green">#37cc37</color>
+    <color name="color_blue">#000099</color>
 
 </resources>

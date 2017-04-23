@@ -48,7 +48,8 @@ import ly.appsocial.chatcenter.dto.param.PhotoParamDto;
 /**
  * 「写真」アクティビティ。
  */
-public class PhotoActivity extends BaseActivity implements View.OnClickListener, ProgressDialogFragment.DialogListener, AlertDialogFragment.DialogListener {
+public class PhotoActivity extends BaseActivity implements View.OnClickListener,
+		ProgressDialogFragment.DialogListener, AlertDialogFragment.DialogListener {
 
 	public static final String PHOTO_DATA = "PHOTO_DATA";
 	private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1000;

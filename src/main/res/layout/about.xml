@@ -18,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/widget_line_width"
         android:layout_below="@id/toolbar"
-        android:background="@color/color_chatcenter_separator_light"/>
+        android:background="@color/color_chatcenter_title_divider"/>
 
     <ListView
         android:id="@+id/about_listview"

@@ -9,12 +9,10 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.JsonElement;
 
@@ -26,7 +24,7 @@ import ly.appsocial.chatcenter.dto.ws.response.GetChannelsCountResponseDto;
 
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.FunnelItem;
-import ly.appsocial.chatcenter.util.PreferenceUtil;
+import ly.appsocial.chatcenter.util.CCPrefUtils;
 
 public class ChannelFilterView extends LinearLayout {
 
@@ -51,8 +49,8 @@ public class ChannelFilterView extends LinearLayout {
     public ChannelFilterView(Context context, ArrayList<FunnelItem> items) {
         super(context);
 
-        mLastChannelStatus = PreferenceUtil.getLastChannelStatus(context);
-        mLastFunnellId = PreferenceUtil.getLastFunnelId(context);
+        mLastChannelStatus = CCPrefUtils.getLastChannelStatus(context);
+        mLastFunnellId = CCPrefUtils.getLastFunnelId(context);
 
         if (items != null && items.size() > 0) {
             for (FunnelItem item: items) {

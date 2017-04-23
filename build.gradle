@@ -40,7 +40,7 @@ ext {
 	siteUrl = 'https://github.com/chatcenter/android'
 	gitUrl = 'https://github.com/chatcenter/android.git'
 
-	libraryVersion = '1.0.8'
+	libraryVersion = '1.0.9'
 
 	developerId = 'appsocially'
 	developerName = 'AppSocially Inc.'
@@ -97,11 +97,13 @@ dependencies {
 	compile 'com.squareup.picasso:picasso:2.5.2'
 	compile 'com.squareup.okhttp:okhttp:2.7.5'
 	compile 'com.squareup.okhttp:okhttp-ws:2.7.5'
-	compile 'com.google.android.gms:play-services-gcm:10.0.1'
+
 	compile 'com.google.android.gms:play-services-maps:10.0.1'
 	compile 'com.google.android.gms:play-services-places:10.0.1'
 	compile 'com.google.android.gms:play-services-location:10.0.1'
 	compile 'com.opentok.android:opentok-android-sdk:2.9.1-REL-2636'
+
+	compile "com.daimajia.swipelayout:library:1.2.0@aar"
 
 	compile 'com.google.dagger:dagger:2.2'
 	apt 'com.google.dagger:dagger-compiler:2.2'

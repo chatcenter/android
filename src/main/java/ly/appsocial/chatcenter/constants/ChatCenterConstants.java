@@ -5,9 +5,15 @@ package ly.appsocial.chatcenter.constants;
  */
 public class ChatCenterConstants {
 
+	public static final String CHATCENTER_SDK_VERSION = "1.0.8";
+
 	public static final String URL_DASHBOARD = "https://app.chatcenter.io";
 	public static final int MAX_MESSAGE_ON_LOAD = 20;
 	public static final int MAX_CHANNEL_ON_LOAD = 20;
+    public static final long SEND_TYPING_TIME_OUT = 500;
+	public static final long TIME_DISPLAYING_TYPING = 2000; // Display "typing..." in 2 seconds
+	public static final int MAX_NOTE_LENGTH = 500; // Max length of Note is 500 characters
+	public static final String LICENSE_URL = "https://chatcenter.github.io/android/Copyright/%s/Copyright";
 
 	/**
 	 * プリファレンスキー
@@ -15,12 +21,7 @@ public class ChatCenterConstants {
 	public static class Preference {
 		/** Providerトークン生成タイムスタンプ(ms) */
 		public static final String TOKEN_TIMESTAMP = "chatcenter_token_timestamp";
-		/** Userトークン */
-		public static final String USER_TOKEN = "chatcenter_user_token";
-		/** User ID */
-		public static final String USER_ID = "chatcenter_user_id";
-		public static final String USER_ADMIN = "chatcenter_user_admin";
-
+		public static final String USER = "chatcenter_user";
 		public static final String DEVICE_TOKEN = "chatcenter-device-token";
 		/**
 		 * 表示済みチャットリスト
@@ -31,6 +32,16 @@ public class ChatCenterConstants {
 		public static final String BROWSED_CHATS = "chatcenter_browsed_chats";
 
 		public static final String LAST_LOCATION = "chatcenter_last_location";
+
+		/** To save last stage of app for next launching*/
+		public static final String LAST_ORG_UID = "chatcenter_last_selected_org_uid";
+		public static final String LAST_APP_ID = "chatcenter_last_selected_app_id";
+
+		public static final String LAST_CHANNEL_STATUS = "chatcenter_last_channel_status";
+		public static final String LAST_CHANNEL_FUNNEL = "chatcenter_last_channel_funnel";
+		public static final String LAST_CHANNEL_FILTER_STRING = "chatcenter_last_channel_filter_string";
+
+		public static final String USER_CONFIG = "chatcenter_user_config";
 	}
 
 	public static class Extra {
@@ -55,6 +66,8 @@ public class ChatCenterConstants {
 		public static final String STICKER_TYPE_VOICE_CHAT = "voice_chat";
 		public static final String STICKER_TYPE_CAMERA = "camera_upload";
 		public static final String STICKER_TYPE_TYPE_PHONE_CALL = "phone_call";
+		public static final String STICKER_TYPE_SCHEDULE = "schedule";
+		public static final String STICKER_TYPE_SELECT = "select";
 	}
 
 	public static class ActionType {

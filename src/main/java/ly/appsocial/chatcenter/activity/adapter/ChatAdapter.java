@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -23,8 +24,8 @@ import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.ChatActivity;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
-import ly.appsocial.chatcenter.dto.UserItem;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.dto.ws.response.GetAppsResponseDto;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.util.ViewUtil;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
@@ -71,6 +72,7 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	/* このユーザーはAgentですか？Guestですか？*/
 	private boolean isAgent;
 
+	private GetAppsResponseDto.App mApp;
 
 	/**
 	 * コンストラクタ
@@ -79,16 +81,17 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	 * @param items 項目リスト
 	 */
 	public ChatAdapter(Context context, List<ChatItem> items, WidgetView.StickerActionListener listener,
-					   boolean isAgent) {
+					   boolean isAgent, GetAppsResponseDto.App app) {
 		super(context, 0, items);
 
 		mContext = context;
 		mStickerActionListener = listener;
 		mInflater = LayoutInflater.from(context);
 		mCanMail = canMail(getContext());
-		mUserToken = AuthUtil.getUserToken(context);
+		mUserToken = CCAuthUtil.getUserToken(context);
 		this.isAgent = isAgent;
-		mUserId = AuthUtil.getUserId(context);
+		mUserId = CCAuthUtil.getUserId(context);
+		mApp = app;
 	}
 
 	// //////////////////////////////////////////////////////////////////////////
@@ -146,6 +149,10 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 	 */
 	public void setChatInfo(String channelUid) {
 		mChannelUid = channelUid;
+	}
+
+	public void setApp(GetAppsResponseDto.App app) {
+		mApp = app;
 	}
 
 	@Override
@@ -214,12 +221,25 @@ public class ChatAdapter extends ArrayAdapter<ChatItem> {
 		// Message status
 		String statusStr = item.getStatusString(getContext());
 		if (StringUtil.isNotBlank(statusStr)) {
-			if (item.localStatus == ChatItem.ChatItemStatus.READ && !AuthUtil.isCurrentUserAdmin(getContext())) {
+			if (item.localStatus == ChatItem.ChatItemStatus.READ && !mApp.readForGuest
+						&& !CCAuthUtil.isCurrentUserAdmin(getContext())) {
 				statusStr = ""; // We do not let guest user view read status.
 			}
 			holder.messageStatusTextView.setText(statusStr);
 		} else {
 			holder.messageStatusTextView.setText("");
+		}
+
+		if (item.localStatus != null && item.localStatus == ChatItem.ChatItemStatus.SEND_FAILED) {
+			holder.messageStatusTextView.setTextColor(Color.RED);
+		} else {
+			int textColor;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				textColor = getContext().getColor(R.color.color_chatcenter_text);
+			} else {
+				textColor = getContext().getResources().getColor(R.color.color_chatcenter_text);
+			}
+			holder.messageStatusTextView.setTextColor(textColor);
 		}
 
 		holder.widgetView.setupCustomerView(item, mStickerActionListener, mCanMail);

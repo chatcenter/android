@@ -79,7 +79,7 @@ public class GetFixedPhraseParser implements ApiRequest.Parser<GetFixedPhraseRes
 						item.widget = widget;
 						widget.message = new BasicWidget.Message();
 						widget.message.text = obj.getString("content");
-						item.type = ResponseType.MESSAGE;
+						item.type = ResponseType.STICKER;
 						items.add(item);
 					}
 				}

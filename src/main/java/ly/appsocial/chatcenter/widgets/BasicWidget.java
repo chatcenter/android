@@ -26,7 +26,7 @@ import ly.appsocial.chatcenter.dto.WidgetAction;
 import ly.appsocial.chatcenter.dto.param.PhotoParamDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetAppsResponseDto;
 import ly.appsocial.chatcenter.ui.RoundImageView;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
 
@@ -47,8 +47,8 @@ public class BasicWidget extends Widget {
 	@SerializedName("text")
 	public String text;
 
-	/** Temporary Uid */
-	public String uid;
+	/** Temporary Uid, Empty String for default*/
+	public String uid = "";
 
 	/** Sticker message */
 	@SerializedName("message")
@@ -126,7 +126,7 @@ public class BasicWidget extends Widget {
 	}
 
 	protected String getUserToken(Context context){
-		return AuthUtil.getUserToken(context.getApplicationContext());
+		return CCAuthUtil.getUserToken(context.getApplicationContext());
 	}
 
 	protected String getAppToken(Context context){

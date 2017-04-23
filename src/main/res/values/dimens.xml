@@ -45,5 +45,7 @@
 	<dimen name="live_location_time_button">40dp</dimen>
 	<dimen name="yes_no_height">35dp</dimen>
 	<dimen name="yes_no_width">50dp</dimen>
+    <dimen name="history_item_action_menu_height">24dp</dimen>
+    <dimen name="chatcenter_gg_calendar_text_size">10sp</dimen>
 
 </resources>

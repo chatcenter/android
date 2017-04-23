@@ -18,13 +18,18 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/widget_line_width"
         android:layout_alignParentBottom="true"
-        android:background="@color/color_chatcenter_separator_light"/>
+        android:background="@color/color_chatcenter_title_divider"/>
 
-    <ListView
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_below="@id/toolbar"/>
+
+    <WebView
         android:id="@+id/copyright_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="@color/color_chatcenter_separator_light"
-        android:dividerHeight="@dimen/widget_line_width"/>
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

@@ -31,4 +31,5 @@ public class ResponseType {
 	public static final String URL = 			"url";
 	public static final String SAVED = 			"saved";
 	public static final String LIST = 			"list";
+	public static final String TYPING = 		"typing";
 }

@@ -31,12 +31,11 @@ import ly.appsocial.chatcenter.dto.param.ChatParamDto;
 import ly.appsocial.chatcenter.dto.ws.request.VideoChatRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.WsConnectChannelRequest;
 import ly.appsocial.chatcenter.dto.ws.response.VideoChatResponseDto;
-import ly.appsocial.chatcenter.dto.ws.response.WsChannelJoinMessageDto;
+import ly.appsocial.chatcenter.dto.ws.response.WsChannelResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
 import ly.appsocial.chatcenter.fragment.VideoCallFragment;
 import ly.appsocial.chatcenter.fragment.VideoChatFragment;
-import ly.appsocial.chatcenter.util.ApiUtil;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.NetworkQueueHelper;
 import ly.appsocial.chatcenter.widgets.VideoCallWidget;
 import ly.appsocial.chatcenter.ws.ApiRequest;
@@ -73,6 +72,7 @@ public class VideoChatActivity extends BaseActivity {
 
 	/** WebSocket */
 	private Handler mHandler = new Handler();
+	private WebSocketClientListener mWsListener = new WebSocketClientListener();
 
 
 	@Override
@@ -87,12 +87,7 @@ public class VideoChatActivity extends BaseActivity {
 		mMessageId = intent.getStringExtra("message_id");
 		mOnlyVoice = intent.getBooleanExtra("audioOnly", false);
 
-		// WebSocket 接続
-		String appToken = ApiUtil.getAppToken(this);
-		appToken = (appToken == null || appToken.isEmpty() ) ? mParamDto.appToken : appToken;
-
-		WebSocketHelper.connectWithAppToken(getApplicationContext(), appToken, new WebSocketClientListener());
-
+		WebSocketHelper.setListener(mWsListener);
 
 		if ( mIsCalling ){
 			openVideoChat();
@@ -108,6 +103,12 @@ public class VideoChatActivity extends BaseActivity {
 		super.onStop();
 		// API のキャンセル
 		mOkHttpClient.cancel(REQUEST_TAG);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		WebSocketHelper.removeListener(mWsListener);
 	}
 
 	private void openVideoChat(){
@@ -208,7 +209,7 @@ public class VideoChatActivity extends BaseActivity {
 		String path = "channels/" + mChannelUid + "/calls/" + mMessageId + "/reject";
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
 		mVideoChatRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<VideoChatResponseDto>() {
 			@Override
@@ -238,7 +239,7 @@ public class VideoChatActivity extends BaseActivity {
 		VideoChatRequestDto videoChatRequestDto = new VideoChatRequestDto();
 		videoChatRequestDto.callId = mMessageId;
 		videoChatRequestDto.user = new UserItem();
-		videoChatRequestDto.user.id = AuthUtil.getUserId(getApplicationContext());
+		videoChatRequestDto.user.id = CCAuthUtil.getUserId(getApplicationContext());
 		videoChatRequestDto.reason = new VideoChatRequestDto.Reason();
 		videoChatRequestDto.reason.type = "error";
 		videoChatRequestDto.reason.message = "Invite to Participant was canceled";
@@ -265,7 +266,7 @@ public class VideoChatActivity extends BaseActivity {
 		String path = "channels/" + mChannelUid + "/calls/" + mMessageId + "/hangup";
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
 		mVideoChatRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<VideoChatResponseDto>() {
 			@Override
@@ -295,7 +296,7 @@ public class VideoChatActivity extends BaseActivity {
 		VideoChatRequestDto videoChatRequestDto = new VideoChatRequestDto();
 		videoChatRequestDto.callId = mMessageId;
 		videoChatRequestDto.user = new UserItem();
-		videoChatRequestDto.user.id = AuthUtil.getUserId(getApplicationContext());
+		videoChatRequestDto.user.id = CCAuthUtil.getUserId(getApplicationContext());
 
 		mVideoChatRequest.setJsonBody(videoChatRequestDto.toJson());
 		NetworkQueueHelper.enqueue(mVideoChatRequest, REQUEST_TAG);
@@ -315,7 +316,7 @@ public class VideoChatActivity extends BaseActivity {
 		String path = "channels/" + mChannelUid + "/calls/" + mMessageId + "/accept";
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", AuthUtil.getUserToken(getApplicationContext()));
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
 		mVideoChatRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new ApiRequest.Callback<VideoChatResponseDto>() {
 			@Override
@@ -347,7 +348,7 @@ public class VideoChatActivity extends BaseActivity {
 		VideoChatRequestDto videoChatRequestDto = new VideoChatRequestDto();
 		videoChatRequestDto.callId = mMessageId;
 		videoChatRequestDto.user = new UserItem();
-		videoChatRequestDto.user.id = AuthUtil.getUserId(getApplicationContext());
+		videoChatRequestDto.user.id = CCAuthUtil.getUserId(getApplicationContext());
 
 		mVideoChatRequest.setJsonBody(videoChatRequestDto.toJson());
 		NetworkQueueHelper.enqueue(mVideoChatRequest, REQUEST_TAG);
@@ -389,7 +390,7 @@ public class VideoChatActivity extends BaseActivity {
 					VideoCallWidget widget = (VideoCallWidget)item.widget;
 					if ( widget.events != null ){
 						VideoCallWidget.VideoCallUser caller = widget.caller;
-						int currentUserId = AuthUtil.getUserId(getApplicationContext());
+						int currentUserId = CCAuthUtil.getUserId(getApplicationContext());
 
 						for ( VideoCallWidget.VideoCallEvent event : widget.events){
 							if ( event.content != null && event.content.action != null ){
@@ -414,7 +415,7 @@ public class VideoChatActivity extends BaseActivity {
 		}
 
 		@Override
-		public void onWSChannelJoin(WsChannelJoinMessageDto response) {
+		public void onWSChannelJoin(WsChannelResponseDto response) {
 			// Do nothing
 		}
 
@@ -429,6 +430,16 @@ public class VideoChatActivity extends BaseActivity {
 		}
 
 		@Override
+		public void onWSChannelClosed(WsChannelResponseDto response) {
+
+		}
+
+		@Override
+		public void onWSChannelDeleted(WsChannelResponseDto response) {
+
+		}
+
+		@Override
 		public void onWSRecieveAnswer(Integer messageId, Integer answerType){
 			// Do nothing
 		}
@@ -437,7 +448,7 @@ public class VideoChatActivity extends BaseActivity {
 
 	private void handleReject(VideoCallWidget widget, VideoCallWidget.VideoCallEvent event) {
 		boolean needToCloseActivity = false;
-		int currentUserId = AuthUtil.getUserId(getApplicationContext());
+		int currentUserId = CCAuthUtil.getUserId(getApplicationContext());
 		VideoCallWidget.VideoCallUser caller = widget.caller;
 		VideoCallWidget.VideoCallUser rejectedUser = event.content.user;
 		List<VideoCallWidget.VideoCallUser> receivers = widget.receivers;

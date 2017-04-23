@@ -45,8 +45,9 @@
     <string name="chatcenter_messages_signout">ログアウト</string>
 
     <string name="location_dialog_title">どの位置情報を共有しますか？</string>
-    <string name="location_title">位置情報</string>
+    <string name="location_title">ライブ位置情報</string>
     <string name="location_live_title">ライブ位置情報</string>
+    <string name="share_location_live_title">ライブ位置情報</string>
     <string name="location_select_map">地図から選択</string>
     <string name="location_select_live">ライブ位置情報</string>
     <string name="sending_location">位置情報共有中</string>
@@ -258,5 +259,15 @@
     <string name="alert_question_widget_choice_too_many">選択肢は%d個までにしてください</string>
     <string name="guest">ゲスト</string>
     <string name="alert_can_not_send_without_message">インターネット接続がないためメッセージを送信できません。</string>
+    <string name="user_typing"><![CDATA[<strong>%s</strong>さんが入力中]]></string>
+    <string name="conversation_deleted">削除しました。</string>
+    <string name="delete">削除</string>
+    <string name="close">終了</string>
+    <string name="open">再開</string>
+    <string name="assign">担当</string>
+    <string name="confirm_open_conversation">チャットを再開しますか？</string>
+    <string name="confirm_close_conversation">チャットを終了しますか？</string>
+    <string name="confirm_delete_conversation">チャットを削除しますか？</string>
+    <string name="schedule_all_day">終日</string>
 
 </resources>

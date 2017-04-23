@@ -21,7 +21,7 @@ import ly.appsocial.chatcenter.util.ViewUtil;
 /**
  * 履歴画面の1行のカスタムビュー
  */
-public class MessageItemView extends LinearLayout implements Checkable {
+public class MessageItemView extends LinearLayout {
 
 	// //////////////////////////////////////////////////////////////////////////
 	// インスタンスフィールド
@@ -32,7 +32,7 @@ public class MessageItemView extends LinearLayout implements Checkable {
 
 	// View
 	/** チェッボックス */
-	private CheckBox mCheckBox;
+	// private CheckBox mCheckBox;
 	/** アイコンテキスト */
 	private TextView mIconTextView;
 	/** アイコン画像 */
@@ -74,7 +74,7 @@ public class MessageItemView extends LinearLayout implements Checkable {
 		inflate(context, R.layout.ui_messageitemview, this);
 		setOrientation(VERTICAL);
 
-		mCheckBox = (CheckBox) findViewById(R.id.ui_messageitemview_checkbox);
+		// mCheckBox = (CheckBox) findViewById(R.id.ui_messageitemview_checkbox);
 		mIconTextView = (TextView) findViewById(R.id.ui_messageitemview_icon_textview);
 		mIconImageView = (ImageView) findViewById(R.id.ui_messageitemview_icon_imageview);
 		mNameTextView = (TextView) findViewById(R.id.ui_messageitemview_name_textview);
@@ -88,7 +88,7 @@ public class MessageItemView extends LinearLayout implements Checkable {
 	// イベントメソッド
 	// //////////////////////////////////////////////////////////////////////////
 
-	@Override
+	/*@Override
 	public boolean isChecked() {
 		return mCheckBox.isChecked();
 	}
@@ -100,7 +100,7 @@ public class MessageItemView extends LinearLayout implements Checkable {
 
 	@Override
 	public void toggle() {
-	}
+	}*/
 
 	// //////////////////////////////////////////////////////////////////////////
 	// パブリックメソッド
@@ -118,9 +118,9 @@ public class MessageItemView extends LinearLayout implements Checkable {
 	 *
 	 * @param visibility
 	 */
-	public void setCheckBoxVisibility(boolean visibility) {
+	/*public void setCheckBoxVisibility(boolean visibility) {
 		mCheckBox.setVisibility(visibility ? View.VISIBLE : View.GONE);
-	}
+	}*/
 
 	/**
 	 * アイコンテキストを設定します。

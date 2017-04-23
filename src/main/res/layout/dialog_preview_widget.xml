@@ -14,15 +14,18 @@
 
         <Button
             android:id="@+id/bt_send"
-            android:layout_width="60dp"
-            android:layout_height="30dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:layout_marginRight="5dp"
             android:background="@android:color/transparent"
+            android:minWidth="0dp"
+            android:padding="@dimen/activity_horizontal_margin"
             android:text="@string/chat_send_button"
             android:textAllCaps="false"
-            android:textColor="@color/color_chatcenter_title_button"/>
+            android:textColor="@color/color_chatcenter_title_button_text"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -47,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="1px"
             android:layout_alignParentBottom="true"
-            android:background="@color/color_chatcenter_separator"/>
+            android:background="@color/color_chatcenter_title_divider"/>
 
     </RelativeLayout>
 

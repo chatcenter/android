@@ -40,7 +40,7 @@ import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.WidgetAction;
 import ly.appsocial.chatcenter.ui.RoundImageView;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.ViewUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.util.StringUtil;
@@ -105,7 +105,7 @@ public class WidgetView extends FrameLayout {
 		LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View v = inflater.inflate(R.layout.view_sticker, this, true);
 		findChildViews(v);
-		mUserToken = AuthUtil.getUserToken(getContext());
+		mUserToken = CCAuthUtil.getUserToken(getContext());
 
 		// Now provide the view with values
 		setDefaultValue(attrs);
@@ -354,8 +354,8 @@ public class WidgetView extends FrameLayout {
 	public void setMessageFromCustomer(String message) {
 		mTvMessage.setText(message);
 		mTvMessage.setBackgroundResource(R.drawable.bg_customer_sticker);
-		mTvMessage.setTextColor(getResources().getColor(R.color.color_chatcenter_customer_bubble_text));
-		mTvMessage.setLinkTextColor(getResources().getColor(R.color.color_chatcenter_customer_bubble_text));
+		mTvMessage.setTextColor(getResources().getColor(R.color.color_chatcenter_sent_msg_text));
+		mTvMessage.setLinkTextColor(getResources().getColor(R.color.color_chatcenter_sent_msg_text));
 	}
 
 	public StickerActionListener getStickerActionListener() {

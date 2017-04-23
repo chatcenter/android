@@ -9,11 +9,11 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import ly.appsocial.chatcenter.R;
+import ly.appsocial.chatcenter.activity.model.GoogleCalendarEvent;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
 import ly.appsocial.chatcenter.fragment.ScheduleDateViewFragment;
@@ -35,6 +36,7 @@ import ly.appsocial.chatcenter.fragment.ScheduleWeekViewFragment;
 import ly.appsocial.chatcenter.fragment.WidgetPreviewDialog;
 import ly.appsocial.chatcenter.ui.LockableScrollView;
 import ly.appsocial.chatcenter.util.DialogUtil;
+import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 
 public class ScheduleActivity extends BaseActivity implements
@@ -44,6 +46,7 @@ public class ScheduleActivity extends BaseActivity implements
 
 	private final int HOURS_IN_DAY = 24; // There are 24 hours in day
 	private final int TIME_SESSION_PERIOD = 30; // 30 minutes
+	private final int MAX_WEEK_CAN_BACK = 1;
 
 	public static final String SELECTED_TIME = "selected_time";
 
@@ -58,6 +61,9 @@ public class ScheduleActivity extends BaseActivity implements
 
 	/** Display what is current date*/
 	private TextView mTvSelectedDate;
+
+	private LinearLayout mLLAllDayView;
+	private LinearLayout mLLAllDayEventContainer;
 
 	/** ScrollView to hold Date's ViewPager*/
 	private LockableScrollView mScrollView;
@@ -76,7 +82,7 @@ public class ScheduleActivity extends BaseActivity implements
 
 	/** Current selecting week*/
 	public int mCurrentWeekIndex = -1;
-	public int mNextWeekOffset = 1;
+	public int mNextWeekOffset = MAX_WEEK_CAN_BACK;
 
 	private Toolbar mToolbar;
 
@@ -96,28 +102,34 @@ public class ScheduleActivity extends BaseActivity implements
 		mWeekPager = (ViewPager) findViewById(R.id.schedule_date_selector);
 		mDatePager = (ViewPager) findViewById(R.id.schedule_time_selector);
 		mScrollView = (LockableScrollView) findViewById(R.id.scroll_view);
+		mLLAllDayView = (LinearLayout) findViewById(R.id.ll_allday_event);
+		mLLAllDayEventContainer = (LinearLayout) findViewById(R.id.ll_allday_event_container);
 
-		// Initial WeekList: add this week and next week
+		// Initial WeekList: add current week and last MAX_WEEK_CAN_BACK  weeks and next MAX_WEEK_CAN_BACK weeks
 		mWeekList = new ArrayList<>();
-		mWeekList.add(new ScheduleWeek(0));
-		mWeekList.add(new ScheduleWeek(1));
-
 		mSelectedDates = new ArrayList<>();
 		mLoadedDates = new ArrayList<>();
-		mLoadedDates.addAll(mWeekList.get(0).mDays);
-		mLoadedDates.addAll(mWeekList.get(1).mDays);
+		for (int i = 0; i <= 2 * MAX_WEEK_CAN_BACK; i++) {
+			mWeekList.add(new ScheduleWeek(i - MAX_WEEK_CAN_BACK));
+			mLoadedDates.addAll(mWeekList.get(i).mDays);
+		}
 
 		// Setup for Weeks' ViewPager
 		mWeekPagerAdapter = new WeekPagerAdapter(getSupportFragmentManager(), mWeekList);
 		mWeekPager.setAdapter(mWeekPagerAdapter);
 		mWeekPager.addOnPageChangeListener(mWeekPageChangeListener);
 
-
-
 		// Setup for Dates' ViewPager
 		mDatePagerAdapter = new DatePagerAdapter(getSupportFragmentManager(), mLoadedDates);
 		mDatePager.setAdapter(mDatePagerAdapter);
 		mDatePager.addOnPageChangeListener(mDatePageChangeListener);
+
+		mWeekPager.post(new Runnable() {
+			@Override
+			public void run() {
+				mWeekPager.setCurrentItem(MAX_WEEK_CAN_BACK, false);
+			}
+		});
 
 		mScrollView.setScrollingEnabled(true);
 
@@ -189,6 +201,42 @@ public class ScheduleActivity extends BaseActivity implements
 		int dateIndex = mLoadedDates.indexOf(date);
 		if (dateIndex != mDatePager.getCurrentItem()) {
 			mDatePager.setCurrentItem(dateIndex, false);
+		}
+	}
+
+	/**
+	 * Check if have all day event -> show all day event view,
+	 * Hide view if have no all day event.
+	 * @param date
+	 */
+	public void setAllDayEvent(ScheduleDate date) {
+		int dateIndex = mLoadedDates.indexOf(date);
+		int currentDateIndex = mDatePager.getCurrentItem();
+
+		if (currentDateIndex != dateIndex) {
+			return;
+		}
+		mLLAllDayEventContainer.removeAllViews();
+		if (date.mGoogleAllDayEvents == null || date.mGoogleAllDayEvents.size() == 0) {
+			mLLAllDayView.setVisibility(View.GONE);
+		} else {
+			mLLAllDayView.setVisibility(View.VISIBLE);
+
+			for (GoogleCalendarEvent event: date.mGoogleAllDayEvents) {
+				TextView label = new TextView(this);
+				mLLAllDayEventContainer.addView(label);
+				LinearLayout.LayoutParams lbParams = (LinearLayout.LayoutParams) label.getLayoutParams();
+				lbParams.width = 0;
+				lbParams.height = LinearLayout.LayoutParams.MATCH_PARENT;
+				lbParams.weight = 1.0f;
+				lbParams.topMargin = 5;
+				lbParams.bottomMargin = 5;
+				label.setText(event.getSummary());
+				label.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.chatcenter_gg_calendar_text_size));
+				label.setGravity(Gravity.CENTER);
+				label.setTextColor(getResources().getColor(R.color.color_chatcenter_text));
+				label.setBackgroundResource(R.drawable.bg_google_event);
+			}
 		}
 	}
 
@@ -267,7 +315,7 @@ public class ScheduleActivity extends BaseActivity implements
 
 		if (actions != null && actions.size() > 0) {
 			String widgetContent = ChatItem.createScheduleWidgetContent(actions, this);
-			showDialogWidgetPreview(widgetContent);
+			showDialogWidgetPreview(widgetContent, this);
 		} else {
 			String message = getString(R.string.alert_schedule_select_schedule_slot);
 			showAlert(message);
@@ -359,7 +407,8 @@ public class ScheduleActivity extends BaseActivity implements
 		 */
 		@Override
 		public Fragment getItem(int position) {
-			Fragment fragment = ScheduleDateViewFragment.newInstance(mDates.get(position), ScheduleActivity.this);
+			ScheduleDateViewFragment fragment = ScheduleDateViewFragment.newInstance(mDates.get(position), ScheduleActivity.this);
+			fragment.mActivity = ScheduleActivity.this;
 			return fragment;
 		}
 
@@ -434,9 +483,16 @@ public class ScheduleActivity extends BaseActivity implements
 
 		ScheduleWeek(int offset) {
 			Calendar calendar = Calendar.getInstance();
+
 			calendar.setFirstDayOfWeek(Calendar.MONDAY);
 			calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
 			calendar.add(Calendar.WEEK_OF_YEAR, offset);
+
+			// reset to 00:00:00
+			calendar.set(Calendar.HOUR_OF_DAY, 0);
+			calendar.set(Calendar.MINUTE, 0);
+			calendar.set(Calendar.SECOND, 0);
+			calendar.set(Calendar.MILLISECOND, 0);
 
 			for (int i = 0; i < 7; i++)
 			{
@@ -454,18 +510,17 @@ public class ScheduleActivity extends BaseActivity implements
 		boolean isSelected;
 		public List<TimeSession> mTimeSessions;
 		public List<SelectedSession> mSelectedSessions;
+		public List<GoogleCalendarEvent> mGoogleEvents;
+		public List<GoogleCalendarEvent> mGoogleAllDayEvents;
 
 		public List<TimeSession> getTimeSessions () {
 			if (mTimeSessions == null) {
 				mTimeSessions = new ArrayList<>();
 				mSelectedSessions = new ArrayList<>();
+				mGoogleEvents = new ArrayList<>();
+				mGoogleAllDayEvents = new ArrayList<>();
 				Calendar calendar = Calendar.getInstance();
 				calendar.setTime(mDate);
-
-				calendar.set(Calendar.HOUR_OF_DAY, 0);
-				calendar.set(Calendar.MINUTE, 0);
-				calendar.set(Calendar.SECOND, 0);
-				calendar.set(Calendar.MILLISECOND, 0);
 
 				for (int i = 0; i < 2 * HOURS_IN_DAY; i++) {
 					TimeSession timeSession = new TimeSession();
@@ -539,6 +594,31 @@ public class ScheduleActivity extends BaseActivity implements
 				}
 			});
 		}
+
+		public void addGoogleEvents(List<GoogleCalendarEvent> events) {
+			if(events == null) {
+				return;
+			}
+			mGoogleEvents.clear();
+			mGoogleAllDayEvents.clear();
+
+			for (GoogleCalendarEvent event : events) {
+				if (event.isAllDay()) {
+					mGoogleAllDayEvents.add(event);
+				} else {
+					mGoogleEvents.add(event);
+				}
+			}
+		}
+
+		public void resetGoogleEvents(List<GoogleCalendarEvent> events) {
+			if (events == null) {
+				return;
+			}
+
+			mGoogleEvents.clear();
+			mGoogleEvents.addAll(events);
+		}
 	}
 
 	private String getDisplayLabel (Long startTime, Long endTime) {
@@ -589,6 +669,7 @@ public class ScheduleActivity extends BaseActivity implements
 	public static class SelectedSession {
 		public int endIndex;
 		public int startIndex;
+		public String label;
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package ly.appsocial.chatcenter.widgets;
 
 import android.content.Context;
-import android.os.Build;
 import android.view.View;
 
 import com.google.gson.annotations.SerializedName;
@@ -12,7 +11,7 @@ import java.util.List;
 
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.dto.UserItem;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.views.WidgetView;
 
@@ -81,7 +80,7 @@ public class VideoCallWidget extends BasicWidget {
 		StringBuilder text;
 		String caller;
 		String receiver;
-		int currentUserId = AuthUtil.getUserId(context);
+		int currentUserId = CCAuthUtil.getUserId(context);
 		String callerName = this.caller.displayName + context.getString(R.string.person_name_suffix);
 		String receiverName = this.receivers.get(0).displayName;
 		String yourDisplayName = context.getString(R.string.you).replace(":", "");

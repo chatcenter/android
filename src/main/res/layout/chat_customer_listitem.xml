@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:textColor="@color/color_chatcenter_text_light_gray"
-            android:textSize="9sp"/>
+            android:textSize="8sp"/>
 
         <!-- メッセージ -->
         <LinearLayout

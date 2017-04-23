@@ -9,13 +9,15 @@ import android.net.NetworkInfo;
 public abstract class NetworkStateReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(intent.getExtras()!=null) {
-            NetworkInfo ni=(NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
-            if(ni!=null && ni.getState()==NetworkInfo.State.CONNECTED) {
-                onNetWorkConnected();
-            }
-        }
-        if(intent.getExtras().getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY,Boolean.FALSE)) {
+
+        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        if (isConnected) {
+            onNetWorkConnected();
+        } else {
             onNetWorkLost();
         }
     }

@@ -30,6 +30,12 @@
 
     </android.support.v7.widget.Toolbar>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/toolbar"
+        android:background="@color/color_chatcenter_title_divider"/>
+
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"

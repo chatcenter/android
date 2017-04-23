@@ -17,7 +17,7 @@
             android:background="@android:color/transparent"
             android:text="@string/save"
             android:textStyle="bold"
-            android:textColor="@color/color_chatcenter_text_light"
+            android:textColor="@color/color_chatcenter_title_button_text"
             android:layout_gravity="right"
             android:padding="@dimen/margin10dp"
             android:onClick="onSaveButtonClicked"/>

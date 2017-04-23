@@ -8,7 +8,9 @@ import org.json.JSONObject;
 
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
+import ly.appsocial.chatcenter.dto.UserItem;
 import ly.appsocial.chatcenter.dto.ws.response.GetMessagesResponseDto;
+import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
 import ly.appsocial.chatcenter.widgets.VideoCallWidget;
 import ly.appsocial.chatcenter.ws.ApiRequest;
@@ -45,6 +47,12 @@ public class GetMessagesParser implements ApiRequest.Parser<GetMessagesResponseD
 				if ( obj != null ){
 					ChatItem item = new Gson().fromJson(obj.toString(), ChatItem.class);
 					if ( item != null ){
+						if (item.isRead()) {
+							item.localStatus = ChatItem.ChatItemStatus.READ;
+						} else {
+							item.localStatus = ChatItem.ChatItemStatus.SENT;
+						}
+
 						if (item.type.equals(ResponseType.INFORMATION)) {
 							// Skip message type information for now
 							continue;
@@ -55,7 +63,9 @@ public class GetMessagesParser implements ApiRequest.Parser<GetMessagesResponseD
 						}else {
 							item.setupContent(BasicWidget.class, obj);
 						}
-						resps.items.add(item);
+
+						/** add message to list*/
+						resps.items.add(item.rebuildChatItem());
 					}
 				}
 			}

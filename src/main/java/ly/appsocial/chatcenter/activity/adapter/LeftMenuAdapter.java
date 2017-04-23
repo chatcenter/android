@@ -113,6 +113,8 @@ public class LeftMenuAdapter extends BaseExpandableListAdapter{
         // ORG unread count
         if (item.getOrg().unreadMessagesChannels != null && item.getOrg().unreadMessagesChannels.size() > 0) {
             holder.tvOrgUnreadCount.setText("" + item.getOrg().unreadMessagesChannels.size());
+        } else {
+            holder.tvOrgUnreadCount.setText("");
         }
 
         // Setup ava for ORG

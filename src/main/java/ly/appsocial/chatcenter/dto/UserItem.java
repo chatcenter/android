@@ -19,13 +19,13 @@ public class UserItem implements Parcelable, Serializable {
     public String iconUrl = "";
     /** Admin */
     @SerializedName("admin")
-    public Boolean admin = false;
+    public boolean admin = false;
     /** ユーザートークン */
     @SerializedName("token")
     public String token = "";
     /** User online status */
     @SerializedName("online")
-    public Boolean online = false;
+    public boolean online = false;
     @SerializedName("first_name")
     public String firstName = "";
     @SerializedName("family_name")

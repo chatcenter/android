@@ -2,13 +2,11 @@ package ly.appsocial.chatcenter.activity;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -19,11 +17,22 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import ly.appsocial.chatcenter.R;
+import ly.appsocial.chatcenter.database.tables.TbApp;
+import ly.appsocial.chatcenter.database.tables.TbChannel;
+import ly.appsocial.chatcenter.database.tables.TbMessage;
+import ly.appsocial.chatcenter.database.tables.TbOrg;
 import ly.appsocial.chatcenter.di.InjectorHelper;
 import ly.appsocial.chatcenter.fragment.WidgetPreviewDialog;
 
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = BaseActivity.class.getSimpleName();
+
+    /** Database */
+    public TbChannel mTbChannel;
+    public TbMessage mTbMessage;
+    public TbOrg mTbOrg;
+    public TbApp mTbApp;
+    public WidgetPreviewDialog widgetPreviewDialog;
 
     @Inject @Named("client")
     protected OkHttpClient mOkHttpClient;
@@ -34,6 +43,15 @@ public class BaseActivity extends AppCompatActivity {
         InjectorHelper.getInstance().injectNetworkModule(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mTbChannel = new TbChannel(this);
+        mTbMessage = new TbMessage(this);
+        mTbOrg = new TbOrg(this);
+        mTbApp = new TbApp(this);
+    }
+
     public float convertDpToPixel(float dp, Context context) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
@@ -41,9 +59,10 @@ public class BaseActivity extends AppCompatActivity {
         return px;
     }
 
-    public void showDialogWidgetPreview(String widgetContent) {
-        DialogFragment newFragment = WidgetPreviewDialog.newInstance(widgetContent);
-        newFragment.show(getSupportFragmentManager(), "dialog");
+    public void showDialogWidgetPreview(String widgetContent, WidgetPreviewDialog.WidgetPreviewListener listener) {
+        widgetPreviewDialog = WidgetPreviewDialog.newInstance(widgetContent);
+        widgetPreviewDialog.setListener(listener);
+        widgetPreviewDialog.show(getSupportFragmentManager(), "dialog");
     }
 
     public boolean isNetworkAvailable() {

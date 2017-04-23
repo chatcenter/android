@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_selected="true">
-        <bitmap android:src="@drawable/icon_selected" android:tint="@color/color_chatcenter_text"/>
+        <bitmap android:src="@drawable/icon_selected"
+                android:tint="@color/color_chatcenter_text"/>
     </item>
 </selector>

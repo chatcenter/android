@@ -24,10 +24,6 @@ public class LiveLocationUser {
 
 	private Context mContext;
 	private boolean mIsActive = false;
-	private Timer mTimer;
-	private int mTimerCount = 0;
-	final int INTERVAL_PERIOD = 1000;
-	final int LIVE_SECOND = 30;
 
 	public LiveLocationUser(Context context, UserItem user){
 		mContext = context;
@@ -49,30 +45,10 @@ public class LiveLocationUser {
 
 	public void updateTimer(){
 		mIsActive = true;
-
-		if (mTimer != null) {
-			mTimer.cancel();
-		}
-		mTimerCount = 0;
-		mTimer = new Timer();
-		mTimer.scheduleAtFixedRate(new TimerTask() {
-			@Override
-			public void run() {
-				mTimerCount++;
-				if ( mTimerCount >= LIVE_SECOND){
-					stopTimer();
-				}
-			}
-		}, 0, INTERVAL_PERIOD);
 	}
 
 	public void stopTimer(){
-		if (mTimer != null) {
-			mTimer.cancel();
-			mTimer = null;
-			mIsActive = false;
-		}
-		mTimerCount = 0;
+		mIsActive = false;
 
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(ChatCenterConstants.BroadcastAction.UPDATE_CHAT);

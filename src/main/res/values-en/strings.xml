@@ -39,7 +39,8 @@
 
     <string name="location_dialog_title">What kind of Location do you want to share?</string>
     <string name="location_title">Live Location</string>
-	<string name="location_live_title">Share Live Location</string>
+	<string name="location_live_title">Live Location</string>
+    <string name="share_location_live_title">Share Live Location</string>
     <string name="location_select_map">Send Venue</string>
     <string name="location_select_live">Share Live Location</string>
     <string name="sending_location">Sharing live location</string>
@@ -48,7 +49,7 @@
     <string name="location_share_mylive">Share my Live Location</string>
 	<string name="location_share_time">For how long do you want to share it?</string>
 	<string name="share_time_format_min">%d Mins</string>
-	<string name="share_time_format_hour">%d Hours</string>
+	<string name="share_time_format_hour">%d Hour</string>
 
 
     <!-- ========================================================================== -->
@@ -256,4 +257,17 @@
     <string name="guest">Guest</string>
 
     <string name="alert_can_not_send_without_message">Can not send message without internet.</string>
+    <string name="user_typing"><![CDATA[<strong>%s</strong> is typing]]></string>
+    <string name="conversation_deleted">Deleted</string>
+    <string name="delete">Delete</string>
+    <string name="close">Close</string>
+    <string name="open">Reopen</string>
+    <string name="assign">Assign</string>
+
+    <string name="confirm_open_conversation">Do you want to open this chat?</string>
+    <string name="confirm_close_conversation">Do you want to close this chat?</string>
+    <string name="confirm_delete_conversation">Do you want to delete this chat?</string>
+
+    <string name="schedule_all_day">All day</string>
+
 </resources>

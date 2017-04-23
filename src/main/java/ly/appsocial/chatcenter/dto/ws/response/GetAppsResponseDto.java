@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import ly.appsocial.chatcenter.dto.FunnelItem;
+
 /**
  * [GET /api/users/:id] response.
  */
@@ -26,6 +28,14 @@ public class GetAppsResponseDto {
 		public String token;
 		@SerializedName("stickers")
 		public List<String> stickers;
+		@SerializedName("business_type")
+		public String businessType;
+		@SerializedName("read_for_guest")
+		public boolean readForGuest;
+		@SerializedName("funnels")
+		public List<FunnelItem> funnels;
+
+		public int localId;
 	}
 
 	public static class AppIcon implements Serializable {

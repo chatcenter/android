@@ -9,7 +9,20 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/widget_line_width"
-        android:background="@color/color_chatcenter_widget_divider"/>
+        android:background="@color/color_chatcenter_title_divider"/>
+
+    <TextView
+        android:id="@id/tv_user_typing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingLeft="@dimen/margin10dp"
+        android:paddingTop="4dp"
+        android:textColor="@color/color_chatcenter_text"
+        android:textSize="8sp"
+        android:visibility="gone"/>
 
     <!-- 入力ボックス -->
     <LinearLayout

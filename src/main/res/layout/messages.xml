@@ -36,7 +36,8 @@
                 android:drawableRight="@drawable/icon_one_triangle"
                 android:text="@string/all"
                 android:textColor="@color/color_chatcenter_title_text"
-                android:textSize="12sp"/>
+                android:textSize="12sp"
+                android:visibility="gone"/>
         </LinearLayout>
 
         <!-- 削除 -->
@@ -72,7 +73,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/widget_line_width"
         android:layout_below="@id/toolbar"
-        android:background="@color/color_chatcenter_separator_light"/>
+        android:background="@color/color_chatcenter_title_divider"/>
 
     <RelativeLayout
         android:layout_width="match_parent"

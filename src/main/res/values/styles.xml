@@ -9,12 +9,12 @@
         <item name="android:windowBackground">@color/color_chatcenter_background</item>
         <item name="android:buttonStyle">@style/ChatCeterButtonStyle</item>
         <item name="android:textColorPrimary">@color/color_chatcenter_text</item>
-        <item name="android:textColorSecondary">@color/color_chatcenter_text_light</item>
-        <item name="android:textColorTertiary">@color/color_chatcenter_text_light</item>
+        <item name="android:textColorSecondary">@color/color_chatcenter_text_link</item>
+        <item name="android:textColorTertiary">@color/color_chatcenter_text_link</item>
         <item name="android:windowContentOverlay">@null</item>
 		<item name="colorPrimary">@color/color_chatcenter_title_background</item>
         <item name="colorPrimaryDark">@color/color_chatcenter_title_background_dark</item>
-		<item name="colorAccent">@color/color_chatcenter_text_light</item>
+		<item name="colorAccent">@color/color_chatcenter_text_link</item>
 		<item name="android:colorBackground">@color/color_chatcenter_background</item>
         <item name="actionBarSize">@dimen/activity_header_height</item>
 	</style>
@@ -40,7 +40,7 @@
         <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="colorControlNormal">@color/color_chatcenter_title_text</item>
         <item name="actionButtonStyle">@style/ChatCenter.MenuButtonStyle</item>
-        <item name="actionMenuTextColor">@color/color_chatcenter_title_button</item>
+        <item name="actionMenuTextColor">@color/color_chatcenter_title_button_text</item>
     </style>
 
     <!-- プルアップ画面用 -->
@@ -99,8 +99,8 @@
     <style name="chat_bubble_customer_textview" parent="common_sticker_container">
         <item name="android:textIsSelectable">true</item>
         <item name="android:autoLink">web|phone|email</item>
-        <item name="android:textColor">@color/color_chatcenter_customer_bubble_text</item>
-        <item name="android:textColorLink">@color/color_chatcenter_customer_bubble_text</item>
+        <item name="android:textColor">@color/color_chatcenter_sent_msg_text</item>
+        <item name="android:textColorLink">@color/color_chatcenter_sent_msg_text</item>
     </style>
 
     <!-- 吹き出し(クライアント) -->

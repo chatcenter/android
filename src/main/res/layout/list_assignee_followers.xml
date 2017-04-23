@@ -21,7 +21,7 @@
             android:padding="@dimen/margin10dp"
             android:text="@string/save"
             android:textAllCaps="false"
-            android:textColor="@color/color_chatcenter_text_light"
+            android:textColor="@color/color_chatcenter_title_button_text"
             android:textStyle="bold"/>
 
     </android.support.v7.widget.Toolbar>

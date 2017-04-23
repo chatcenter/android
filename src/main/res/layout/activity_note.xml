@@ -23,7 +23,7 @@
             android:minHeight="0dp"
             android:text="@string/save"
             android:background="@android:color/transparent"
-            android:textColor="@color/color_chatcenter_text_light"
+            android:textColor="@color/color_chatcenter_title_button_text"
             android:textStyle="bold"
             android:padding="@dimen/margin10dp"
             android:layout_gravity="right"/>
@@ -34,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/widget_line_width"
         android:layout_below="@id/toolbar"
-        android:background="@color/color_chatcenter_separator_light"/>
+        android:background="@color/color_chatcenter_title_divider"/>
 
     <EditText
         android:id="@+id/edt_note"

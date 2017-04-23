@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/widget_line_width"
         android:layout_below="@id/toolbar"
-        android:background="@color/color_chatcenter_separator_light"/>
+        android:background="@color/color_chatcenter_title_divider"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -39,7 +39,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/margin10dp"
                     android:layout_marginTop="@dimen/margin10dp"
-                    android:layout_marginBottom="@dimen/margin10dp">
+                    android:layout_marginBottom="@dimen/margin10dp"
+                    android:layout_gravity="center_vertical">
 
                     <TextView
                         android:id="@+id/info_assignee_icon_textview"
@@ -50,7 +51,7 @@
                         android:gravity="center"
                         android:includeFontPadding="false"
                         android:textColor="@android:color/white"
-                        android:textSize="40sp"/>
+                        android:textSize="32sp"/>
 
                     <ImageView
                         android:id="@+id/info_assignee_icon_image"
@@ -88,10 +89,20 @@
                         android:visibility="gone"/>
 
                     <TextView
-                        android:id="@+id/info_assignee_facebook"
+                        android:id="@+id/info_assignee_email_icon"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_above="@+id/info_assignee_status"
+                        android:drawableLeft="@drawable/icon_email_tint"
+                        android:textColor="@color/color_chatcenter_text"
+                        android:drawablePadding="@dimen/margin10dp"
+                        android:visibility="gone"/>
+
+                    <TextView
+                        android:id="@+id/info_assignee_facebook"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/info_assignee_status"
                         android:drawableLeft="@drawable/icon_facebook_tint"
                         android:textColor="@color/color_chatcenter_text"
                         android:drawablePadding="@dimen/margin10dp"
@@ -101,7 +112,7 @@
                         android:id="@+id/info_assignee_twitter"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_above="@+id/info_assignee_status"
+                        android:layout_above="@id/info_assignee_status"
                         android:drawableLeft="@drawable/icon_twitter_tint"
                         android:textColor="@color/color_chatcenter_text"
                         android:drawablePadding="@dimen/margin10dp"
@@ -149,6 +160,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
+                            android:id="@+id/ll_assign"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -383,6 +395,7 @@
                 android:orientation="vertical">
 
                 <LinearLayout
+                    android:id="@+id/ll_close"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/info_item_vertical_margin"
@@ -414,11 +427,12 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/ll_delete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/info_item_vertical_margin"
                     android:orientation="vertical"
-                    android:visibility="gone">
+                    android:visibility="visible">
 
                     <View
                         android:layout_width="match_parent"
@@ -434,7 +448,8 @@
                         android:padding="@dimen/margin10dp"
                         android:text="@string/delete_conversation"
                         android:textColor="@color/color_chatcenter_text_red"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold"
+                        android:onClick="onDeleteButtonClicked"/>
 
                     <View
                         android:layout_width="match_parent"

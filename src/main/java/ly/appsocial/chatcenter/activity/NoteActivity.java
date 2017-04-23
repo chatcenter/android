@@ -3,18 +3,26 @@ package ly.appsocial.chatcenter.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.style.CharacterStyle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import ly.appsocial.chatcenter.R;
+import ly.appsocial.chatcenter.constants.ChatCenterConstants;
+import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
+import ly.appsocial.chatcenter.util.DialogUtil;
 
-public class NoteActivity extends  BaseActivity implements View.OnClickListener{
+public class NoteActivity extends  BaseActivity implements View.OnClickListener, AlertDialogFragment.DialogListener{
 
     public static final String CURRENT_NOTE_CONTENT = "current_note_content";
     private EditText mEdtNoteContent;
     private Button mBtSaveNote;
+    private boolean isCanShowAlertTooLongTextMsg = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +42,7 @@ public class NoteActivity extends  BaseActivity implements View.OnClickListener{
         mEdtNoteContent.setText(getIntent().getStringExtra(CURRENT_NOTE_CONTENT));
         mEdtNoteContent.setCursorVisible(false);
         mEdtNoteContent.setOnClickListener(this);
+        mEdtNoteContent.addTextChangedListener(new NoteTextWatcher());
     }
 
     @Override
@@ -62,6 +71,74 @@ public class NoteActivity extends  BaseActivity implements View.OnClickListener{
         } else if (v.getId() == R.id.edt_note) {
             mEdtNoteContent.setCursorVisible(true);
             mEdtNoteContent.setSelection(mEdtNoteContent.getText().length());
+        }
+    }
+
+    /**
+     * ダイアログをキャンセルした際のコールバック。
+     *
+     * @param tag このフラグメントのタグ
+     */
+    @Override
+    public void onDialogCancel(String tag) {
+
+    }
+
+    /**
+     * ダイアログの肯定ボタンを押下した際のコールバック。
+     *
+     * @param tag このフラグメントのタグ
+     */
+    @Override
+    public void onPositiveButtonClick(String tag) {
+
+    }
+
+    /**
+     * ノート入力のテキストボックスのウォッチャー
+     */
+    private class NoteTextWatcher implements TextWatcher {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            // empty
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            Editable editable = mEdtNoteContent.getText();
+
+            // span の削除
+            CharacterStyle[] spans = editable.getSpans(0, editable.length(), CharacterStyle.class);
+            for (CharacterStyle span : spans) {
+                editable.removeSpan(span);
+            }
+
+            // 送信ボタンの有効設定
+            String text = mEdtNoteContent.getText().toString();
+            mBtSaveNote.setEnabled(!text.matches("^[\\s　]*$") && text.length() <= ChatCenterConstants.MAX_NOTE_LENGTH);
+
+
+            if (text.length() <= ChatCenterConstants.MAX_NOTE_LENGTH) {
+                isCanShowAlertTooLongTextMsg = true;
+            }
+
+            if (text.length() > ChatCenterConstants.MAX_NOTE_LENGTH && isCanShowAlertTooLongTextMsg) {
+
+                DialogUtil.showAlertDialog(getSupportFragmentManager(),
+                        DialogUtil.Tag.ALERT,
+                        null,
+                        String.format(getString(R.string.alert_message_text_too_long), ChatCenterConstants.MAX_NOTE_LENGTH));
+
+                isCanShowAlertTooLongTextMsg = false;
+
+                String note = text.substring(0, ChatCenterConstants.MAX_NOTE_LENGTH);
+                mEdtNoteContent.setText(note);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            // empty
         }
     }
 }

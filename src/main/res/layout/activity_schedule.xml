@@ -13,6 +13,13 @@
 
     </android.support.v7.widget.Toolbar>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/toolbar"
+        android:background="@color/color_chatcenter_title_divider"/>
+
+
     <LinearLayout
         android:id="@+id/date_selector_container"
         android:layout_width="match_parent"
@@ -32,7 +39,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1px"
-            android:background="@color/color_chatcenter_separator"/>
+            android:background="@color/color_chatcenter_title_divider"/>
 
         <android.support.v4.view.ViewPager
             android:id="@+id/schedule_date_selector"
@@ -43,7 +50,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1px"
-            android:background="@color/color_chatcenter_separator"/>
+            android:background="@color/color_chatcenter_title_divider"/>
 
         <TextView
             android:id="@+id/schedule_selected_date"
@@ -58,7 +65,33 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1px"
-            android:background="@color/color_chatcenter_separator"/>
+            android:background="@color/color_chatcenter_title_divider"/>
+
+        <LinearLayout
+            android:id="@+id/ll_allday_event"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/time_block_height"
+            android:orientation="horizontal"
+            android:background="@color/color_chatcenter_gg_calendar_background"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:text="@string/schedule_all_day"
+                android:gravity="center"
+                android:textSize="@dimen/chatcenter_gg_calendar_text_size"
+                android:textColor="@color/color_chatcenter_text"/>
+
+            <LinearLayout
+                android:id="@+id/ll_allday_event_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"/>
+
+        </LinearLayout>
     </LinearLayout>
 
     <ly.appsocial.chatcenter.ui.LockableScrollView

@@ -37,7 +37,7 @@ public class FunnelAdapter extends ArrayAdapter<FunnelItem> {
 		View view = inflater.inflate(R.layout.item_list_funnel, parent, false);
 
 		TextView tvName = (TextView) view.findViewById(R.id.tv_funnel_name);
-		CheckBox cbSelected = (CheckBox) view.findViewById(R.id.cb_selected);
+		ImageView cbSelected = (ImageView) view.findViewById(R.id.cb_selected);
 
 		FunnelItem item = getItem(position);
 		tvName.setText(item.name);

@@ -39,6 +39,8 @@ public class OrgItem implements Parcelable {
     @SerializedName("users")
     public List<UserItem> users;
 
+    public int localId;
+
     protected OrgItem(Parcel in) {
         id = in.readInt();
         name = in.readString();
@@ -83,7 +85,7 @@ public class OrgItem implements Parcelable {
      * このチームはオンライですか？オフラインですか？確認します。
      */
     public void checkOrgStatus(Context context, final OrgStatusListener listener) {
-        String path = String.format("/orgs/%s/online", uid);
+        String path = String.format("orgs/%s/online", uid);
         OkHttpApiRequest request = new OkHttpApiRequest(context, ApiRequest.Method.GET,
                 path,
                 null,

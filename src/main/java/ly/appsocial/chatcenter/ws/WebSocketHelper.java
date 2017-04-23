@@ -3,7 +3,7 @@ package ly.appsocial.chatcenter.ws;
 import android.content.Context;
 
 import ly.appsocial.chatcenter.util.ApiUtil;
-import ly.appsocial.chatcenter.util.AuthUtil;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.CCLog;
 
 
@@ -13,11 +13,11 @@ public class WebSocketHelper {
     public static boolean connectWithAppToken(Context context, String appToken, CCWebSocketClient.Listener listener) {
         if (mWebSocketClient != null && mWebSocketClient.isConnected()) {
             CCLog.d("WebSocketHelper", "connectWithAppToken: ");
-            mWebSocketClient.setListener(listener);
+            mWebSocketClient.addListener(listener);
             return false;
         }
 
-        String url = ApiUtil.getWsUrl(context) + "/?authentication=" + AuthUtil.getUserToken(context) + "&app_token=" + appToken; //;
+        String url = ApiUtil.getWsUrl(context) + "/?authentication=" + CCAuthUtil.getUserToken(context) + "&app_token=" + appToken; //;
         CCLog.d("WebSocketHelper", "connectWithAppToken: " + mWebSocketClient + " " + url);
 
         mWebSocketClient = new CCWebSocketClient(context, url, listener);
@@ -52,8 +52,20 @@ public class WebSocketHelper {
 
             return;
         }
-        mWebSocketClient.setListener(listener);
+        mWebSocketClient.addListener(listener);
     }
+
+    public static void removeListener(CCWebSocketClient.Listener listener) {
+        CCLog.d("WebSocketHelper", "setListener: " + mWebSocketClient);
+
+        if (mWebSocketClient == null) {
+            CCLog.d("WebSocketHelper", "setListener: skip");
+
+            return;
+        }
+        mWebSocketClient.removeListener(listener);
+    }
+
     public static void send(final String message) {
         CCLog.d("WebSocketHelper", "send: " + mWebSocketClient);
 

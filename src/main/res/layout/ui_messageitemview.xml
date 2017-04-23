@@ -5,14 +5,6 @@
               android:gravity="center_vertical"
               android:orientation="horizontal">
 
-    <!-- チェックボックス -->
-    <CheckBox
-        android:id="@+id/ui_messageitemview_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="false"
-        android:focusable="false"/>
-
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
 import ly.appsocial.chatcenter.dto.ws.response.GetChannelsMineResponseDto;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
@@ -46,7 +47,7 @@ public class GetChannelsMineParser implements ApiRequest.Parser<GetChannelsMineR
 			for (int i = 0; i < itemArray.length(); i++ ){
 				JSONObject obj = itemArray.getJSONObject(i);
 				if ( obj != null ){
-					GetChannelsMineResponseDto.Channel item = new Gson().fromJson(obj.toString(), GetChannelsMineResponseDto.Channel.class);
+					ChannelItem item = new Gson().fromJson(obj.toString(), ChannelItem.class);
 					if ( item != null && item.latestMessage != null ){
 						if (item.latestMessage.type.equals(ResponseType.INFORMATION)) {
 							continue;

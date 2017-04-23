@@ -15,15 +15,10 @@
         android:layout_weight="1"
         android:textColor="@color/color_chatcenter_text"/>
 
-    <CheckBox
+    <ImageView
         android:id="@+id/cb_selected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:button="@drawable/btn_selected"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:clickable="false"
-        android:enabled="false"/>
+        android:src="@drawable/btn_selected"/>
 
 </LinearLayout>
