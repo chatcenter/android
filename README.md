@@ -109,7 +109,7 @@ The following are the parameters. Bold is mandatory. If other parameters are not
 	</tr>
 	<tr>
         <td> context(Activity)</td>
-        <td colspan="2"><b>Please specify the original Activity</b></td>
+        <td colspan="3"><b>Please specify the original Activity</b></td>
     </tr>
 	<tr>
 		<td>orgUid(String)</td>
@@ -178,7 +178,6 @@ The following are the parameters. Bold is mandatory. If other parameters are not
 Call history view to display chat history list.  
 <p align="center"><img src="InstallationImages/historyview_en.png" width="375" height="667"></p>
 
-### 3-1. When requiring authentication
 Please insert the following code in a convenient place.
 
 ```
@@ -191,7 +190,11 @@ ChatCenter.showMessages(final Context context,
 						final Date providerExpiresAt);
 ```
 
-The following are the parameters. Bold is mandatory. If other parameters are not required, please specify null.
+**Note: In case of no authentication, user will be logged out automatically 30 days after login. Also, we do not currently support to link authentication processing afterwards**  
+Please insert the following code in a convenient place.  
+
+
+The following are the parameters. Bold is mandatory. If other parameters are not required, please specify nil.
 <table>
 	<tr>
 		<th>Name of parameter</th>
@@ -222,7 +225,7 @@ The following are the parameters. Bold is mandatory. If other parameters are not
     </tr>
 	<tr>
 		<td>providerCreatedAt(int)</td>
-		<td colspan="3">Time stamp (in seconds). Specify 0</td>
+		<td colspan="3">Time stamp (in seconds).</td>
 	</tr>
 	<tr>
 		<td>providerExpiresAt(Date)</td>
@@ -249,7 +252,7 @@ ChatCenter.signOut(context, SignOutCallback)
 <a id="51CustomDesign"></a>
 ### 5.1 Custom Design
 
-To change color of ChatCenter views, please copy file <b>colors.xml</b> in <b>/res/values</b> folder in CordovaDemo and override color value.
+To change color of ChatCenter views, please copy file <b>colors.xml</b> in <b>/res/values</b> folder in Sample and override color value.
 
 #### Base color
 

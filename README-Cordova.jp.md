@@ -72,7 +72,6 @@ ChatCenter SDKではロケーションウィジェットでGoogle Maps SDKを使
            android:name="com.google.android.geo.API_KEY"
            android:value="[YOUR_GOOGLE_API_KEY]"/>
 
-Please confirm both Google Maps and Google Places API for Android are enable in dashboard of Google API. 
 またGoogle APIのダッシュボードにて、Google Maps Android APIおよびGoogle Places API for Androidが有効になっていることをご確認ください。
 <p align="center"><img src="InstallationImages/googlemapssdk.png"></p>
 		   
