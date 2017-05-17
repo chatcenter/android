@@ -5,7 +5,6 @@
                 android:orientation="vertical">
 
     <RelativeLayout
-        android:id="@+id/time_label"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/time_block_height">
 

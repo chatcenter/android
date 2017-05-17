@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -20,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Html;
@@ -69,6 +71,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -76,7 +79,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import ly.appsocial.chatcenter.BuildConfig;
@@ -88,7 +90,6 @@ import ly.appsocial.chatcenter.activity.adapter.WidgetMenuGridAdapter;
 import ly.appsocial.chatcenter.activity.receivers.NetworkStateReceiver;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.database.tables.TbApp;
-import ly.appsocial.chatcenter.database.tables.TbChannel;
 import ly.appsocial.chatcenter.database.tables.TbMessage;
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.ChatItem;
@@ -1843,31 +1844,46 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 	private void startCameraIntent() {
 		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		// Ensure that there's a camera activity to handle the intent
 		if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-			// キャッシュディレクトリのチェック
-			File externalCacheDir = Environment.getExternalStorageDirectory();
-			if (externalCacheDir == null) {
-				return;
+			// Create the File where the photo should go
+			try {
+				mCurrentPhoto = createImageFile();
+			} catch (IOException ex) {
+				// Error occurred while creating the File
+				ex.printStackTrace();
 			}
-			// 保存先パスの生成
-			String saveDirPath = externalCacheDir.getAbsolutePath() + "/" + getPackageName() + "/Chat/";
-			File saveDir = new File(saveDirPath);
-			if (!saveDir.exists() && !saveDir.mkdirs()) {
-				return;
-			}
-			for (File file : saveDir.listFiles()) {
-				file.delete();
-			}
-			String saveFilePath = saveDirPath + new SimpleDateFormat("yyyyMMddHHmmss", Locale.JAPAN).format(new Date()) + ".jpg";
-			mCurrentPhoto = new File(saveFilePath);
 			// Continue only if the File was successfully created
 			if (mCurrentPhoto != null) {
-				Uri photoURI = Uri.fromFile(mCurrentPhoto);
+				String provider = getPackageName() + ".provider";
+				Uri photoURI;
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					photoURI = FileProvider.getUriForFile(this,
+							provider,
+							mCurrentPhoto);
+				} else {
+					photoURI = Uri.fromFile(mCurrentPhoto);
+				}
 				takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
 				startActivityForResult(takePictureIntent, REQUEST_CAMERA);
 			}
 		}
 	}
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        return image;
+    }
 
 	/*
 	 * Image Widget from Camera Roll
@@ -3556,7 +3572,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					mCurrentChannelItem = mTbChannel.getChannel(getOrgUid(), mChannelUid);
 
 					// タイトル設定
-					mTitleTextView.setText(mCurrentChannelItem.getDisplayName(ChatActivity.this, !mIsAgent));
+					if(mCurrentChannelItem != null) {
+						mTitleTextView.setText(mCurrentChannelItem.getDisplayName(ChatActivity.this, !mIsAgent));
+					}
+
 					mTitleTextView.setVisibility(View.VISIBLE);
 				} else {
 					// タイトル設定

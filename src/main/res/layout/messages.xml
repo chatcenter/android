@@ -1,5 +1,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_chatcenter_msg_history_background"
@@ -42,30 +43,30 @@
 
         <!-- 削除 -->
         <!--<Button-->
-            <!--android:id="@+id/messages_delete_button"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="right"-->
-            <!--android:background="@null"-->
-            <!--android:minHeight="0dp"-->
-            <!--android:minWidth="0dp"-->
-            <!--android:padding="@dimen/margin10dp"-->
-            <!--android:text="削除"-->
-            <!--android:textColor="@drawable/selector_messages_header_text_color"-->
-            <!--android:visibility="gone"/>-->
+        <!--android:id="@+id/messages_delete_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="right"-->
+        <!--android:background="@null"-->
+        <!--android:minHeight="0dp"-->
+        <!--android:minWidth="0dp"-->
+        <!--android:padding="@dimen/margin10dp"-->
+        <!--android:text="削除"-->
+        <!--android:textColor="@drawable/selector_messages_header_text_color"-->
+        <!--android:visibility="gone"/>-->
 
         <!--<Button-->
-            <!--android:id="@+id/messages_edit_button"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="right"-->
-            <!--android:background="@null"-->
-            <!--android:minHeight="0dp"-->
-            <!--android:minWidth="0dp"-->
-            <!--android:padding="@dimen/margin10dp"-->
-            <!--android:text="編集"-->
-            <!--android:textColor="@drawable/selector_messages_header_text_color"-->
-            <!--android:visibility="visible"/>-->
+        <!--android:id="@+id/messages_edit_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="right"-->
+        <!--android:background="@null"-->
+        <!--android:minHeight="0dp"-->
+        <!--android:minWidth="0dp"-->
+        <!--android:padding="@dimen/margin10dp"-->
+        <!--android:text="編集"-->
+        <!--android:textColor="@drawable/selector_messages_header_text_color"-->
+        <!--android:visibility="visible"/>-->
 
     </android.support.v7.widget.Toolbar>
 
@@ -85,25 +86,88 @@
             android:id="@+id/messages_empty_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
             android:layout_gravity="center"
             android:lineSpacingExtra="2sp"
             android:padding="15dp"
             android:text="@string/msg_messages_empty"
+            android:textColor="@color/color_chatcenter_text"
             android:visibility="gone"/>
 
-        <!-- リスト -->
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_layout"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <ListView
-                android:id="@+id/messages_listview"
+            <!-- Search box-->
+            <RelativeLayout
+                android:id="@+id/ll_search_box"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/search_box_height"
+                android:background="@color/color_chatcenter_background_very_light"
+                android:padding="@dimen/margin8dp">
+
+                <ly.appsocial.chatcenter.ui.CustomEditText
+                    android:id="@+id/edt_search_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_search_text_box"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:paddingLeft="40dp"
+                    android:paddingRight="40dp"
+                    android:textColor="@color/color_chatcenter_text"
+                    android:hint="@string/channel_search_hint"
+                    android:textColorHint="@color/color_chatcenter_background_very_light"
+                    android:cursorVisible="false"/>
+
+                <ImageButton
+                    android:id="@+id/bt_search"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_search"
+                    android:text="search"/>
+
+                <ImageButton
+                    android:id="@+id/bt_cancel_search"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_cancel"
+                    android:text="search"
+                    android:visibility="gone"/>
+
+            </RelativeLayout>
+
+            <!-- リスト -->
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/swipe_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/ll_search_box">
+
+                <ListView
+                    android:id="@+id/messages_listview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@color/color_chatcenter_separator_light"
+                    android:dividerHeight="@dimen/widget_line_width"/>
+            </android.support.v4.widget.SwipeRefreshLayout>
+
+            <View
+                android:id="@+id/layout_search_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:divider="@color/color_chatcenter_separator_light"
-                android:dividerHeight="@dimen/widget_line_width"/>
-        </android.support.v4.widget.SwipeRefreshLayout>
+                android:background="#5000"
+                android:layout_below="@id/ll_search_box"
+                android:clickable="true"
+                android:visibility="gone"/>
+        </RelativeLayout>
 
         <!-- ネットワークエラー -->
         <TextView
@@ -114,17 +178,17 @@
             android:gravity="center"
             android:padding="5dp"
             android:text="@string/chat_network_error_message"
-            android:textSize="11sp"
-            android:textColor="#fff"/>
+            android:textColor="#fff"
+            android:textSize="11sp"/>
 
 
         <TextView
             android:id="@+id/tv_notification_new_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
-            android:layout_centerHorizontal="true"
             android:background="@drawable/bg_history_view_new_msg_notification"
             android:drawablePadding="@dimen/margin10dp"
             android:drawableRight="@drawable/ic_circle_up"
@@ -132,8 +196,8 @@
             android:maxLines="1"
             android:padding="4dp"
             android:textColor="@android:color/white"
-            android:visibility="gone"
-            android:textSize="10sp"/>
+            android:textSize="10sp"
+            android:visibility="gone"/>
 
         <!-- プログレスバー -->
         <LinearLayout
@@ -142,7 +206,8 @@
             android:layout_height="match_parent"
             android:background="#62000000"
             android:gravity="center"
-            android:visibility="gone">
+            android:visibility="gone"
+            android:clickable="true">
 
             <LinearLayout
                 android:layout_width="wrap_content"

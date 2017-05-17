@@ -11,29 +11,39 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.PopupWindowCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -88,6 +98,7 @@ import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
 import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
 import ly.appsocial.chatcenter.fragment.ProgressDialogFragment;
 import ly.appsocial.chatcenter.ui.ChannelFilterView;
+import ly.appsocial.chatcenter.ui.CustomEditText;
 import ly.appsocial.chatcenter.util.ApiUtil;
 import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.DialogUtil;
@@ -335,6 +346,14 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
     private String mNotificationAppToken;
     private String mNotificationOrgUid;
 
+    /** チャンネルを検索*/
+    private RelativeLayout mLLSearchBox;
+    private CustomEditText mEdtSearchText;
+    private ImageButton mBtSearch;
+    private ImageButton mBtCancelSearch;
+    private String mTextForSearching;
+    private View mSearchOverlay;
+
     // //////////////////////////////////////////////////////////////////////////
     // イベントメソッド
     // //////////////////////////////////////////////////////////////////////////
@@ -411,6 +430,14 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
             mTvFunnel.setVisibility(View.GONE);
         }
 
+        // チャンネルを検索用のUI
+        mLLSearchBox = (RelativeLayout) findViewById(R.id.ll_search_box);
+        if (!mIsAgent) {
+            mLLSearchBox.setVisibility(View.GONE);
+        } else {
+            setUpSearchView();
+        }
+
         ChatCenter.initChatCenter(this, null, null);
 
         if (mIsAgent) {
@@ -452,6 +479,94 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         registerReceiver(mNetworkStateReceiver, netWorkStateFilter);
 
     }
+
+    private void setUpSearchView() {
+        mLLSearchBox.setVisibility(View.VISIBLE);
+        mEdtSearchText = (CustomEditText) findViewById(R.id.edt_search_text);
+        mBtSearch = (ImageButton) findViewById(R.id.bt_search);
+        mBtCancelSearch = (ImageButton) findViewById(R.id.bt_cancel_search);
+        mSearchOverlay = findViewById(R.id.layout_search_overlay);
+
+        mBtSearch.setOnClickListener(this);
+        mBtCancelSearch.setOnClickListener(this);
+        mEdtSearchText.setOnClickListener(this);
+        mEdtSearchText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    mBtCancelSearch.setVisibility(View.VISIBLE);
+                } else {
+                    mBtCancelSearch.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        mEdtSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    performSearch();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        mEdtSearchText.setOnKeyPreImeListener(new CustomEditText.OnKeyPreImeListener() {
+            @Override
+            public void onBackPressed() {
+                mEdtSearchText.setCursorVisible(false);
+                hideSoftKeyboard();
+            }
+        });
+
+        setupUI(findViewById(R.id.root_view));
+    }
+
+    /**
+     * If click outside of keyboard then Hide the keyboard
+     * @param view
+     */
+    public void setupUI(View view) {
+
+        //Set up touch listener for non-text box views to hide keyboard.
+        if(!(view instanceof EditText)) {
+
+            view.setOnTouchListener(new View.OnTouchListener() {
+
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (mSearchOverlay.getVisibility() == View.VISIBLE) {
+                        mEdtSearchText.setCursorVisible(false);
+                        hideSoftKeyboard();
+                    }
+                    return false;
+                }
+
+            });
+        }
+
+        //If a layout container, iterate over children and seed recursion.
+        if (view instanceof ViewGroup) {
+
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+
+                View innerView = ((ViewGroup) view).getChildAt(i);
+
+                setupUI(innerView);
+            }
+        }
+    }
+
 
     @Override
     protected void onResume() {
@@ -557,37 +672,105 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
          toggleMode();
          } else */
         if (view.equals(mTvFunnel)) {
-            if (mChannelFilterWindow == null) {
-                mChannelFilterWindow = new PopupWindow(this);
-
-                ChannelFilterView contentView = new ChannelFilterView(this, mFunnelItems);
-                contentView.setFilterDialogListener(this);
-
-                mChannelFilterWindow.setContentView(contentView);
-                mChannelFilterWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-                mChannelFilterWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-                mChannelFilterWindow.setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
-
-                mCurrentStatus = contentView.getCurrentStatus();
-                mCurrentFunnel = contentView.getCurrentFunnel();
-            }
-
-            if (mChannelFilterWindow.isShowing()) {
-                mChannelFilterWindow.dismiss();
-            } else {
-                if (mCurrentOrgItem != null) {
-                    PopupWindowCompat.showAsDropDown(mChannelFilterWindow, mToolbar, 0, 0, Gravity.CENTER_HORIZONTAL);
-                    requestGetChannelCount(mCurrentOrgItem.uid);
-                }
-            }
+            showOrHideFilterDialog();
         } else if (view.equals(mTvNotiNewMessage)) {
             if (mListView != null) {
                 // 最新項目を表示します。
                 mListView.setSelection(0);
                 mTvNotiNewMessage.setVisibility(View.GONE);
             }
+        } else if (view.equals(mBtSearch)) {
+            performSearch();
+        } else if (view.equals(mBtCancelSearch)) {
+            cancelSearch();
+        } else if (view.equals(mEdtSearchText)) {
+            mEdtSearchText.setCursorVisible(true);
+            mSearchOverlay.setVisibility(View.VISIBLE);
         }
+    }
+
+    /**
+     * If the filter dialog is showing, close the dialog
+     * If the dialog is disappeared, show the dialog
+     */
+    private void showOrHideFilterDialog() {
+        if (mChannelFilterWindow == null) {
+            mChannelFilterWindow = new PopupWindow(this);
+
+            ChannelFilterView contentView = new ChannelFilterView(this, mFunnelItems);
+            contentView.setFilterDialogListener(this);
+
+            mChannelFilterWindow.setContentView(contentView);
+            mChannelFilterWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            mChannelFilterWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+            mChannelFilterWindow.setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
+
+            mCurrentStatus = contentView.getCurrentStatus();
+            mCurrentFunnel = contentView.getCurrentFunnel();
+        }
+
+        if (mChannelFilterWindow.isShowing()) {
+            mChannelFilterWindow.dismiss();
+        } else {
+            if (mCurrentOrgItem != null) {
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+
+                    // Get position to show dialog
+                    int[] a = new int[2];
+                    mToolbar.getLocationInWindow(a);
+                    int xOffset = 0;
+                    int yOffset = a[1] + mToolbar.getHeight();
+
+                    // calculate new size of dialog
+                    Display display = getWindowManager().getDefaultDisplay();
+                    Point size = new Point();
+                    display.getSize(size);
+                    int dialogHeight = size.y - yOffset;
+                    mChannelFilterWindow.setHeight(dialogHeight);
+
+                    // Show the dialog
+                    mChannelFilterWindow.showAtLocation(getWindow().getDecorView(), Gravity.NO_GRAVITY, xOffset, yOffset);
+                } else{
+                    mChannelFilterWindow.showAsDropDown(mToolbar);
+                }
+                mChannelFilterWindow.update();
+                requestGetChannelCount(mCurrentOrgItem.uid);
+            }
+        }
+    }
+
+    private void cancelSearch() {
+        // Clear keyword
+        mEdtSearchText.setText("");
+
+        // If you're searching with keyword, reload from start without keyword
+        if (StringUtil.isNotBlank(mTextForSearching)) {
+            mTextForSearching = "";
+            requestGetChannels(mTextForSearching, 0);
+        }
+
+        mEdtSearchText.setCursorVisible(false);
+        hideSoftKeyboard();
+    }
+
+    /**
+     * Start to search channel
+     */
+    private void performSearch () {
+        mTextForSearching = mEdtSearchText.getText().toString().trim();
+        requestGetChannels(mTextForSearching, 0);
+        mEdtSearchText.setCursorVisible(false);
+        hideSoftKeyboard();
+    }
+
+    private void hideSoftKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        mSearchOverlay.setVisibility(View.GONE);
     }
 
     @Override
@@ -657,7 +840,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
             if (mCurrentAppId == null && mCurrentOrgItem == null || mIsInit) {
                 requestGetApps();
             } else {
-                requestGetChannels();
+                requestGetChannels(mTextForSearching, 0);
             }
         } else {
             requestGetChannelsMine();
@@ -860,7 +1043,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         isChannelsLoading = false;
         isCanLoadMore = false;
 
-        requestGetChannels();
+        requestGetChannels(mTextForSearching, 0);
         setUpFilterLabel();
     }
 
@@ -873,7 +1056,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         isChannelsLoading = false;
         isCanLoadMore = false;
 
-        requestGetChannels();
+        requestGetChannels(mTextForSearching, 0);
         setUpFilterLabel();
     }
 
@@ -908,7 +1091,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         if (isInternetConnecting) {
             isCanLoadMore = false;
             isChannelsLoading = false;
-            requestGetChannels();
+            requestGetChannels(mTextForSearching, 0);
         } else {
             mSwipeRefreshLayout.setRefreshing(false);
         }
@@ -975,7 +1158,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         Bundle data = new Bundle();
         data.putInt(AssigneeFollowersUsersActivity.LIST_TYPE, AssigneeFollowersUsersActivity.LIST_TYPE_ASSIGNEE);
         data.putString(AssigneeFollowersUsersActivity.CHANNEL_DATA, channel.uid);
-        data.putParcelable(AssigneeFollowersUsersActivity.ORG_DATA, mCurrentOrgItem);
+        data.putString(AssigneeFollowersUsersActivity.ORG_DATA, mCurrentOrgItem.uid);
         data.putString(AssigneeFollowersUsersActivity.APP_TOKEN, mCurrentApp.token);
 
         intent.putExtras(data);
@@ -1140,7 +1323,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         }
 
         if (isInternetConnecting) {
-            requestGetChannels();
+            requestGetChannels(mTextForSearching, 0);
         } else {
             if (mIsAgent) {
                 mTbChannel.getListChannelInOrg(mCurrentOrgItem.uid, null, this);
@@ -1403,7 +1586,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
             if (!isChannelsLoading && isCanLoadMore && lastItem > 0) {
                 if (isInternetConnecting) {
                     if (mIsAgent) {
-                        requestGetChannels((int) Math.floor(mAdapter.getItem(lastItem - 1).lastUpdatedAt));
+                        requestGetChannels(mTextForSearching, (int) Math.floor(mAdapter.getItem(lastItem - 1).lastUpdatedAt));
                     } else {
                         requestGetChannelsMine((int) Math.floor(mAdapter.getItem(lastItem - 1).lastUpdatedAt));
                     }
@@ -1462,8 +1645,16 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         mMenuListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                LeftMenuChildItem menuItem = menuItems.get(menuItems.keySet().toArray()[groupPosition]).get(childPosition);
-                changeOrg(menuItem);
+                if (menuItems != null && menuItems.keySet()!= null && menuItems.keySet().toArray() != null
+                        && menuItems.keySet().toArray().length > groupPosition) {
+                    List<LeftMenuChildItem> childItems = menuItems.get(menuItems.keySet().toArray()[groupPosition]);
+                    if (childItems != null && childItems.size() > childPosition) {
+                        LeftMenuChildItem menuItem = childItems.get(childPosition);
+                        if (menuItem != null) {
+                            changeOrg(menuItem);
+                        }
+                    }
+                }
                 return false;
             }
         });
@@ -1631,7 +1822,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
     /**
      * GET /api/channels
      */
-    private void requestGetChannels(int lastUpdatedDate) {
+    private void requestGetChannels(String channelName, int lastUpdatedDate) {
         Log.e(TAG, "requestGetChannelsMine: " + lastUpdatedDate);
         if (!isInternetConnecting || mGetChannelsRequest != null || mCurrentOrgItem == null) {
             return;
@@ -1650,6 +1841,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         request.setLastUpdatedAt(lastUpdatedDate);
         request.setOrgUid(mCurrentOrgItem.uid);
         request.setFunnelID(mParamDto.funnelId);
+        request.setChannelName(channelName);
 
         if (mParamDto.channelStatus == ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME) {
             request.setAssigneeID(CCAuthUtil.getUserId(this));
@@ -1663,15 +1855,11 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         mGetChannelsRequest.setApiToken(mCurrentAppId);
 
         NetworkQueueHelper.enqueue(mGetChannelsRequest, REQUEST_TAG);
-    }
 
-    /**
-     * GET /api/channels
-     */
-    private void requestGetChannels() {
-        requestGetChannels(0);
+        if (lastUpdatedDate == 0) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        }
     }
-
 
     /**
      * GET /api/channels/count
@@ -2196,6 +2384,12 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
 
         cancelAllRequest();
 
+        // Clear Keyword
+        mEdtSearchText.setText("");
+        mEdtSearchText.setCursorVisible(false);
+        mSearchOverlay.setVisibility(View.GONE);
+        mTextForSearching = "";
+
         // Remove all old org from database
         mTbOrg.clearTable();
         mTbChannel.clearTable();
@@ -2288,15 +2482,17 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
      */
     private void logout() {
         ChatCenter.signOutAgent(MessagesActivity.this);
-        if (ChatCenter.getTopActivity() != null) {
-            Intent intent = new Intent(MessagesActivity.this, ChatCenter.getTopActivity().getClass());
-            startActivity(intent);
-        }
-
         mTbChannel.clearTable();
         mTbApp.clearDatabase();
         mTbOrg.clearTable();
         mTbMessage.clearTable();
+
+        // Launch Main activity
+        String packageName = getPackageName();
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
+        if (launchIntent != null) {
+            startActivity(launchIntent);
+        }
 
         finish();
     }
@@ -2334,6 +2530,12 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
             mChannelItems.clear();
         }
 
+        // Clear Keyword
+        mEdtSearchText.setText("");
+        mEdtSearchText.setCursorVisible(false);
+        mSearchOverlay.setVisibility(View.GONE);
+        mTextForSearching = "";
+
         // Load new channel
         mCurrentOrgItem = menuItem.getOrg();
         CCPrefUtils.saveLastOrgUid(MessagesActivity.this, mCurrentOrgItem.uid);
@@ -2342,7 +2544,7 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
         mTvFunnel.setEnabled(true);
 
         if (isInternetConnecting) {
-            requestGetChannels();
+            requestGetChannels(mTextForSearching, 0);
             mProgressBar.setVisibility(View.VISIBLE);
         } else {
             if (mIsAgent) {

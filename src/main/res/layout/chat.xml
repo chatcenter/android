@@ -191,7 +191,6 @@
             android:textStyle="bold"/>
 
         <HorizontalScrollView
-            android:id="@+id/suggestion_scroll"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"

@@ -326,8 +326,10 @@ public class PhotoActivity extends BaseActivity implements View.OnClickListener,
 				if (!saveDir.exists() && !saveDir.mkdirs()) {
 					return null;
 				}
-				for (File file : saveDir.listFiles()) {
-					file.delete();
+				if(saveDir.listFiles() != null) {
+					for (File file : saveDir.listFiles()) {
+						file.delete();
+					}
 				}
 				String saveFilePath = saveDirPath + new SimpleDateFormat("yyyyMMddHHmmss", Locale.JAPAN).format(new Date()) + ext;
 

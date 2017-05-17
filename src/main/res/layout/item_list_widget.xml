@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- 担当者名 -->
+    <LinearLayout
+        android:id="@+id/ll_widget_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/margin8dp">
+
+        <TextView
+            android:id="@+id/tv_sender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginRight="@dimen/margin8dp"
+            android:textColor="@color/color_chatcenter_text_light_gray"
+            android:textSize="9sp"/>
+
+
+        <ly.appsocial.chatcenter.widgets.views.WidgetView
+            android:id="@+id/widget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/margin8dp"
+            custom:actionTextColor="@drawable/selector_action_button_text_color"
+            custom:backgroundConfirmNegative="@drawable/selector_action_confirm_left"
+            custom:backgroundConfirmPositive="@drawable/selector_action_confirm_right"
+            custom:backgroundMain="@drawable/bg_my_common_sticker"
+            custom:backgroundSelect="@drawable/selector_action_select"
+            custom:backgroundSelectLast="@drawable/selector_action_select_last"
+            custom:textColor="@color/color_chatcenter_widget_text">
+        </ly.appsocial.chatcenter.widgets.views.WidgetView>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/fixed_phrase_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/ll_widget_container"
+        android:layout_alignTop="@id/ll_widget_container"
+        android:clickable="true"/>
+</RelativeLayout>

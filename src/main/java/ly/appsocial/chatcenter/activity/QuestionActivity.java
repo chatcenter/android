@@ -163,7 +163,7 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
                 DialogUtil.showAlertDialog(getSupportFragmentManager(),
                         DialogUtil.Tag.ALERT,
                         null,
-                        String.format(getString(R.string.alert_question_widget_title_too_long), ChatCenterConstants.QuestionWidget.TITLE_MAX_LENGTH));
+                        getString(R.string.widget_create_error));
             } else {
                 String content = makeContentString();
                 if (content != null) {
@@ -307,8 +307,16 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
                 widget.stickerAction.viewInfo = new BasicWidget.StickerAction.ViewInfo();
                 widget.stickerAction.viewInfo.type = ChatCenterConstants.ViewType.LINEAR;
 
-                widget.stickerAction.viewInfo.minLabel = linearScaleQuestionFragment.mScaleEditLeft.getText().toString();
-                widget.stickerAction.viewInfo.maxLabel = linearScaleQuestionFragment.mScaleEditRight.getText().toString();
+                String minLabel = linearScaleQuestionFragment.mScaleEditLeft.getText().toString();
+                String maxLabel = linearScaleQuestionFragment.mScaleEditRight.getText().toString();
+
+                widget.stickerAction.viewInfo.minLabel = minLabel;
+                widget.stickerAction.viewInfo.maxLabel = maxLabel;
+
+
+                if (StringUtil.isBlank(minLabel) || StringUtil.isBlank(maxLabel)) {
+                    return null;
+                }
 
                 int minValue = linearScaleQuestionFragment.mMinScale;
                 int maxValue = linearScaleQuestionFragment.mMaxScale;

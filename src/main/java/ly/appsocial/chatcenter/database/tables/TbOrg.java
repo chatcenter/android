@@ -130,6 +130,7 @@ public class TbOrg extends TBBase {
             return false;
         }
 
+
         String[] projection = new String[] {OrgEntry.COLUMN_UID};
 
         String selection = OrgEntry.COLUMN_UID + " = ?";
@@ -141,7 +142,12 @@ public class TbOrg extends TBBase {
                 selectionArgs,
                 null, null, null);
 
-        return (cursor != null) && (cursor.getCount() > 0);
+        boolean existing = false;
+        if (cursor != null) {
+            existing = cursor.getCount() > 0;
+            cursor.close();
+        }
+        return existing;
     }
 
     public OrgItem getOrg(String orgUid) {

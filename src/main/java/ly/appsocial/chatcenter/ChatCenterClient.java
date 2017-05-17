@@ -28,22 +28,17 @@ public class ChatCenterClient {
 	private ApiRequest<PostDevicesSignInResponseDto> mPostDevicesSignInRequest;
 	private ApiRequest<PostUsersAuthResponseDto> mPostUsersAuthRequest;
 	private ApiRequest<PostUsersResponseDto> mPostUsersRequest;
-	private Context mAppContext;
 
-	protected ChatCenterClient(Context appContext) {
-		mAppContext = appContext;
-	}
-
-	public void signOutPushNotification(String deviceToken, ApiRequest.Callback<PostDevicesSignOutResponseDto> callback) {
+	public void signOutPushNotification(Context context, String deviceToken, ApiRequest.Callback<PostDevicesSignOutResponseDto> callback) {
 		String path = "devices/sign_out";
 		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", CCAuthUtil.getUserToken(mAppContext));
+		headers.put("Authentication", CCAuthUtil.getUserToken(context));
 
 		Map<String, String> params = new HashMap<>();
 		params.put("device_type", "android");
 		params.put("device_token", deviceToken);
 		mPostDevicesSignOutRequest = new OkHttpApiRequest<>(
-				mAppContext,
+				context,
 				ApiRequest.Method.POST,
 				path,
 				params,
@@ -70,21 +65,22 @@ public class ChatCenterClient {
 	 * @param deviceToken
 	 * @param callback
 	 */
-	public void signInPushNotification(String appToken,
+	public void signInPushNotification(Context context,
+									   String appToken,
 									   String deviceToken,
 									   ApiRequest.Callback<PostDevicesSignInResponseDto> callback) {
 		// To save device token
-		CCAuthUtil.saveDeviceToken(mAppContext, deviceToken);
+		CCAuthUtil.saveDeviceToken(context, deviceToken);
 
 		String path = "devices/";
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put("Authentication", CCAuthUtil.getUserToken(mAppContext));
+		headers.put("Authentication", CCAuthUtil.getUserToken(context));
 
 		PostDevicesRequestDto request = new PostDevicesRequestDto();
 		request.deviceToken = deviceToken;
 		mPostDevicesSignInRequest = new OkHttpApiRequest<>(
-				mAppContext,
+				context,
 				ApiRequest.Method.POST,
 				path,
 				request.toParams(),
@@ -107,7 +103,8 @@ public class ChatCenterClient {
 		NetworkQueueHelper.enqueue(mPostDevicesSignInRequest, REQUEST_TAG);
 	}
 
-	public void getUserToken(final String email,
+	public void getUserToken(final Context context,
+							 final String email,
 							 final String password,
 							 final String provider,
 							 final String providerToken,
@@ -118,7 +115,7 @@ public class ChatCenterClient {
 							 final ApiRequest.Callback<PostUsersAuthResponseDto> callback) {
 
 		// To save device token
-		CCAuthUtil.saveDeviceToken(mAppContext, deviceToken);
+		CCAuthUtil.saveDeviceToken(context, deviceToken);
 
 		if (mPostUsersAuthRequest != null) {
 			return;
@@ -142,7 +139,7 @@ public class ChatCenterClient {
 
 				// 認証情報の保存
 				responseDto.admin = true;
-				CCAuthUtil.saveTokens(mAppContext, providerCreatedAt, responseDto);
+				CCAuthUtil.saveTokens(context, providerCreatedAt, responseDto);
 
 				if (callback != null) {
 					callback.onSuccess(responseDto);
@@ -157,12 +154,13 @@ public class ChatCenterClient {
 				}
 			}
 		};
-		mPostUsersAuthRequest = new OkHttpApiRequest<>(mAppContext, ApiRequest.Method.POST, path,
+		mPostUsersAuthRequest = new OkHttpApiRequest<>(context, ApiRequest.Method.POST, path,
 				postUsersAuthRequestDto.toParams(), null, cb, new PostUsersAuthParser());
 		NetworkQueueHelper.enqueue(mPostUsersAuthRequest, REQUEST_TAG);
 	}
 
-	public void getUserToken(final String org_uid,
+	public void getUserToken(final Context context,
+							 final String org_uid,
 							 final String email,
 							 final String firstName,
 							 final String familyName,
@@ -174,7 +172,7 @@ public class ChatCenterClient {
 							 final ApiRequest.Callback<PostUsersResponseDto> callback) {
 
 		// To save device token
-		CCAuthUtil.saveDeviceToken(mAppContext, deviceToken);
+		CCAuthUtil.saveDeviceToken(context, deviceToken);
 
 		if (mPostUsersRequest != null) {
 			return;
@@ -185,15 +183,15 @@ public class ChatCenterClient {
 		PostUsersRequestDto postUsersRequestDto = new PostUsersRequestDto();
 		postUsersRequestDto.provider = provider;
 		postUsersRequestDto.providerToken = providerToken;
-		postUsersRequestDto.setProviderTokenCreateAt(mAppContext, providerCreatedAt);
-		postUsersRequestDto.setProviderExpires(mAppContext, providerExpiresAt);
+		postUsersRequestDto.setProviderTokenCreateAt(context, providerCreatedAt);
+		postUsersRequestDto.setProviderExpires(context, providerExpiresAt);
 		postUsersRequestDto.kissCd = org_uid;
 		postUsersRequestDto.deviceToken = deviceToken;
 		postUsersRequestDto.firstName = firstName;
 		postUsersRequestDto.familyName = familyName;
 		postUsersRequestDto.email = email;
 
-		mPostUsersRequest = new OkHttpApiRequest<>(mAppContext, ApiRequest.Method.POST,
+		mPostUsersRequest = new OkHttpApiRequest<>(context, ApiRequest.Method.POST,
 				path, postUsersRequestDto.toParams(), null,
 				new ApiRequest.Callback<PostUsersResponseDto>() {
 					@Override
@@ -202,7 +200,7 @@ public class ChatCenterClient {
 
 						if ( responseDto != null && responseDto.users != null && responseDto.users.size() > 0 ){
 							// 認証情報の保存
-							CCAuthUtil.saveTokens(mAppContext, providerCreatedAt, responseDto.users.get(0));
+							CCAuthUtil.saveTokens(context, providerCreatedAt, responseDto.users.get(0));
 
 							if (callback != null) {
 								callback.onSuccess(responseDto);

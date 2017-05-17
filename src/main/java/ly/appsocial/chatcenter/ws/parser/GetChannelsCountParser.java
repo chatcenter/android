@@ -38,6 +38,7 @@ public class GetChannelsCountParser implements ApiRequest.Parser<GetChannelsCoun
             return new Gson().fromJson(response , GetChannelsCountResponseDto.class);
         } catch (Exception e) {
             mErrorCode = -1;
+            e.printStackTrace();
         }
         return null;
     }

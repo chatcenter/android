@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,7 +33,6 @@ import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.FunnelItem;
-import ly.appsocial.chatcenter.dto.OrgItem;
 import ly.appsocial.chatcenter.dto.UserItem;
 import ly.appsocial.chatcenter.dto.param.ChatParamDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetFunnelResponseDto;
@@ -199,6 +197,11 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
 
         if (mFunnels == null || mFunnels.size() == 0) {
             requestGetFunnels();
+        }
+
+        if (mCurrentChannel != null && ChannelItem.CHANNEL_ASSIGNED.equals(mCurrentChannel.status)
+                && mCurrentChannel.assignee == null) {
+            requestGetChannel(mChannelUid);
         }
     }
 
@@ -501,6 +504,38 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
         startActivityForResult(intent, REQUEST_SETUP_NOTE);
     }
 
+    /** Show all schedule widget that have sent in this channel*/
+    public void onScheduleWidgetButtonClicked(View view) {
+        openWidgetList(ChatCenterConstants.StickerName.STICKER_TYPE_SCHEDULE, getString(R.string.schedule));
+    }
+
+    /** Show all file widget that have sent in this channel*/
+    public void onFileWidgetButtonClicked(View view) {
+        openWidgetList("file", getString(R.string.file));
+    }
+
+    /** Show all question widget that have sent in this channel*/
+    public void onQuestionWidgetButtonClicked(View view) {
+        openWidgetList(ChatCenterConstants.StickerName.STICKER_TYPE_SELECT, getString(R.string.question));
+    }
+
+    public void onLocationWidgetButtonClicked(View view) {
+        openWidgetList(ChatCenterConstants.StickerName.STICKER_TYPE_SCHEDULE, getString(R.string.schedule));
+    }
+
+    /**
+     * Open Widget activity to show the widgets was sent in this channel
+     * @param stickerType
+     * @param title
+     */
+    private void openWidgetList(String stickerType, String title) {
+        Intent intent = new Intent(this, WidgetActivity.class);
+        intent.putExtra(WidgetActivity.CHANNEL_UID, mChannelUid);
+        intent.putExtra(WidgetActivity.STICKER_TYPE, stickerType);
+        intent.putExtra(WidgetActivity.ACTIVITY_TITLE, title);
+        startActivity(intent);
+    }
+
     public void onCloseButtonClicked(View view) {
         if (mCurrentChannel == null) {
             return;
@@ -775,7 +810,6 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
             mGetChannelsRequest.setApiToken(mParamDto.appToken);
         }
         NetworkQueueHelper.enqueue(mGetChannelsRequest, REQUEST_TAG);
-        DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
     }
 
     /**
@@ -844,7 +878,9 @@ public class InfoActivity extends BaseActivity implements AlertDialogFragment.Di
             mPostChannelRequest.setApiToken(mParamDto.appToken);
         }
         NetworkQueueHelper.enqueue(mPostChannelRequest, REQUEST_TAG);
-        DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+        if (mIsAgent) {
+            DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+        }
     }
 
     /**

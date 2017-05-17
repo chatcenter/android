@@ -9,22 +9,22 @@ import com.google.gson.annotations.SerializedName;
 
 public class GetChannelsCountResponseDto {
     @SerializedName("all")
-    public int all;
+    public String all;
 
     @SerializedName("unassigned")
-    public int unassigned;
+    public String unassigned;
 
     @SerializedName("assigned")
-    public int assigned;
+    public String assigned;
 
     @SerializedName("closed")
-    public int close;
+    public String close;
 
     @SerializedName("mine")
-    public int mine;
+    public String mine;
 
     @SerializedName("unread")
-    public int unread;
+    public String unread;
 
     @SerializedName("funnels")
     public JsonObject funnels;

@@ -572,16 +572,6 @@ public class WidgetView extends FrameLayout {
 			return;
 		}
 
-		TextView minLabel = (TextView)mActionLinearContainer.findViewById(R.id.linear_label_min);
-		TextView maxLabel = (TextView)mActionLinearContainer.findViewById(R.id.linear_label_max);
-
-		if ( stickerAction.viewInfo.minLabel != null ){
-			minLabel.setText(stickerAction.viewInfo.minLabel);
-		}
-		if ( stickerAction.viewInfo.maxLabel != null ){
-			maxLabel.setText(stickerAction.viewInfo.maxLabel);
-		}
-
 		mRadioButtonList.clear();
 
 		for (int i = 0; i < actions.size(); i++) {
@@ -593,29 +583,35 @@ public class WidgetView extends FrameLayout {
 				LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				LinearLayout item = (LinearLayout)inflater.inflate(R.layout.layout_linear_item, null);
 				RadioButton radio = (RadioButton)item.findViewById(R.id.radiobutton);
-				TextView label = (TextView)item.findViewById(R.id.linear_label);
+				TextView tvValue = (TextView)item.findViewById(R.id.linear_value);
+				TextView tvLabel = (TextView)item.findViewById(R.id.linear_label);
 
-				label.setText(String.valueOf(value));
+				tvValue.setText(String.valueOf(value));
+
+				if (i == 0) {
+					tvLabel.setText(stickerAction.viewInfo.minLabel);
+				} else if (i == actions.size() - 1) {
+					tvLabel.setText(stickerAction.viewInfo.maxLabel);
+				}
 
 				radio.setChecked(mChatItem.widget.isSelectedAction(actionData));
 				radio.setOnClickListener(new RadioButtonOnClickListener(actionData));
 
 				mRadioButtonList.add(radio);
 
-				LinearLayout.LayoutParams lp = new
-						LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-				// lp.weight = 1;
-
 				// Add view to container
-				linearLayout.addView(item, lp);
+				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
+				layoutParams.weight = 1;
 
-				if (i < actions.size() - 1) {
-					View view = new View(getContext());
-					LinearLayout.LayoutParams layoutParams = new
-							LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-					layoutParams.weight = 1;
-					linearLayout.addView(view, layoutParams);
-				}
+				linearLayout.addView(item, layoutParams);
+
+//				if (i < actions.size() - 1) {
+//					View view = new View(getContext());
+//					LinearLayout.LayoutParams layoutParams = new
+//							LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+//					layoutParams.weight = 1;
+//					linearLayout.addView(view, layoutParams);
+//				}
 			}
 		}
 		showLinearActions(true);

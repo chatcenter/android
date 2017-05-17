@@ -32,22 +32,42 @@ public class LeftMenuAdapter extends BaseExpandableListAdapter{
 
     @Override
     public int getGroupCount() {
-        return expandableListDetail.keySet().size();
+        if (expandableListDetail != null && expandableListDetail.keySet() != null) {
+            return expandableListDetail.keySet().size();
+        }
+        return 0;
     }
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return expandableListDetail.get(getGroup(groupPosition)).size();
+        if (expandableListDetail != null && getGroup(groupPosition) != null) {
+            List<LeftMenuChildItem> childItems = expandableListDetail.get(getGroup(groupPosition));
+            if (childItems != null) {
+                return childItems.size();
+            }
+        }
+        return 0;
     }
 
     @Override
     public Object getGroup(int groupPosition) {
-        return expandableListDetail.keySet().toArray()[groupPosition];
+        if (expandableListDetail != null && expandableListDetail.keySet() != null
+                && expandableListDetail.keySet().toArray().length > groupPosition) {
+            return expandableListDetail.keySet().toArray()[groupPosition];
+        }
+        return null;
     }
 
     @Override
     public Object getChild(int groupPosition, int childPosition) {
-        return expandableListDetail.get(getGroup(groupPosition)).get(childPosition);
+        if (expandableListDetail != null && getGroup(groupPosition) != null){
+            List<LeftMenuChildItem> childItems = expandableListDetail.get(getGroup(groupPosition));
+            if (childItems != null && childItems.size() > childPosition) {
+                return childItems.get(childPosition);
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -81,10 +101,11 @@ public class LeftMenuAdapter extends BaseExpandableListAdapter{
         }
         LeftMenuGroupItem menuItem = (LeftMenuGroupItem) getGroup(groupPosition);
 
-        viewHolder.tvTitle.setText(menuItem.getTitle());
-        viewHolder.tvTitle.setCompoundDrawablesWithIntrinsicBounds(menuItem.getIconResource(), 0, R.drawable.icon_left_menu_indicator, 0);
-        viewHolder.tvTitle.setSelected(isExpanded);
-
+        if (menuItem != null) {
+            viewHolder.tvTitle.setText(menuItem.getTitle());
+            viewHolder.tvTitle.setCompoundDrawablesWithIntrinsicBounds(menuItem.getIconResource(), 0, R.drawable.icon_left_menu_indicator, 0);
+            viewHolder.tvTitle.setSelected(isExpanded);
+        }
         return convertView;
     }
 
@@ -107,30 +128,33 @@ public class LeftMenuAdapter extends BaseExpandableListAdapter{
 
         LeftMenuChildItem item = (LeftMenuChildItem) getChild(groupPosition, childPosition);
 
-        // ORG name
-        holder.tvOrgName.setText(item.getOrg().name);
+        if (item != null) {
 
-        // ORG unread count
-        if (item.getOrg().unreadMessagesChannels != null && item.getOrg().unreadMessagesChannels.size() > 0) {
-            holder.tvOrgUnreadCount.setText("" + item.getOrg().unreadMessagesChannels.size());
-        } else {
-            holder.tvOrgUnreadCount.setText("");
-        }
+            // ORG name
+            holder.tvOrgName.setText(item.getOrg().name);
 
-        // Setup ava for ORG
-        ViewUtil.loadImageCircle(holder.imvOrgAva, item.getOrg().iconUrl);
-        holder.tvOrgAva.setText(item.getOrg().name.toUpperCase().substring(0, 1));
+            // ORG unread count
+            if (item.getOrg().unreadMessagesChannels != null && item.getOrg().unreadMessagesChannels.size() > 0) {
+                holder.tvOrgUnreadCount.setText("" + item.getOrg().unreadMessagesChannels.size());
+            } else {
+                holder.tvOrgUnreadCount.setText("");
+            }
 
-        GradientDrawable gradientDrawable = (GradientDrawable) holder.tvOrgAva.getBackground();
-        gradientDrawable.setColor(ViewUtil.getIconColor(item.getOrg().uid));
+            // Setup ava for ORG
+            ViewUtil.loadImageCircle(holder.imvOrgAva, item.getOrg().iconUrl);
+            holder.tvOrgAva.setText(item.getOrg().name.toUpperCase().substring(0, 1));
 
-        // Check if the current item is selected
-        boolean selected = item.getValue().equals(mSelectedOrg);
-        // Update the view content
-        if (selected) {
-            convertView.setBackgroundColor(mContext.getResources().getColor(R.color.color_chatcenter_separator_light));
-        } else {
-            convertView.setBackgroundColor(mContext.getResources().getColor(android.R.color.transparent));
+            GradientDrawable gradientDrawable = (GradientDrawable) holder.tvOrgAva.getBackground();
+            gradientDrawable.setColor(ViewUtil.getIconColor(item.getOrg().uid));
+
+            // Check if the current item is selected
+            boolean selected = item.getValue().equals(mSelectedOrg);
+            // Update the view content
+            if (selected) {
+                convertView.setBackgroundColor(mContext.getResources().getColor(R.color.color_chatcenter_separator_light));
+            } else {
+                convertView.setBackgroundColor(mContext.getResources().getColor(android.R.color.transparent));
+            }
         }
         return convertView;
     }

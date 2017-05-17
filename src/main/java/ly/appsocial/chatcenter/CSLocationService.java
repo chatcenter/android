@@ -247,7 +247,11 @@ public class CSLocationService extends Service implements GoogleApiClient.Connec
 						break;
 					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
 						try {
-							status.startResolutionForResult(ChatActivity.getInstance(), REQUEST_LOCATION_SET);
+							if (ChatActivity.getInstance() != null) {
+								status.startResolutionForResult(ChatActivity.getInstance(), REQUEST_LOCATION_SET);
+							} else {
+								CSLocationService.this.stopSelf();
+							}
 						} catch (IntentSender.SendIntentException e) {
 							CSLocationService.this.stopSelf();
 						}

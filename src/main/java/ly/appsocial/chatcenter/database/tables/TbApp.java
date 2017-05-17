@@ -205,11 +205,11 @@ public class TbApp extends TBBase {
      */
     private boolean isAppExist(GetAppsResponseDto.App app) {
 
-        open();
-
         if (app == null) {
             return false;
         }
+
+        open();
 
         String[] projection = new String[] {AppEntry.COLUMN_UID};
 
@@ -222,8 +222,12 @@ public class TbApp extends TBBase {
                 selectionArgs,
                 null, null, null);
 
-        boolean result = (cursor != null) && (cursor.getCount() > 0);
+        boolean result = false;
+        if (cursor != null) {
+            result = cursor.getCount() > 0;
+            cursor.close();
 
+        }
         close();
 
         return result;

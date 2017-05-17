@@ -10,7 +10,8 @@
     <!-- ========================================================================== -->
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.GET_TASKS"/>
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -20,7 +21,8 @@
     <!-- ビデオチャット -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
-    <uses-feature android:name="android.hardware.camera"/>
+    <uses-feature android:name="android.hardware.camera"
+                  android:required="true" />
 
     <!-- ========================================================================== -->
     <!-- アプリケーション -->
@@ -37,7 +39,8 @@
             android:name=".activity.MessagesActivity"
             android:screenOrientation="portrait"
             android:theme="@style/ChatCenterTheme.Slide"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="stateHidden"/>
 
         <!-- チャット -->
         <activity
@@ -125,13 +128,26 @@
             android:screenOrientation="portrait"
             android:theme="@style/ChatCenterTheme.Slide">
         </activity>
-
         <activity
             android:name=".activity.ShareLocationActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
             android:theme="@style/ChatCenterTheme.PullUp">
         </activity>
+        <activity android:name=".activity.WidgetActivity"
+                  android:configChanges="orientation|screenSize"
+                  android:screenOrientation="portrait"
+                  android:theme="@style/ChatCenterTheme.Slide"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

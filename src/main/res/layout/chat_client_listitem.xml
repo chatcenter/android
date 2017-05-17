@@ -27,7 +27,6 @@
         android:orientation="horizontal">
 
         <RelativeLayout
-            android:id="@+id/user_ava_container"
             android:layout_width="@dimen/chat_list_user_ava_size"
             android:layout_height="@dimen/chat_list_user_ava_size"
             android:layout_marginRight="4dp">
@@ -51,7 +50,6 @@
         </RelativeLayout>
 
         <LinearLayout
-            android:id="@+id/chat_customer_listitem_message_container"
             style="@style/common_customer_sticker_view"
             android:orientation="vertical">
 

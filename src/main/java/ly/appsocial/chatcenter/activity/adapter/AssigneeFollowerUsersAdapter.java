@@ -87,7 +87,7 @@ public class AssigneeFollowerUsersAdapter extends ArrayAdapter<AssigneeFollowerL
 
 		public void setUpView(AssigneeFollowerListItem item) {
 			tvName.setText(item.getUser().displayName);
-			cbSelected.setSelected(item.isSelected());
+			cbSelected.setVisibility(item.isSelected() ? View.VISIBLE : View.GONE);
 
 			// アイコン
 			String iconText = item.getUser().displayName != null && item.getUser().displayName.length() > 0 ? item.getUser().displayName.substring(0, 1) : "";

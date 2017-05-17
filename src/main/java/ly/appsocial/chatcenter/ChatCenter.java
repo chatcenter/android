@@ -47,9 +47,9 @@ public class ChatCenter {
 	// ChatCenterClient
 	// //////////////////////////////////////////////////////////////////////////
 	private static ChatCenterClient mClient;
-	public static ChatCenterClient client(Context context) {
+	public static ChatCenterClient client() {
 		if (mClient == null) {
-			mClient = new ChatCenterClient(context.getApplicationContext());
+			mClient = new ChatCenterClient();
 		}
 		return mClient;
 	}
@@ -63,7 +63,7 @@ public class ChatCenter {
 	 *
 	 */
 	public static void initChatCenter(Context context, String appName, Integer appIconId ) {
-		client(context);
+		client();
 
 		mAppToken = ApiUtil.getAppToken(context);
 		if ( appName != null ) {
@@ -86,7 +86,7 @@ public class ChatCenter {
 										   String deviceToken,
 										   @Nullable final RegisterDeviceCallback callback) {
 
-		client(context).signInPushNotification(appToken,
+		client().signInPushNotification(context, appToken,
 				deviceToken,
 				new ApiRequest.Callback<PostDevicesSignInResponseDto>() {
 
@@ -110,7 +110,7 @@ public class ChatCenter {
 										   final String deviceToken,
 										   final SignOutCallback callback) {
 
-		client(context).signOutPushNotification(deviceToken,
+		client().signOutPushNotification(context, deviceToken,
 				new ApiRequest.Callback<PostDevicesSignOutResponseDto>() {
 
 					@Override
@@ -134,7 +134,7 @@ public class ChatCenter {
 										 long providerExpiresAt,
 										 String deviceToken,
 										 final SignInCallback callback) {
-		client(context).getUserToken(email,
+		client().getUserToken(context, email,
 				password,
 				provider,
 				providerToken,
@@ -160,7 +160,7 @@ public class ChatCenter {
 							  String password,
 							  String deviceToken,
 							  final SignInCallback callback ) {
-		client(context).getUserToken(email,
+		client().getUserToken(context, email,
 				password,
 				null,
 				null,
@@ -188,7 +188,7 @@ public class ChatCenter {
 										 String email,
 										 String deviceToken,
 										 final SignInCallback callback) {
-		client(context).getUserToken(orgId,
+		client().getUserToken(context, orgId,
 				email,
 				firstName,
 				familyName,
@@ -213,7 +213,7 @@ public class ChatCenter {
 	public static void signOut(final Context context,
 							   String deviceToken,
 							   final SignOutCallback callback) {
-		client(context).signOutPushNotification(deviceToken,
+		client().signOutPushNotification(context, deviceToken,
 				new ApiRequest.Callback<PostDevicesSignOutResponseDto>() {
 			@Override
 			public void onSuccess(PostDevicesSignOutResponseDto responseDto) {
@@ -276,7 +276,7 @@ public class ChatCenter {
 	}
 
 	public static boolean hasChatUser(Context context) {
-		return client(context).hasChatUser(context);
+		return client().hasChatUser(context);
 	}
 
 	// //////////////////////////////////////////////////////////////////////////
@@ -379,6 +379,7 @@ public class ChatCenter {
 
 	/**
 	 * Get Unread Messages Count
+	 *
 	 * 未読メッセージ件数を取得します。
 	 *
 	 * @param context コンテキスト
@@ -751,19 +752,6 @@ public class ChatCenter {
 	}
 	public interface ChatCenterListener {
 		void onAgentSignOut(Context context);
-	}
-
-	// /////////////////////////////////////////////////
-	// TOP activity
-	// /////////////////////////////////////////////////
-	private static AppCompatActivity mTopActivity;
-
-	public static AppCompatActivity getTopActivity() {
-		return mTopActivity;
-	}
-
-	public static void setTopActivity(AppCompatActivity topActivity) {
-		ChatCenter.mTopActivity = topActivity;
 	}
 
 	public interface LoginType {

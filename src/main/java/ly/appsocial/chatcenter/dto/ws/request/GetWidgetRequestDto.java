@@ -4,15 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
-import ly.appsocial.chatcenter.util.StringUtil;
 
 /**
  * [GET /api/channels/:channel_uid/messages] request.
  */
-public class GetMessagesRequestDto {
+public class GetWidgetRequestDto {
 
-	public Integer lastId = null;
+	public int lastId;
 	public Integer maxLoadNum = ChatCenterConstants.MAX_MESSAGE_ON_LOAD;
+	public String stickerType;
 
 	// //////////////////////////////////////////////////////////////////////////
 	// パブリックメソッド
@@ -25,9 +25,10 @@ public class GetMessagesRequestDto {
 	 */
 	public Map<String, String> toParams() {
 		Map<String, String> params = new HashMap<String, String>();
+		params.put("sticker_type", stickerType);
 		params.put("limit", maxLoadNum.toString());
-		if ( lastId != null ){
-			params.put("last_id", lastId.toString());
+		if ( lastId > 0 ){
+			params.put("last_id", String.valueOf(lastId));
 		}
 		return params;
 	}

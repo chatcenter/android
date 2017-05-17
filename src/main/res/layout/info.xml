@@ -29,7 +29,6 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/info_assignee_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
@@ -37,10 +36,10 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/margin10dp"
-                    android:layout_marginTop="@dimen/margin10dp"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginBottom="@dimen/margin10dp"
-                    android:layout_gravity="center_vertical">
+                    android:layout_marginLeft="@dimen/margin10dp"
+                    android:layout_marginTop="@dimen/margin10dp">
 
                     <TextView
                         android:id="@+id/info_assignee_icon_textview"
@@ -66,8 +65,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:orientation="vertical"
                     android:gravity="center_vertical"
+                    android:orientation="vertical"
                     android:padding="@dimen/margin10dp">
 
                     <TextView
@@ -84,8 +83,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_above="@+id/info_assignee_status"
-                        android:textColor="@color/color_chatcenter_text"
                         android:drawablePadding="@dimen/margin10dp"
+                        android:textColor="@color/color_chatcenter_text"
                         android:visibility="gone"/>
 
                     <TextView
@@ -94,8 +93,8 @@
                         android:layout_height="wrap_content"
                         android:layout_above="@+id/info_assignee_status"
                         android:drawableLeft="@drawable/icon_email_tint"
-                        android:textColor="@color/color_chatcenter_text"
                         android:drawablePadding="@dimen/margin10dp"
+                        android:textColor="@color/color_chatcenter_text"
                         android:visibility="gone"/>
 
                     <TextView
@@ -104,8 +103,8 @@
                         android:layout_height="wrap_content"
                         android:layout_above="@id/info_assignee_status"
                         android:drawableLeft="@drawable/icon_facebook_tint"
-                        android:textColor="@color/color_chatcenter_text"
                         android:drawablePadding="@dimen/margin10dp"
+                        android:textColor="@color/color_chatcenter_text"
                         android:visibility="gone"/>
 
                     <TextView
@@ -114,8 +113,8 @@
                         android:layout_height="wrap_content"
                         android:layout_above="@id/info_assignee_status"
                         android:drawableLeft="@drawable/icon_twitter_tint"
-                        android:textColor="@color/color_chatcenter_text"
                         android:drawablePadding="@dimen/margin10dp"
+                        android:textColor="@color/color_chatcenter_text"
                         android:visibility="gone"/>
 
                     <TextView
@@ -146,6 +145,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
+
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/widget_line_width"
@@ -180,8 +180,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="@dimen/assignee_ava_size"
                                 android:layout_below="@id/assignee_header"
-                                android:scrollbars="none"
-                                android:layout_margin="@dimen/margin10dp">
+                                android:layout_margin="@dimen/margin10dp"
+                                android:scrollbars="none">
 
                                 <LinearLayout
                                     android:id="@+id/view_assignee"
@@ -238,8 +238,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="@dimen/assignee_ava_size"
                                 android:layout_below="@id/follower_header"
-                                android:scrollbars="none"
-                                android:layout_margin="@dimen/margin10dp">
+                                android:layout_margin="@dimen/margin10dp"
+                                android:scrollbars="none">
 
                                 <LinearLayout
                                     android:id="@+id/view_followers"
@@ -344,6 +344,115 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/widget_line_width"
+                android:layout_marginTop="@dimen/info_item_vertical_margin"
+                android:background="@color/color_chatcenter_separator_light"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_info_item"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/activity_header_height"
+                android:onClick="onFileWidgetButtonClicked">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin10dp"
+                    android:layout_weight="1"
+                    android:text="@string/file"
+                    android:textColor="@color/color_chatcenter_text"
+                    android:textStyle="bold"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/margin10dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/icon_right_triangle"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/widget_line_width"
+                android:background="@color/color_chatcenter_separator_light"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/widget_line_width"
+                android:layout_marginTop="@dimen/info_item_vertical_margin"
+                android:background="@color/color_chatcenter_separator_light"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_info_item"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/activity_header_height"
+                android:onClick="onScheduleWidgetButtonClicked">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin10dp"
+                    android:layout_weight="1"
+                    android:text="@string/schedule"
+                    android:textColor="@color/color_chatcenter_text"
+                    android:textStyle="bold"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/margin10dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/icon_right_triangle"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/widget_line_width"
+                android:background="@color/color_chatcenter_separator_light"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/widget_line_width"
+                android:layout_marginTop="@dimen/info_item_vertical_margin"
+                android:background="@color/color_chatcenter_separator_light"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_info_item"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/activity_header_height"
+                android:onClick="onQuestionWidgetButtonClicked">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin10dp"
+                    android:layout_weight="1"
+                    android:text="@string/question"
+                    android:textColor="@color/color_chatcenter_text"
+                    android:textStyle="bold"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/margin10dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/icon_right_triangle"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/widget_line_width"
+                android:background="@color/color_chatcenter_separator_light"/>
+
+
             <LinearLayout
                 android:id="@+id/btn_about"
                 android:layout_width="match_parent"
@@ -445,11 +554,11 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:background="@drawable/bg_info_item"
+                        android:onClick="onDeleteButtonClicked"
                         android:padding="@dimen/margin10dp"
                         android:text="@string/delete_conversation"
                         android:textColor="@color/color_chatcenter_text_red"
-                        android:textStyle="bold"
-                        android:onClick="onDeleteButtonClicked"/>
+                        android:textStyle="bold"/>
 
                     <View
                         android:layout_width="match_parent"

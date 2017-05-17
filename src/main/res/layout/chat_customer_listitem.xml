@@ -48,7 +48,6 @@
 
         <!-- メッセージ -->
         <LinearLayout
-            android:id="@+id/chat_customer_listitem_message_container"
             style="@style/common_sticker_container"
             android:orientation="vertical"
             android:gravity="right">

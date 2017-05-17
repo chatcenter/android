@@ -1,6 +1,5 @@
 <resources>
     <!-- アプリ名 -->
-    <string name="app_name">ChatCenter</string>
 
     <!-- ## 履歴 ## -->
     <string name="msg_messages_empty">チャットがありません。</string>
@@ -16,29 +15,23 @@
     <string name="dialog_error_body">サーバと通信が行えませんでした。通信状況を確認して下さい。</string>
 
     <!-- 電話確認ダイアログ -->
-    <string name="dialog_tel_title">%1$sへ問い合わせ</string>
-    <string name="dialog_tel_body">電話アプリを起動しますか？</string>
 
     <!-- 電話番号未登録ダイアログ -->
-    <string name="dialog_tel_number_not_register_body">電話番号が登録されておりません</string>
 
     <!-- 認証エラーダイアログ -->
     <string name="dialog_auth_error_body">ログアウトされました。再度ログインを行ってください。</string>
 
     <!-- 項目エラーダイアログ -->
-    <string name="widget_create_error">項目を確認してください。</string>
+    <string name="widget_create_error">未入力の項目があります。</string>
 
     <!-- チャット未選択ダイアログ -->
-    <string name="dialog_no_select_chat_body">チャットを選択してください。</string>
 
     <!-- チャット削除エラーダイアログ -->
     <string name="dialog_chat_delete_error_body">削除できませんでした。通信状況を確認して下さい。</string>
 
     <!-- メッセージ送信エラーダイアログ -->
-    <string name="chatcenter_dialog_message_send_error_body">メッセージが送信できませんでした。通信状況を確認して下さい。</string>
 
     <!-- エラーダイアログ -->
-    <string name="chatcenter_dialog_message_error_body">エラーが起きました。通信状況を確認して下さい。</string>
 
     <string name="chatcenter_messages_title">メッセージ</string>
 
@@ -62,23 +55,14 @@
     <!-- DateTime format -->
     <!-- ========================================================================== -->
     <string name="datetime_format_full">yyyy/MM/dd HH:mm:ss</string>
-    <string name="datetime_format_default">yyyy/MM/dd HH:mm</string>
-    <string name="datetime_today">今日</string>
-    <string name="datetime_yesterday">昨日</string>
-    <string name="datetime_2_days_ago">一昨日</string>
     <string name="datetime_format_time">HH:mm</string>
-    <string name="datetime_format_day">MM/dd</string>
-    <string name="datetime_format_today">今日 HH:mm</string>
 
     <!-- ========================================================================== -->
     <!-- Message Status -->
     <!-- ========================================================================== -->
     <string name="message_status_read">既読</string>
     <string name="message_status_sending">送信中</string>
-    <string name="message_status_sent">送信済み</string>
     <string name="message_status_send_failed">送信失敗</string>
-
-    <string name="webview_header" translatable="false">WebView</string>
 
     <string name="save">保存</string>
     <string name="you">あなた:&#160;</string>
@@ -87,32 +71,27 @@
     <string name="called">電話しました。</string>
     <string name="dialog_confirm_reply_sticker">以下のメッセージを送ります。</string>
     <string name="cancel">キャンセル</string>
-    <string name="message_reply_sticker_header">私の答えは</string>
     <string name="done">決定</string>
     <string name="sticker_video_call_now"><![CDATA[<b>%s</b> が 通話を要求しました。<br/>]]></string>
     <string name="sticker_video_call_title" formatted="false"><![CDATA[<b>%s</b> が <b>%s</b> に通話しました。<br/>]]></string>
     <string name="sticker_video_call_missed">応答がありませんでした。</string>
     <string name="sticker_video_call_time" formatted="false">%02d:%02d</string>
-    <string name="select_file">送信する画像かPDFを選択してください</string>
     <string name="camera_permission_denied">カメラへのアクセスを拒否すると撮影できません</string>
     <string name="storage_permission_denied">外部ストレージへのアクセスを拒否するとファイルを送信できません</string>
     <string name="location_permission_denied">位置情報へのアクセスを拒否すると地図を送信できません</string>
     <string name="video_permission_denied">カメラへのアクセスを拒否するとビデオチャットを開始できません</string>
     <string name="audio_permission_denied">マイクへのアクセスを拒否するとビデオチャットを開始できません</string>
     <string name="alert">ご注意</string>
-    <string name="file_uploading">アップロード中…</string>
 
     <!-- ========================================================================== -->
     <!-- チャネル詳細画面 -->
     <!-- ========================================================================== -->
-    <string name="channel_detail_header">チャネル詳細</string>
     <string name="info_header">インフォメーション</string>
     <string name="about_header">ChatCenter iOについて</string>
     <string name="terms_of_service">利用規約</string>
     <string name="privacy_policy">プライバシーポリシー</string>
     <string name="service_level_agreement">サービスレベル契約</string>
     <string name="copyright">著作権情報</string>
-    <string name="assignee_or_follower">担当者/閲覧者</string>
     <string name="assignee">担当者</string>
     <string name="followers">閲覧者</string>
     <string name="no_assignee">担当者なし</string>
@@ -135,8 +114,6 @@
     <string name="seconds">秒</string>
     <string name="minute">分</string>
     <string name="minutes">分</string>
-    <string name="sticker_menu_header">ウィジェットメニュー</string>
-    <string name="sticker_menu_close">閉じる</string>
 
     <string name="sticker_label_confirm">質問</string>
     <string name="sticker_label_calendar">スケジュール</string>
@@ -144,12 +121,8 @@
     <string name="sticker_label_image">写真</string>
     <string name="sticker_label_phrase">定型文</string>
     <string name="sticker_label_camera">カメラ</string>
-    <string name="sticker_label_video_call">ビデオチャット</string>
     <string name="fixed_phrases">定型文</string>
     <string name="tap_to_select">タップして選択してください</string>
-    <string name="fixed_phrases_session_label_app">アプリ推奨</string>
-    <string name="fixed_phrases_session_label_org">チーム推奨</string>
-    <string name="fixed_phrases_session_label_myphrases">自分専用</string>
     <string name="fixed_phrases_myphrase_empty">自分専用定型文を作っていません</string>
     <string name="fixed_phrases_no_app_fixed_phrases">アプリ推奨定型文がありません</string>
     <string name="fixed_phrases_no_org_fixed_phrases">チーム推奨定型文がありません</string>
@@ -177,7 +150,7 @@
     <string name="answer_type_yes_no">はい／いいえ</string>
     <string name="answer_type_multi_choice">単一選択</string>
     <string name="answer_type_checkbox">複数選択</string>
-    <string name="answer_type_leaner_scale">段階評価</string>
+    <string name="answer_type_leaner_scale">評価</string>
 
     <string-array name="linear_scale_list">
         <item>1</item>
@@ -194,12 +167,10 @@
     <string name="scale_to">から</string>
     <string name="default_scale_label_from">非常に悪い</string>
     <string name="default_scale_label_to">非常に良い</string>
-    <string name="preview_title">プレビュー</string>
 
     <string name="hour_am">午前</string>
     <string name="hour_pm">午後</string>
 
-    <string name="sticker_label_phone_call">電話する</string>
     <string name="suggestion">サジェスチョン</string>
 
     <string name="ringing">呼び出し中…</string>
@@ -255,7 +226,6 @@
 
     <string name="alert_schedule_select_schedule_slot">最低1つ以上は日時を選択してください</string>
     <string name="alert_question_widget_title_too_long">タイトルは%d文字以内にしてください。</string>
-    <string name="alert_question_widget_question_too_long">質問文は%d文字以内にしてください。</string>
     <string name="alert_question_widget_choice_too_many">選択肢は%d個までにしてください</string>
     <string name="guest">ゲスト</string>
     <string name="alert_can_not_send_without_message">インターネット接続がないためメッセージを送信できません。</string>
@@ -269,5 +239,10 @@
     <string name="confirm_close_conversation">チャットを終了しますか？</string>
     <string name="confirm_delete_conversation">チャットを削除しますか？</string>
     <string name="schedule_all_day">終日</string>
+    <string name="schedule">スケジュール</string>
+    <string name="file">ファイル</string>
+    <string name="question">質問</string>
+
+    <string name="channel_search_hint">チャンネルを検索</string>
 
 </resources>

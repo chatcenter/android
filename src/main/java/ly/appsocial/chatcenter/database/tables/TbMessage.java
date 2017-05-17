@@ -253,9 +253,11 @@ public class TbMessage extends TBBase {
                 null,
                 null,
                 null);
-
-        boolean existing = cursor.getCount() > 0;
-
+        boolean existing = false;
+        if (cursor != null) {
+            existing = cursor.getCount() > 0;
+            cursor.close();
+        }
         close();
 
         return existing;

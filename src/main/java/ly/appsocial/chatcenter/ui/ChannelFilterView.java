@@ -25,6 +25,7 @@ import ly.appsocial.chatcenter.dto.ws.response.GetChannelsCountResponseDto;
 import ly.appsocial.chatcenter.dto.ChannelItem;
 import ly.appsocial.chatcenter.dto.FunnelItem;
 import ly.appsocial.chatcenter.util.CCPrefUtils;
+import ly.appsocial.chatcenter.util.StringUtil;
 
 public class ChannelFilterView extends LinearLayout {
 
@@ -54,13 +55,13 @@ public class ChannelFilterView extends LinearLayout {
 
         if (items != null && items.size() > 0) {
             for (FunnelItem item: items) {
-                mFunnelItems.add(new MessageFunnelItem(item, 0));
+                mFunnelItems.add(new MessageFunnelItem(item, "0"));
             }
         }
         FunnelItem allItem = new FunnelItem();
         allItem.name = context.getString(R.string.all);
         allItem.id = -1;
-        mFunnelItems.add(0, new MessageFunnelItem(allItem, 0));
+        mFunnelItems.add(0, new MessageFunnelItem(allItem, "0"));
 
         for (MessageFunnelItem item: mFunnelItems) {
             if (item.funnel.id == mLastFunnellId) {
@@ -106,10 +107,10 @@ public class ChannelFilterView extends LinearLayout {
             }
         });
 
-        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.all), ChannelItem.ChannelStatus.CHANNEL_ALL, 0, false));
-        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.unassigned_status), ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED, 0, false));
-        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.assigned_status), ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME, 0, false));
-        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.close_status), ChannelItem.ChannelStatus.CHANNEL_CLOSE, 0, false));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.all), ChannelItem.ChannelStatus.CHANNEL_ALL, "0", false));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.unassigned_status), ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED, "0", false));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.assigned_status), ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME, "0", false));
+        mStatusItems.add(new MessageStatusItem(getContext().getString(R.string.close_status), ChannelItem.ChannelStatus.CHANNEL_CLOSE, "0", false));
 
         for (MessageStatusItem item: mStatusItems) {
             if (item.value.equals(mLastChannelStatus)) {
@@ -124,19 +125,19 @@ public class ChannelFilterView extends LinearLayout {
 
         for (MessageStatusItem item: mStatusItems) {
             if (ChannelItem.ChannelStatus.CHANNEL_ALL == item.value) {
-                    item.count = count.all;
+                item.count = count != null && StringUtil.isNotBlank(count.all) ? count.all : "0";
             } else if (ChannelItem.ChannelStatus.CHANNEL_CLOSE == item.value) {
-                item.count = count.close;
+                item.count = count != null && StringUtil.isNotBlank(count.close) ? count.close : "0";
             } else if (ChannelItem.ChannelStatus.CHANNEL_ASSIGNED_TO_ME == item.value) {
-                item.count = count.mine;
+                item.count = count != null && StringUtil.isNotBlank(count.mine) ? count.mine : "0";
             } else if (ChannelItem.ChannelStatus.CHANNEL_UNASSIGNED == item.value) {
-                item.count = count.unassigned;
+                item.count = count != null && StringUtil.isNotBlank(count.unassigned) ? count.unassigned : "0";
             }
         }
 
         mStatusAdapter.notifyDataSetChanged();
 
-        if (mFunnelItems != null && count.funnels != null) {
+        if (mFunnelItems != null && count != null && count.funnels != null) {
             for (MessageFunnelItem item : mFunnelItems) {
                 JsonElement jsonElement;
                 if (item.funnel.id == -1) {
@@ -147,7 +148,7 @@ public class ChannelFilterView extends LinearLayout {
                 }
 
                 if (jsonElement != null) {
-                    item.count =jsonElement.getAsInt();
+                    item.count =jsonElement.getAsString();
                 }
             }
         }
@@ -173,10 +174,10 @@ public class ChannelFilterView extends LinearLayout {
     public static class MessageStatusItem {
         public String name;
         public ChannelItem.ChannelStatus value;
-        public int count;
+        public String count;
         public boolean isSelected;
 
-        public MessageStatusItem(String name, ChannelItem.ChannelStatus value, int count, boolean isSelected) {
+        public MessageStatusItem(String name, ChannelItem.ChannelStatus value, String count, boolean isSelected) {
             this.name = name;
             this.value = value;
             this.count = count;
@@ -186,8 +187,8 @@ public class ChannelFilterView extends LinearLayout {
 
     public static class MessageFunnelItem {
         public FunnelItem funnel;
-        public int count;
-        public MessageFunnelItem(FunnelItem funnel, int count) {
+        public String count;
+        public MessageFunnelItem(FunnelItem funnel, String count) {
             this.funnel = funnel;
             this.count = count;
         }

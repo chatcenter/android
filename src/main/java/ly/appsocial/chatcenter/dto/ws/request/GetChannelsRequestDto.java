@@ -26,6 +26,7 @@ public class GetChannelsRequestDto {
     private int mFunnelID;
     /** Assignee ID*/
     private int mAssigneeID;
+    private String mChannelName;
     /**
      * リクストパラメータを生成します。
      *
@@ -51,6 +52,9 @@ public class GetChannelsRequestDto {
         }
         if (mAssigneeID > 0) {
             params.put("assignee_id", mAssigneeID + "");
+        }
+        if (StringUtil.isNotBlank(mChannelName)) {
+            params.put("channel_name",mChannelName);
         }
         return params;
     }
@@ -109,5 +113,13 @@ public class GetChannelsRequestDto {
 
     public void setAssigneeID(int assigneeID) {
         mAssigneeID = assigneeID;
+    }
+
+    public String getChannelName() {
+        return mChannelName;
+    }
+
+    public void setChannelName(String channelName) {
+        mChannelName = channelName;
     }
 }

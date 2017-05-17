@@ -77,7 +77,9 @@ public class VideoCallFragment extends Fragment {
 			tvUserAva.setVisibility(View.VISIBLE);
 			imvUserAva.setVisibility(View.GONE);
 
-			tvUserAva.setText(userName.toUpperCase().substring(0, 1));
+			if (StringUtil.isNotBlank(userName)) {
+				tvUserAva.setText(userName.toUpperCase().substring(0, 1));
+			}
 
 			GradientDrawable gradientDrawable = (GradientDrawable) tvUserAva.getBackground();
 			gradientDrawable.setColor(ViewUtil.getIconColor(userName));

@@ -32,8 +32,7 @@
     <color name="color_chatcenter_sent_msg_text">#ffffff</color>
 
 	<!-- オペレーターからのメッセージ (バブル) -->
-	<color name="color_chatcenter_operator_bubble">#200067ff</color>
-	<color name="color_chatcenter_operator_bubble_text">#293b54</color>
+    <color name="color_chatcenter_operator_bubble_text">#293b54</color>
 
     <color name="color_chatcenter_separator_light">#c6c6c6</color>
     <color name="color_chatcenter_text_light_gray">#646464</color>
