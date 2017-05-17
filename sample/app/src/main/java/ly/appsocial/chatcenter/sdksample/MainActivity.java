@@ -18,7 +18,7 @@ import java.util.Map;
 
 import io.fabric.sdk.android.Fabric;
 import ly.appsocial.chatcenter.ChatCenter;
-import ly.appsocial.chatcenter.ChatCenterClient;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.ws.ApiRequest;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
@@ -67,18 +67,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         // Your app can not start if device not support google play services
-        ChatCenter.getDeviceToken(this, new ChatCenterClient.GetDeviceTokenCallback() {
-            @Override
-            public void onSuccess(String deviceToken) {
-
-            }
-
-            @Override
-            public void onError() {
-                int errorCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(MainActivity.this);
-                GoogleApiAvailability.getInstance().showErrorDialogFragment(MainActivity.this, errorCode, 0);
-            }
-        });
+        int errorCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(MainActivity.this);
+        GoogleApiAvailability.getInstance().showErrorDialogFragment(MainActivity.this, errorCode, 0);
 
     }
 
@@ -128,7 +118,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void clearHistory() {
-        ChatCenter.signOut(this, new ChatCenter.SignOutCallback() {
+        String deviceToken = CCAuthUtil.getDeviceToken(this);
+        ChatCenter.signOut(this,
+                deviceToken,
+                new ChatCenter.SignOutCallback() {
             @Override
             public void onSuccess() {
                 Toast.makeText(MainActivity.this, R.string.history_cleared, Toast.LENGTH_SHORT).show();
@@ -142,13 +135,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void openChatActivityWithEmail(final String firstName, final String lastName, final String email) {
         mProgressDialog = ProgressDialog.show(this, getString(R.string.app_name), "Loading...", true);
-        ChatCenter.signInWithNewUser(MainActivity.this, TEAM_ID, firstName, lastName, email, new ChatCenter.SignInCallback() {
+        ChatCenter.signInWithNewUser(this,
+                TEAM_ID,
+                firstName,
+                lastName,
+                email,
+                CCAuthUtil.getDeviceToken(this),
+                new ChatCenter.SignInCallback() {
             @Override
             public void onSuccess() {
                 closeProgressDialog();
                 Map<String, String> info = new HashMap<>();
-                ChatCenter.showChat(MainActivity.this, TEAM_ID, firstName,
-                        lastName, email, info);
+                ChatCenter.showChat(MainActivity.this,
+                        TEAM_ID,
+                        firstName,
+                        lastName,
+                        email,
+                        CCAuthUtil.getDeviceToken(MainActivity.this),
+                        info);
 
                 mEdtEmail.setText("");
                 mEdtFirstName.setText("");

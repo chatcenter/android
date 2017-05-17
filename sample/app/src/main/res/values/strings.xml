@@ -3,6 +3,7 @@
   -->
 
 <resources>
+
 	<string name="app_name">Example</string>
 
 	<string name="start_chat">Start Conversation</string>
@@ -14,5 +15,11 @@
 	<string name="login_hint_first_name">First Name</string>
 	<string name="login_hint_last_name">Last Name</string>
 	<string name="login_hint_email">Email</string>
+
+	<!-- GCM Sender -->
+	<string name="product_gcm_notification_sender" translatable="false">[YOUR GCM SENDER ID]</string>
+
+	<!-- Google API Key-->
+	<string name="google_api_key" translatable="false">[YOUR GOOGLE API KEY]</string>
 
 </resources>
