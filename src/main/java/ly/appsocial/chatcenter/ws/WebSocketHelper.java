@@ -67,7 +67,7 @@ public class WebSocketHelper {
     }
 
     public static void send(final String message) {
-        CCLog.d("WebSocketHelper", "send: " + mWebSocketClient);
+        CCLog.d("WebSocketHelper", "send: " + message);
 
         if (mWebSocketClient == null || !mWebSocketClient.isConnected()) {
             return;

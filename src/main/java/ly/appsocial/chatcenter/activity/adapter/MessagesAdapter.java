@@ -214,6 +214,9 @@ public class MessagesAdapter extends ArrayAdapter<ChannelItem> {
             holder.mMvMainContent.setTvChannelStatusShow(false);
         }
 
+        // Setting up for replied icon for agent only
+        holder.mMvMainContent.setRepliedIconShow(isNeedToShowRepliedIcon(mIsAgent, item));
+
         return convertView;
     }
 
@@ -290,6 +293,27 @@ public class MessagesAdapter extends ArrayAdapter<ChannelItem> {
         } else {
             return new SimpleDateFormat("MM/dd", Locale.JAPAN).format(new Date(time));
         }
+    }
+
+    /**
+     * If this user is an agent & All message in channel was read & LatestMessage Sender is current user
+     * @param isAgent
+     * @param item
+     * @return
+     */
+    private boolean isNeedToShowRepliedIcon(boolean isAgent, ChannelItem item) {
+        if (!isAgent) {
+            return false;
+        }
+
+        if (item != null
+                && item.latestMessage != null
+                && item.latestMessage.user != null
+                && item.latestMessage.user.admin) {
+            return true;
+        }
+
+        return false;
     }
 
     public interface ChannelListItemListener {

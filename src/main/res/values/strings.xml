@@ -244,5 +244,6 @@
     <string name="question">質問</string>
 
     <string name="channel_search_hint">チャンネルを検索</string>
+    <string name="new_suggestion">新規サジェスチョン</string>
 
 </resources>

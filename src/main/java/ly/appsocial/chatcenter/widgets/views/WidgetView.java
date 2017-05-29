@@ -319,31 +319,13 @@ public class WidgetView extends FrameLayout {
 	}
 
 	public void setWidgetIcon(String actionType) {
-		int drawable = 0;
-		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)) {
-			drawable = R.drawable.icon_widget_question;
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_SELECT)) {
+		int drawable = mChatItem.widget.getWidgetIcon(actionType);
 
-			drawable = R.drawable.icon_widget_question;
-
-			// Change icon if this is calendar widget
-			if (mChatItem != null && mChatItem.widget != null && mChatItem.widget.stickerAction != null
-					&& mChatItem.widget.stickerAction.actionData != null) {
-				BasicWidget.StickerAction.ActionData lastActionData =
-						mChatItem.widget.stickerAction.actionData.get(mChatItem.widget.stickerAction.actionData.size() - 1);
-				if (lastActionData != null && lastActionData.action != null && lastActionData.action.contains(WidgetAction.OPEN_CALENDAR)) {
-					drawable = R.drawable.icon_widget_schedule;
-				}
-			}
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_LOCATION)) {
-			drawable = R.drawable.icon_widget_location;
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_COLOCATION)) {
-			drawable = R.drawable.icon_live_location;
+		if (drawable > 0) {
+			ImageView widgetIcon = (ImageView) findViewById(R.id.widget_icon);
+			widgetIcon.setImageResource(drawable);
+			widgetIcon.setVisibility(VISIBLE);
 		}
-
-		ImageView widgetIcon = (ImageView) findViewById(R.id.widget_icon);
-		widgetIcon.setImageResource(drawable);
-		widgetIcon.setVisibility(VISIBLE);
 	}
 
 	public void setMessageFromClient(String message) {

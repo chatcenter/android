@@ -48,6 +48,8 @@ public class MessageItemView extends LinearLayout {
 	/** Unread message count*/
 	private TextView mTvUnreadMessage;
 
+	private ImageView mImvreplied;
+
 	// etc
 	/** 未読表示にするかどうか */
 	// private int mIsUnread;
@@ -82,6 +84,8 @@ public class MessageItemView extends LinearLayout {
 		mDateTextView = (TextView) findViewById(R.id.ui_messageitemview_date_textview);
 		mTvChannelStatus = (TextView) findViewById(R.id.tv_channel_status);
 		mTvUnreadMessage = (TextView) findViewById(R.id.tv_unread_msg);
+		mImvreplied = (ImageView) findViewById(R.id.imv_replied);
+
 	}
 
 	// //////////////////////////////////////////////////////////////////////////
@@ -193,5 +197,9 @@ public class MessageItemView extends LinearLayout {
 
 	public void setTvChannelStatusShow(boolean show) {
 		mTvChannelStatus.setVisibility(show ? VISIBLE : GONE);
+	}
+
+	public void setRepliedIconShow(boolean show) {
+		mImvreplied.setVisibility(show ? VISIBLE : GONE);
 	}
 }

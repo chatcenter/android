@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -107,9 +108,11 @@ import ly.appsocial.chatcenter.dto.ws.request.PostStickerRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostStickerResponseRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostUsersRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.StartVideoChatRequestDto;
+import ly.appsocial.chatcenter.dto.ws.request.WsChannelActiveRequest;
 import ly.appsocial.chatcenter.dto.ws.request.WsConnectChannelRequest;
 import ly.appsocial.chatcenter.dto.ws.request.WsTypingRequest;
 import ly.appsocial.chatcenter.dto.ws.response.GetAppsResponseDto;
+import ly.appsocial.chatcenter.dto.ws.response.GetFixedPhraseResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetMessagesResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.GetUsersResponseDto;
 import ly.appsocial.chatcenter.dto.ws.response.LiveLocationResponseDto;
@@ -139,6 +142,7 @@ import ly.appsocial.chatcenter.ws.CCWebSocketClientListener;
 import ly.appsocial.chatcenter.ws.OkHttpApiRequest;
 import ly.appsocial.chatcenter.ws.WebSocketHelper;
 import ly.appsocial.chatcenter.ws.parser.GetAppsParser;
+import ly.appsocial.chatcenter.ws.parser.GetFixedPhraseParser;
 import ly.appsocial.chatcenter.ws.parser.GetMessagesParser;
 import ly.appsocial.chatcenter.ws.parser.PostChannelsParser;
 import ly.appsocial.chatcenter.ws.parser.PostMessagesParser;
@@ -217,6 +221,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private ChatAdapter mAdapter;
 	/** The list of all messages in this channel */
 	private List<ChatItem> mMessagesList;
+
+	/** Place to show the fixed phrase on the Guest app*/
+	private LinearLayout mFixedPhrasePlaceHolder;
+	private LinearLayout mFixedPhraseHorizontalView;
 
 	private boolean mNoPreviousMessage = false;
 	private boolean mLoadFromFirst;
@@ -345,6 +353,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private boolean isInternetConnecting = true;
 	private boolean isVideoCallEnabledForApp = false;
 	private boolean isNeedToRefresh = true;
+	private List<ChatItem> mListFixedPhrases;
+
+	/** To check is user calling other?*/
+	private boolean isCalling;
 
 	public static ChatActivity getInstance() {
 		Log.i("ChatActivity", "getInstance");
@@ -404,6 +416,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			@Override
 			public void onClick(View v) {
 				scrollToLast(true, false);
+				showSuggestionForLastMsg(mIsAgent);
 			}
 		});
 
@@ -466,15 +479,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		mBtPhoneCall = (ImageButton) findViewById(R.id.menu_phone_call);
 		mBtPhoneCall.setOnClickListener(this);
 
-		// ソフトキーボード表示・非表示検知
-		// ViewUtil.observeSoftKeyBoards(this, this);
-
-		// ダイアル可能かどうか
-//		mCanDial = newDialIntent(getApplicationContext(), null) != null;
-
-		// setupParentAutoHideSoftKeyboard(mRootLayout);
-
-
+		// Fixed phrase view
+		mFixedPhrasePlaceHolder = (LinearLayout) findViewById(R.id.fixed_phrase_place_holder);
+		mFixedPhraseHorizontalView = (LinearLayout) findViewById(R.id.fixed_phrase_horizontal_view);
 
 		// List users in this channel
 		mChannelUsers = new ArrayList<>();
@@ -528,6 +535,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		// Enable call function again
+		isCalling = false;
 
 		mCurrentApp = mTbApp.getAppByToken(getAppToken());
 		mAdapter.setApp(mCurrentApp);
@@ -715,6 +725,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			 * ソフトキーボードが表示されたらメッセージの最後にスクロールします。
 			 */
 			scrollToLast(true, false);
+			mFixedPhrasePlaceHolder.setVisibility(View.GONE);
+		} else {
+			showFixedPhraseView(mIsAgent);
 		}
 	}
 
@@ -877,6 +890,27 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	/**
+	 * GET /api/fixed_phrases?org_uid
+	 */
+	private void requestGetFixedPhrase() {
+
+		String path = "fixed_phrases?org_uid=" + getOrgUid();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
+
+		ApiRequest<GetFixedPhraseResponseDto> mGetFixedPhraseRequest = new OkHttpApiRequest<>(getApplicationContext(),
+				ApiRequest.Method.GET, path, null, headers, new GetFixedPhraseCallback(),
+				new GetFixedPhraseParser());
+
+		if (mParamDto.appToken != null) {
+			mGetFixedPhraseRequest.setApiToken(mParamDto.appToken);
+		}
+
+		NetworkQueueHelper.enqueue(mGetFixedPhraseRequest, REQUEST_TAG);
+	}
+
+	/**
 	 * POST /api/channels/:channel_uid/messages
 	 */
 	private void requestPostMessages(String message) {
@@ -1002,10 +1036,17 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	private void requestStartVideoChat(boolean audioOnly, List<String> userIds) {
+		if (isCalling) {
+			return;
+		}
+
 		if (!isInternetConnecting) {
 			showNWErrorDialog();
 			return;
 		}
+
+		// Disable call
+		isCalling = true;
 
 		String progMsg = getResources().getString(R.string.processing);
 		DialogUtil.showProgressDialog(getSupportFragmentManager(), progMsg, DialogUtil.Tag.PROGRESS);
@@ -1377,7 +1418,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				latestMessageBuilder.append(": ");
 			}
 
-			if (ResponseType.STICKER.equals(chatItem.type)) {
+			if (ResponseType.SUGGESTION.equals(chatItem.type)) {
+				latestMessageBuilder.append(getString(R.string.new_suggestion));
+			} else if (ResponseType.STICKER.equals(chatItem.type)) {
 				latestMessageBuilder.append(getString(R.string.sent_a_widget));
 			} else if (ResponseType.CALL.equals(chatItem.type)) {
 				latestMessageBuilder.append(getString(R.string.called));
@@ -1570,6 +1613,12 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 		// Show or hide SuggestionView
 		mSuggestionPlaceHolder.setVisibility(View.VISIBLE);
+		mSuggestionPlaceHolder.post(new Runnable() {
+			@Override
+			public void run() {
+				scrollToLast(true, false);
+			}
+		});
 	}
 
 	private View getSuggestionViewForChatItem(final BasicWidget.StickerAction.ActionData action) {
@@ -1609,6 +1658,42 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			@Override
 			public void onClick(View v) {
 				onSuggestionActionSelected(action);
+			}
+		});
+
+		return suggestionView;
+	}
+
+	private View getFixedPhraseView(final ChatItem chatItem) {
+		if (chatItem == null) {
+			return null;
+		}
+
+		View suggestionView = LayoutInflater.from(this).inflate(R.layout.view_suggestion_title_item, null);
+		TextView contentView = (TextView) suggestionView.findViewById(R.id.suggestion_title);
+		ImageView icon = (ImageView) suggestionView.findViewById(R.id.suggestion_icon);
+
+		if (chatItem.widget != null) {
+			if(chatItem.widget.message != null
+					&& StringUtil.isNotBlank(chatItem.widget.message.text)) {
+				contentView.setText(chatItem.widget.message.text);
+			}
+
+			if (chatItem.widget.stickerAction != null
+					&& StringUtil.isNotBlank(chatItem.widget.stickerAction.actionType)) {
+				icon.setImageResource(chatItem.widget.getWidgetIcon(chatItem.widget.stickerAction.actionType));
+				icon.setVisibility(View.VISIBLE);
+			} else {
+				icon.setVisibility(View.GONE);
+			}
+		}
+
+		// contentView.setCompoundDrawables(null, null, null, null);
+		suggestionView.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+				openWidgetPreview(chatItem.widget.content.toString());
 			}
 		});
 
@@ -1692,6 +1777,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		} else {
 			mIbtSendSticker.setImageResource(R.drawable.btn_keyboard);
 		}
+
+		mFixedPhrasePlaceHolder.setVisibility(View.GONE);
 	}
 
 	@Override
@@ -2226,6 +2313,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		if (mLoadFromFirst) {
 			mTbMessage.getListFailedMessageInChannel(mChannelUid, getOrgUid(), this);
 		}
+
+		// Show suggestion view if need
+		showSuggestionForLastMsg(mIsAgent);
 	}
 
 	private void resendFailedMessage(ChatItem chatItem) {
@@ -2380,6 +2470,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				mBtVideoCall.setVisibility(View.VISIBLE);
 				mBtPhoneCall.setVisibility(View.VISIBLE);
 			}
+
+			if (!mIsAgent) {
+				requestGetFixedPhrase();
+			}
 		}
 	}
 
@@ -2420,6 +2514,38 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	/**
+	 * GET /api/users/:id のコールバック
+	 */
+	private class GetFixedPhraseCallback implements OkHttpApiRequest.Callback<GetFixedPhraseResponseDto> {
+		@Override
+		public void onError(OkHttpApiRequest.Error error) {
+
+		}
+
+		@Override
+		public void onSuccess(GetFixedPhraseResponseDto responseDto) {
+			if (responseDto == null) {
+				return;
+			}
+
+			mListFixedPhrases = responseDto.getAllFixedPhrases();
+
+			if (mListFixedPhrases != null && mListFixedPhrases.size() > 0) {
+				mFixedPhraseHorizontalView.removeAllViews();
+				for (ChatItem chatItem : mListFixedPhrases) {
+					View view = getFixedPhraseView(chatItem);
+					mFixedPhraseHorizontalView.addView(view);
+					view.getLayoutParams().width = mSuggestionWidth;
+				}
+			}
+
+			int paddingHorizontal = (getScreenWidth() - mSuggestionWidth) / 2;
+			mFixedPhraseHorizontalView.setPadding(paddingHorizontal, 0, paddingHorizontal, 0);
+			showFixedPhraseView(mIsAgent);
+		}
+	}
+
+	/**
 	 * POST /api/channels/:channel_uid/messages のコールバック
 	 */
 	private class PostMessagesCallback implements OkHttpApiRequest.Callback<PostMessagesResponseDto> {
@@ -2456,7 +2582,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		public void onSuccess(PostMessagesResponseDto responseDto) {
 			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
 			// テキストボックスのクリア
-			mEdtMsgInput.setText("");
+			// mEdtMsgInput.setText("");
 
 			int index = indexOnList(mFakeChatItem);
 			// if is an image widget, remove it from list and database. Waiting for data from websocket
@@ -2584,6 +2710,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				// DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ERROR, null, getString(R.string.chatcenter_dialog_message_error_body));
 			}
 
+			isCalling = false;
 		}
 
 		@Override
@@ -2807,6 +2934,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			wsConnectChannelRequest.channelUid = mChannelUid;
 			WebSocketHelper.send(wsConnectChannelRequest.toJson());
 
+			// The channel come to active
+			sendChannelActive(mChannelUid);
+
 		}
 	}
 
@@ -2823,6 +2953,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			wsConnectChannelRequest.channelUid = mChannelUid;
 
 			WebSocketHelper.send(wsConnectChannelRequest.toJson());
+
+			// The channel come to active
+			sendChannelActive(mChannelUid);
 
 			// ネットワークエラーの非表示
 			runOnUiThread(new Runnable() {
@@ -2951,6 +3084,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					}
 
 					if (messageType.equals(ResponseType.SUGGESTION)) {
+						// showOrHideSuggestionView(item);
 						if (mAdapter.getCount() > 0) {
 							ChatItem lastItem = mAdapter.getItem(mAdapter.getCount() - 1);
 							if (!ResponseType.SUGGESTION.equals(lastItem.type)) {
@@ -2963,6 +3097,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 								mAdapter.notifyDataSetChanged();
 								scrollToLast(false, false);
 								showNotifiNewMessage(item);
+
+								// Display suggestion view if last displayed message is Suggestion
+								if (mTvNotiNewMessage.getVisibility() != View.VISIBLE) {
+									showSuggestionForLastMsg(mIsAgent);
+								}
 							}
 						}
 					} else if (messageType.equals(ResponseType.CALLINVITE)) {
@@ -3013,6 +3152,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 								return;
 							}
 
+							item.widget.setupWithUsers(mChannelUsers);
+
 							ChatItem oldItem = mTbMessage.getMessage(item.id, item.channelUid, item.orgUid);
 							if (oldItem != null) {
 								((VideoCallWidget) oldItem.widget).events = videoCallWidget.events;
@@ -3051,7 +3192,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 								}
 							}
 
-
 						}
 
 						if (CCAuthUtil.getUserId(ChatActivity.this) != item.user.id) {
@@ -3083,6 +3223,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 							scrollToLast(false, false);
 							showNotifiNewMessage(item);
 						}
+
+						// Hide the Suggestion view
+						mSuggestionPlaceHolder.setVisibility(View.GONE);
 					}
 
 				}
@@ -3214,6 +3357,23 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	/**
+	 * Send active status of channel to server when the channel come active
+	 * @param channelUid
+	 */
+	private void sendChannelActive(final String channelUid) {
+		new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				WsChannelActiveRequest request = new WsChannelActiveRequest();
+				request.channelUid = channelUid;
+
+				WebSocketHelper.send(request.toJson());
+			}
+		}, 1000);
+
+	}
+
+	/**
 	 *
 	 */
 	private class MyGestureDetector extends GestureDetector.SimpleOnGestureListener {
@@ -3221,7 +3381,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		public boolean onSingleTapUp(MotionEvent e) {
 			// ソフトキーボードを非表示
 			hideKeyboardAndWidgetMenu();
-			if (mSuggestionPlaceHolder.getVisibility() == View.VISIBLE) {
+
+			if (!isSuggestionAtBottom()) {
 				mSuggestionPlaceHolder.setVisibility(View.GONE);
 			}
 			// フォーカスを移す
@@ -3336,10 +3497,28 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 						previousHeightDifferent = heightDifference;
 						if (heightDifference > 100) {
-							isKeyBoardVisible = true;
-							changeKeyboardHeight(heightDifference);
+							if (!isKeyBoardVisible) {
+								changeKeyboardHeight(heightDifference);
+								mFixedPhrasePlaceHolder.setVisibility(View.GONE);
+								mSuggestionPlaceHolder.setVisibility(View.GONE);
+
+								scrollToLast(true, false);
+								isKeyBoardVisible = true;
+							}
 						} else {
-							isKeyBoardVisible = false;
+							if (isKeyBoardVisible) {
+
+								if (mWidgetMenuPopupWidow == null || !mWidgetMenuPopupWidow.isShowing()) {
+									if (mFixedPhrasePlaceHolder.getVisibility() != View.VISIBLE) {
+										showFixedPhraseView(mIsAgent);
+									}
+									if (mSuggestionPlaceHolder.getVisibility() != View.VISIBLE) {
+										showSuggestionForLastMsg(mIsAgent);
+									}
+								}
+
+								isKeyBoardVisible = false;
+							}
 						}
 					}
 				});
@@ -3393,6 +3572,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		if (mWidgetMenuPopupWidow != null && mWidgetMenuPopupWidow.isShowing()) {
 			mWidgetMenuPopupWidow.dismiss();
 		}
+
+		showFixedPhraseView(mIsAgent);
 	}
 
 	private void openVideoChatActivity(VideoCallWidget widget, String messageId){
@@ -3703,6 +3884,42 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 			// Remove old draft from database
 			mTbMessage.delete(draftMessage);
+		}
+	}
+
+	/**
+	 * Show fixed phrase if user is guest
+	 * @param isAgent
+	 */
+	private void showFixedPhraseView(boolean isAgent) {
+		if (mListFixedPhrases != null && mListFixedPhrases.size() > 0) {
+			mFixedPhrasePlaceHolder.setVisibility(isAgent ? View.GONE : View.VISIBLE);
+		}
+	}
+
+	/**
+	 * If last message on the list is suggestion
+	 */
+	private boolean isSuggestionAtBottom() {
+		if (mMessagesList != null && mMessagesList.size() > 0) {
+			ChatItem lastItem = mMessagesList.get(mMessagesList.size() - 1);
+			if (lastItem != null && ResponseType.SUGGESTION.equals(lastItem.type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Show the suggestion view if last message is suggestion
+	 */
+	private void showSuggestionForLastMsg(boolean isAgent) {
+		if (!isAgent) {
+			return;
+		}
+		if (isSuggestionAtBottom()) {
+			ChatItem lastItem = mMessagesList.get(mMessagesList.size() - 1);
+			showOrHideSuggestionView(lastItem);
 		}
 	}
 }

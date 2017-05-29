@@ -494,4 +494,30 @@ public class BasicWidget extends Widget {
 		@SerializedName("text")
 		public String text;
 	}
+
+	public int getWidgetIcon(String actionType) {
+		int drawable = 0;
+		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)) {
+			drawable = R.drawable.icon_widget_question;
+		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_SELECT)) {
+
+			drawable = R.drawable.icon_widget_question;
+
+			// Change icon if this is calendar widget
+			if (this.stickerAction != null
+					&& this.stickerAction.actionData != null) {
+				BasicWidget.StickerAction.ActionData lastActionData =
+						this.stickerAction.actionData.get(this.stickerAction.actionData.size() - 1);
+				if (lastActionData != null && lastActionData.action != null && lastActionData.action.contains(WidgetAction.OPEN_CALENDAR)) {
+					drawable = R.drawable.icon_widget_schedule;
+				}
+			}
+		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_LOCATION)) {
+			drawable = R.drawable.icon_widget_location;
+		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_COLOCATION)) {
+			drawable = R.drawable.icon_live_location;
+		}
+
+		return drawable;
+	}
 }

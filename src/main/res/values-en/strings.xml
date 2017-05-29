@@ -244,5 +244,6 @@
     <string name="question">Question</string>
 
     <string name="channel_search_hint">Search channels</string>
+    <string name="new_suggestion">New suggestion</string>
 
 </resources>
