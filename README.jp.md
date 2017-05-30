@@ -1,4 +1,4 @@
-# ChatCenter iO Android SDKインストールガイド Ver. 1.1.0
+# ChatCenter iO Android SDKインストールガイド Ver. 1.1.1
 
 ## 目次
 * [Getting Started](#GettingStarted)
