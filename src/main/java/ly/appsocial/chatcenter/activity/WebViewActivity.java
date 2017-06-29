@@ -13,8 +13,12 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
+import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.StringUtil;
 
 public class WebViewActivity extends BaseActivity {
@@ -41,6 +45,7 @@ public class WebViewActivity extends BaseActivity {
         mWebView.setWebViewClient(new MyWebViewClient());
 
         String url = getIntent().getStringExtra(ChatCenterConstants.Extra.URL);
+        boolean isHeaderRequired = getIntent().getBooleanExtra(ChatCenterConstants.Extra.WEBVIEW_HEADER, false);
         String activityTitle = getIntent().getStringExtra(ChatCenterConstants.Extra.ACTIVITY_TITLE);
         if (StringUtil.isBlank(url)) {
             // URL not provided, we don't need to open this.
@@ -52,7 +57,14 @@ public class WebViewActivity extends BaseActivity {
             getSupportActionBar().setTitle(activityTitle);
         }
 
-        mWebView.loadUrl(url);
+        if (isHeaderRequired) {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authentication", CCAuthUtil.getUserToken(this));
+
+            mWebView.loadUrl(url, headers);
+        } else {
+            mWebView.loadUrl(url);
+        }
     }
 
     // url = file path or whatever suitable URL you want.

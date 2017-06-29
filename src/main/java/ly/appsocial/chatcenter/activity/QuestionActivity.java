@@ -50,6 +50,7 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
     final static int ANSWERTYPE_MULTIPLE = 1;
     final static int ANSWERTYPE_CHECKBOX = 2;
     final static int ANSWERTYPE_LINEARSCALE = 3;
+    final static int ANSWERTYPE_PULL_DOWN = 4;
 
     private int mAnswerType = -1;
 
@@ -66,10 +67,11 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
     private static ScrollView mScrollView;
 
     private ArrayList<AnswerTypeSpinnerItem> mQuestionTypeSpinnerItems = new ArrayList<AnswerTypeSpinnerItem>() {{
-        add(new AnswerTypeSpinnerItem(R.drawable.icon_yesno, R.string.answer_type_yes_no, ANSWERTYPE_YESNO));
-        add(new AnswerTypeSpinnerItem(R.drawable.icon_multiplechoice, R.string.answer_type_multi_choice, ANSWERTYPE_MULTIPLE));
-        add(new AnswerTypeSpinnerItem(R.drawable.icon_checkbox, R.string.answer_type_checkbox, ANSWERTYPE_CHECKBOX));
-        add(new AnswerTypeSpinnerItem(R.drawable.icon_linearscale, R.string.answer_type_leaner_scale, ANSWERTYPE_LINEARSCALE));
+        add(new AnswerTypeSpinnerItem(R.drawable.ic_yes_no, R.string.answer_type_yes_no, ANSWERTYPE_YESNO));
+        add(new AnswerTypeSpinnerItem(R.drawable.ic_multiple_choice, R.string.answer_type_multi_choice, ANSWERTYPE_MULTIPLE));
+        add(new AnswerTypeSpinnerItem(R.drawable.ic_check_box, R.string.answer_type_checkbox, ANSWERTYPE_CHECKBOX));
+        add(new AnswerTypeSpinnerItem(R.drawable.ic_linear_scale, R.string.answer_type_leaner_scale, ANSWERTYPE_LINEARSCALE));
+        add(new AnswerTypeSpinnerItem(R.drawable.ic_down_arrow, R.string.answer_type_pull_down, ANSWERTYPE_PULL_DOWN));
     }};
 
     private TextWatcher mTitleTextWatcher = new TextWatcher() {
@@ -189,6 +191,7 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
                     ft.replace(R.id.container, yesNoContentFragment);
                     break;
                 }
+                case ANSWERTYPE_PULL_DOWN:
                 case ANSWERTYPE_MULTIPLE: {
                     if (multipleQuestionFragment == null) {
                         multipleQuestionFragment = new MultipleQuestionFragment();
@@ -255,6 +258,7 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
                 }
                 break;
             }
+            case ANSWERTYPE_PULL_DOWN:
             case ANSWERTYPE_MULTIPLE: {
                 if (multipleQuestionFragment.mAdapter.getOptionCount() == 0) {
                     // There is no option entered
@@ -263,7 +267,12 @@ public class QuestionActivity extends BaseActivity implements WidgetPreviewDialo
 
                 widget.stickerAction.actionType = ChatCenterConstants.ActionType.SELECT;
                 widget.stickerAction.viewInfo = new BasicWidget.StickerAction.ViewInfo();
-                widget.stickerAction.viewInfo.type = ChatCenterConstants.ViewType.DEFAULT;
+
+                if (mAnswerType == ANSWERTYPE_MULTIPLE) {
+                    widget.stickerAction.viewInfo.type = ChatCenterConstants.ViewType.DEFAULT;
+                } else {
+                    widget.stickerAction.viewInfo.type = ChatCenterConstants.ViewType.SELECTBOX;
+                }
 
                 int nCount = multipleQuestionFragment.mAdapter.getCount();
                 for (int i = 0; i < nCount; i++) {

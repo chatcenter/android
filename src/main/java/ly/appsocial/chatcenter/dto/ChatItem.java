@@ -122,6 +122,9 @@ public class ChatItem {
 
 	public int localId;
 
+	/** To store temp message that user entered into InputWidget*/
+	public String tempMessage;
+
 
 	public transient ArrayList<LiveLocationUser> mLiveLocationUsers = new ArrayList<>();
 	private transient boolean mIsInitLocation = false;

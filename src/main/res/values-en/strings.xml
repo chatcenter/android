@@ -89,7 +89,7 @@
     <string name="sticker_label_image">Image</string>
     <string name="sticker_label_phrase">Saved</string>
     <string name="sticker_label_camera">Camera</string>
-    <string name="fixed_phrases">Fixed phrases</string>
+    <string name="fixed_phrases">Saved Widget</string>
     <string name="tap_to_select">Tap to select</string>
     <string name="fixed_phrases_myphrase_empty">You have not created any fixed phrases.</string>
     <string name="fixed_phrases_no_app_fixed_phrases">You have not any app\'s recommendation fixed phrases.</string>
@@ -121,9 +121,10 @@
     <string name="answer_type">Type of Answer</string>
 
     <string name="answer_type_yes_no">Yes / No</string>
-    <string name="answer_type_multi_choice">Multiple Choice</string>
+    <string name="answer_type_multi_choice">List</string>
     <string name="answer_type_checkbox">Checkbox</string>
     <string name="answer_type_leaner_scale">Linear Scale</string>
+    <string name="answer_type_pull_down">Pulldown</string>
 
     <string-array name="linear_scale_list">
         <item>1</item>
@@ -246,4 +247,16 @@
     <string name="channel_search_hint">Search channels</string>
     <string name="new_suggestion">New suggestion</string>
 
+    <string name="landing_page_title">Landing Page</string>
+    <string name="landing_page_send_url">Send URL</string>
+    <string name="landing_page_send_qr">Send QR Code</string>
+    <string name="landing_page_send_url_message">You can go to this link to continue talking to us: %s</string>
+
+    <string name="suggestion_no_title">No title</string>
+    <string name="selectbox_please_select">Select a choice</string>
+
+    <string name="invalid_sheme">Invalid URL</string>
+
+    <string name="no_suggestion">There\'s no suggestion so far</string>
+    <string name="no_saved_widget">There\'s no saved widget so far</string>
 </resources>

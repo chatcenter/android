@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportHeight="120"
+        android:viewportWidth="120">
+    <path
+        android:fillColor="@drawable/selector_widget_button_color"
+        android:pathData="M97.5,23 L10,23 L10,85.5 L16.25,85.5 L16.25,29.25 L97.5,29.25 L97.5,23 Z M35,57.375 C35,62.553125 39.196875,66.75 44.375,66.75 C49.553125,66.75 53.75,62.553125 53.75,57.375 C53.75,52.196875 49.553125,48 44.375,48 C39.196875,48 35,52.196875 35,57.375 L35,57.375 Z M103.75,87.584375 L91.25,66.75 L77.084375,78.55625 L66.25,60.5 L28.75,91.75 L28.75,41.75 L103.75,41.75 L103.75,87.584375 Z M22.5,98 L110,98 L110,35.5 L22.5,35.5 L22.5,98 Z"/>
+</vector>

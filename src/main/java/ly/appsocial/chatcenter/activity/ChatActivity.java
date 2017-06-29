@@ -47,13 +47,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -87,7 +84,6 @@ import ly.appsocial.chatcenter.CSLocationService;
 import ly.appsocial.chatcenter.ChatCenter;
 import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.activity.adapter.ChatAdapter;
-import ly.appsocial.chatcenter.activity.adapter.WidgetMenuGridAdapter;
 import ly.appsocial.chatcenter.activity.receivers.NetworkStateReceiver;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.database.tables.TbApp;
@@ -104,6 +100,7 @@ import ly.appsocial.chatcenter.dto.ws.request.GetMessagesRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostChannelsRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostMessageReadRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostMessageRequestDto;
+import ly.appsocial.chatcenter.dto.ws.request.PostReplyInputWidgetDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostStickerRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostStickerResponseRequestDto;
 import ly.appsocial.chatcenter.dto.ws.request.PostUsersRequestDto;
@@ -126,6 +123,9 @@ import ly.appsocial.chatcenter.dto.ws.response.WsMessagesResponseDto;
 import ly.appsocial.chatcenter.fragment.AlertDialogFragment;
 import ly.appsocial.chatcenter.fragment.ProgressDialogFragment;
 import ly.appsocial.chatcenter.fragment.WidgetPreviewDialog;
+import ly.appsocial.chatcenter.ui.SmallWidgetTableView;
+import ly.appsocial.chatcenter.ui.WidgetMenuBar;
+import ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType;
 import ly.appsocial.chatcenter.util.ApiUtil;
 import ly.appsocial.chatcenter.util.CCAuthUtil;
 import ly.appsocial.chatcenter.util.CCLog;
@@ -150,6 +150,14 @@ import ly.appsocial.chatcenter.ws.parser.PostMessagesReadParser;
 import ly.appsocial.chatcenter.ws.parser.PostUsersParser;
 import ly.appsocial.chatcenter.ws.parser.StartVideoChatParser;
 
+import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_LANDING_PAGE;
+import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_CAMERA;
+import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_FILE;
+import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_FIXED_PHRASE;
+import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_LOCATION;
+import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_QUESTION;
+import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_SCHEDULE;
+import static ly.appsocial.chatcenter.widgets.VideoCallWidget.StickerAction;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_ACCEPT;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_HANGUP;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_REJECT;
@@ -161,8 +169,8 @@ import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_
  */
 public class ChatActivity extends BaseActivity implements View.OnClickListener, AlertDialogFragment.DialogListener,
 		ProgressDialogFragment.DialogListener, ViewUtil.OnSoftKeyBoardVisibleListener,
-		WidgetView.StickerActionListener, WidgetMenuGridAdapter.WidgetMenuClickListener,
-		TbMessage.SaveMessagesCallback, TbMessage.GetMessagesCallback, TbApp.InsertAppCallback, TbMessage.GetFailedMessagesCallback {
+		WidgetView.StickerActionListener, TbMessage.SaveMessagesCallback, TbMessage.GetMessagesCallback,
+		TbApp.InsertAppCallback, TbMessage.GetFailedMessagesCallback, WidgetMenuBar.WidgetMenuClickListener {
 
 	private static final String TAG = ChatActivity.class.getSimpleName();
 
@@ -223,8 +231,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private List<ChatItem> mMessagesList;
 
 	/** Place to show the fixed phrase on the Guest app*/
-	private LinearLayout mFixedPhrasePlaceHolder;
-	private LinearLayout mFixedPhraseHorizontalView;
+	private RelativeLayout mSmallWidgetTableContainer;
+	private SmallWidgetTableView mSuggestionTable;
+	private SmallWidgetTableView mFixedPhraseTable;
 
 	private boolean mNoPreviousMessage = false;
 	private boolean mLoadFromFirst;
@@ -320,18 +329,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 	private File mCurrentPhoto;
 
-	/** Widget menu*/
-	private View mWidgetMenuView;
-	private LinearLayout mWidgetMenuPlaceHolder;
-	private PopupWindow mWidgetMenuPopupWidow;
-	private int mKeyboardHeight;
 	private boolean isKeyBoardVisible;
-	private ArrayList<WidgetMenuGridAdapter.MenuButton> mWidgetMenuButtons;
-
-	/** Suggestion UI*/
-	private LinearLayout mSuggestionPlaceHolder;
-	private LinearLayout mSuggestionHorizontalView;
-	private int mSuggestionWidth = 0;
 
 	// private Uri mImageUri;
 	//private String mSendingContent;
@@ -354,6 +352,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private boolean isVideoCallEnabledForApp = false;
 	private boolean isNeedToRefresh = true;
 	private List<ChatItem> mListFixedPhrases;
+	// private View mMenuBarHolder;
 
 	/** To check is user calling other?*/
 	private boolean isCalling;
@@ -367,6 +366,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private TextView mTvUserTyping;
 
 	private WebSocketClientListener mWSListener = new WebSocketClientListener();
+
+	private WidgetMenuBar mWidgetMenuBar;
+
+	private StickerAction.ActionData mReplyAction;
+	private String mReplyMsgId;
 
 	// //////////////////////////////////////////////////////////////////////////
 	// イベントメソッド
@@ -469,6 +473,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 		// 送信ボタン
 		mSendButton = (Button) findViewById(R.id.chat_send_button);
+		mSendButton.setEnabled(false);
 		mSendButton.setOnClickListener(this);
 
 		// Video call
@@ -479,24 +484,16 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		mBtPhoneCall = (ImageButton) findViewById(R.id.menu_phone_call);
 		mBtPhoneCall.setOnClickListener(this);
 
-		// Fixed phrase view
-		mFixedPhrasePlaceHolder = (LinearLayout) findViewById(R.id.fixed_phrase_place_holder);
-		mFixedPhraseHorizontalView = (LinearLayout) findViewById(R.id.fixed_phrase_horizontal_view);
+		// FixedPhrase and Suggestion Table view
+		mSmallWidgetTableContainer = (RelativeLayout) findViewById(R.id.small_widget_table_container);
+		mSuggestionTable = (SmallWidgetTableView) findViewById(R.id.tableSuggestion);
+		mFixedPhraseTable = (SmallWidgetTableView) findViewById(R.id.tableFixedPhrase);
 
 		// List users in this channel
 		mChannelUsers = new ArrayList<>();
 		if (mCurrentOrgItem != null && mCurrentOrgItem.users != null) {
 			mChannelUsers.addAll(mCurrentOrgItem.users);
 		}
-
-		// Widget menu
-		mWidgetMenuPlaceHolder = (LinearLayout) findViewById(R.id.widget_menu_place_holder);
-		mWidgetMenuView = getLayoutInflater().inflate(R.layout.view_widget_menu, null);
-
-		// Suggestion
-		mSuggestionPlaceHolder = (LinearLayout) findViewById(R.id.suggestion_place_holder);
-		mSuggestionHorizontalView = (LinearLayout) findViewById(R.id.suggestion_horizontal_view);
-		mSuggestionWidth = (int) (0.8 * getScreenWidth());
 
 		// スチッカーを送信ボタン
 		mIbtSendSticker = (ImageButton) findViewById(R.id.ibt_add_sticker);
@@ -530,6 +527,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		IntentFilter netWorkStateFilter = new IntentFilter();
 		netWorkStateFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
 		registerReceiver(mNetworkStateReceiver, netWorkStateFilter);
+
+		mWidgetMenuBar = (WidgetMenuBar) findViewById(R.id.widget_menu_bar);
+		mWidgetMenuBar.setMenuWidgetListener(this);
 	}
 
 	@Override
@@ -582,9 +582,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	}
 
 	private void setupWidgetMenu(){
-		changeKeyboardHeight((int) getResources().getDimension(R.dimen.keyboard_height));
-		enablePopUpView();
 		checkKeyboardHeight(mRootLayout);
+		getWidgetMenuButtons(mCurrentApp.stickers);
 	}
 
 	public String getChannelUid(){
@@ -688,11 +687,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		} else if (id == R.id.ibt_add_sticker) {
 			openStickerMenu();
 		} else if (id == R.id.chat_edittext) {
-			if (mWidgetMenuPopupWidow != null && mWidgetMenuPopupWidow.isShowing()) {
-				mWidgetMenuPopupWidow.dismiss();
-			}
-			if (mSuggestionPlaceHolder != null && mSuggestionPlaceHolder.getVisibility() == View.VISIBLE) {
-				mSuggestionPlaceHolder.setVisibility(View.GONE);
+			if (mSmallWidgetTableContainer != null && mSmallWidgetTableContainer.getVisibility() == View.VISIBLE) {
+				setTableOfSmallWidgetVisible(false);
 			}
 		} else if (id == R.id.menu_phone_call) {
 			startVideoChat(true);
@@ -725,9 +721,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			 * ソフトキーボードが表示されたらメッセージの最後にスクロールします。
 			 */
 			scrollToLast(true, false);
-			mFixedPhrasePlaceHolder.setVisibility(View.GONE);
-		} else {
-			showFixedPhraseView(mIsAgent);
 		}
 	}
 
@@ -753,8 +746,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			mIsInit = false;
 		}
 
-		if (StringUtil.isNotBlank(mParamDto.channelUid)) { // 履歴画面から
+		if (StringUtil.isNotBlank(mParamDto.channelUid)) {
 			mChannelUid = mParamDto.channelUid;
+		} else if (mCurrentChannelItem != null && StringUtil.isNotBlank(mCurrentChannelItem.uid)) {
+			mChannelUid = mCurrentChannelItem.uid;
+		}
+
+		if (StringUtil.isNotBlank(mChannelUid)) { // 履歴画面から
 
 			// Restore draft message
 			restoreDraftTextMessage();
@@ -1177,7 +1175,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
 
 		// mPostMessagesRequest = new ApiRequest<>(this, Request.Method.POST, path, headers, headers, new PostMessagesCallback(item), new PostMessagesParser());
-		mPostMessagesRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers, new SendMessageReplyCallback(answer, replyTo), new PostMessagesParser());
+		mPostMessagesRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers,
+				new SendMessageReplyCallback(answer, replyTo), new PostMessagesParser());
+
 		if (mParamDto.appToken != null) {
 			mPostMessagesRequest.setApiToken(mParamDto.appToken);
 		}
@@ -1435,29 +1435,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		}
 	}
 
-//	/**
-//	 * 電話起動のインテントを生成します。
-//	 * <p>
-//	 * 電話機能がない、もしくは電話アプリがシステム内に存在しない場合は null を返します。
-//	 * </p>
-//	 *
-//	 * @param context コンテキスト
-//	 * @param phoneNumber 電話番号
-//	 * @return 生成したインテント。電話発信できない状況では null
-//	 */
-//	public static Intent newDialIntent(final Context context, final String phoneNumber) {
-//
-//		final Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
-//		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//
-//		// 電話アプリがインストールされているか確認
-//		final List<ResolveInfo> appInfo = context.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-//		if (appInfo == null || appInfo.size() == 0) {
-//			return null;
-//		}
-//		return intent;
-//	}
-
 	@Override
 	public void onActionClick(BasicWidget.StickerAction.ActionData action, String msgId) {
 
@@ -1467,24 +1444,39 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 		if (action.action != null || action.value != null) {
 			if (action.action != null) {
-				for (String actionString : action.action) {
-					if (actionString.startsWith("http")) {
-						Intent intent = new Intent(this, WebViewActivity.class);
-						intent.putExtra(ChatCenterConstants.Extra.URL, action.action.get(0));
-						startActivity(intent);
-						break;
-					} else if (actionString.startsWith(WidgetAction.OPEN_CALENDAR)) {
-						onDateTimeAvailabilityClicked();
-						break;
+				mReplyAction = action;
+				mReplyMsgId = msgId;
+
+				if (ResponseType.URL.equalsIgnoreCase(action.type)) {
+
+					DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+					sendMessageResponseForChannel(mReplyAction, mReplyMsgId);
+
+				} else if (ResponseType.FILE.equalsIgnoreCase(action.type)) {
+					onFileClicked();
+				} else if (ResponseType.CALENDAR.equalsIgnoreCase(action.type)) {
+					onDateTimeAvailabilityClicked();
+				} else if (ResponseType.LOCATION.equalsIgnoreCase(action.type)) {
+					if (!isInternetConnecting) {
+						showNWErrorDialog();
+					} else {
+						openGoogleMapPicker();
 					}
+				} else if (ResponseType.COLOCATION.equalsIgnoreCase(action.type)) {
+					if (!isInternetConnecting) {
+						showNWErrorDialog();
+					} else {
+						openLiveLocation();
+					}
+				} else if (ResponseType.QUESTION.equalsIgnoreCase(action.type)) {
+					onQuestionClicked();
 				}
 			}
 
 			if (action.value != null) {
 				if (action.label.startsWith("http")) {
-					Intent intent = new Intent(this, WebViewActivity.class);
-					intent.putExtra(ChatCenterConstants.Extra.URL, action.label);
-					startActivity(intent);
+					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(action.label));
+					startActivity(i);
 				} else {
 					String message = String.format(getString(R.string.message_reply_choosed_value), action.label);
 					showDialogConfirmReply(message, action, msgId);
@@ -1505,55 +1497,70 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					onDateTimeAvailabilityClicked();
 					break;
 				} else if (actionString.startsWith("http")) {
-					Intent intent = new Intent(this, WebViewActivity.class);
-					intent.putExtra(ChatCenterConstants.Extra.URL, actionData.action.get(0));
-					startActivity(intent);
+					try {
+						Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(actionData.action.get(0)));
+						startActivity(i);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 					break;
 				}
 			}
 		} else if (StringUtil.isNotBlank(actionData.type) && actionData != null) {
 
-			for (String actionString : actionData.action) {
-				if (actionString.startsWith(WidgetAction.OPEN_CALENDAR)) {
-					/** "open calendar" is specified */
-					onDateTimeAvailabilityClicked();
-					break;
-				} else if (actionString.startsWith(WidgetAction.OPEN_IMAGE)) {
-					/** "open image" is specified*/
-					try {
-						String imageUrl = actionString.substring(actionString.indexOf("http"));
-						URL url = new URL(imageUrl);
-						PhotoParamDto photoParam = new PhotoParamDto(imageUrl);
-						photoParam.fileName = StringUtil.getFileNameFromUrl(url);
-						Intent intent = new Intent(this, PhotoActivity.class);
-						intent.putExtra(PhotoActivity.PHOTO_DATA, photoParam);
-						this.startActivity(intent);
-					} catch (MalformedURLException e) {
-						e.printStackTrace();
-					}
-					break;
-				} else if (actionString.startsWith(WidgetAction.REPLY_SUGGESTION_MSG)) {
-					mEdtMsgInput.setText(actionData.message);
-					break;
-				} else if (actionString.startsWith(WidgetAction.REPLY_SUGGESTION_STICKER)
-						|| actionData.type.equals(ResponseType.LOCATION)
-						|| actionData.type.equals(ResponseType.SAVED)
-						|| actionData.type.equals(ResponseType.FILE)) {
-					Gson gson = new Gson();
-					openWidgetPreview(gson.toJson(actionData.suggestionSticker).toString());
-					break;
-				} else if (actionString.startsWith(WidgetAction.OPEN_LOCATION) && actionData.action.size() > 1) {
-					String mapUrl = actionData.action.get(1);
-					Intent intent = new Intent(this, WebViewActivity.class);
-					intent.putExtra(ChatCenterConstants.Extra.URL, mapUrl);
-					intent.putExtra(ChatCenterConstants.Extra.ACTIVITY_TITLE, getString(R.string.google_map));
-					startActivity(intent);
-					break;
-				} else {
-					if (actionData.type.equals("url") && actionString.startsWith("http")) {
-						Intent intent = new Intent(this, WebViewActivity.class);
-						intent.putExtra(ChatCenterConstants.Extra.URL, actionData.action.get(0));
-						startActivity(intent);
+			if (ResponseType.MESSAGE.equals(actionData.type)) {
+				BasicWidget widget = new BasicWidget();
+				BasicWidget.Message message = new BasicWidget.Message();
+
+				message.text = actionData.message;
+
+				widget.message = message;
+				Gson gson = new Gson();
+				openWidgetPreview(gson.toJson(widget).toString());
+
+			} else if (ResponseType.LOCATION.equals(actionData.type)
+					|| ResponseType.SAVED.equals(actionData.type)
+					|| ResponseType.FILE.equals(actionData.type)
+					|| ResponseType.QUESTION.equals(actionData.type)) {
+				Gson gson = new Gson();
+				openWidgetPreview(gson.toJson(actionData.suggestionSticker).toString());
+
+			} else if (ResponseType.URL.equals(actionData.type)) {
+				try {
+					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(actionData.action.get(0)));
+					startActivity(i);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+
+			} else {
+				for (String actionString : actionData.action) {
+					if (actionString.startsWith(WidgetAction.OPEN_CALENDAR)) {
+						/** "open calendar" is specified */
+						onDateTimeAvailabilityClicked();
+						break;
+					} else if (actionString.startsWith(WidgetAction.OPEN_IMAGE)) {
+						/** "open image" is specified*/
+						try {
+							String imageUrl = actionString.substring(actionString.indexOf("http"));
+							URL url = new URL(imageUrl);
+							PhotoParamDto photoParam = new PhotoParamDto(imageUrl);
+							photoParam.fileName = StringUtil.getFileNameFromUrl(url);
+							Intent intent = new Intent(this, PhotoActivity.class);
+							intent.putExtra(PhotoActivity.PHOTO_DATA, photoParam);
+							this.startActivity(intent);
+						} catch (MalformedURLException e) {
+							e.printStackTrace();
+						}
+						break;
+					} else if (actionString.startsWith(WidgetAction.OPEN_LOCATION) && actionData.action.size() > 1) {
+						try {
+							String mapUrl = actionData.action.get(1);
+							Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(mapUrl));
+							startActivity(i);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
 						break;
 					}
 				}
@@ -1591,113 +1598,116 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		showOrHideSuggestionView(chatItem);
 	}
 
+	@Override
+	public void onWidgetInputFinish(PostReplyInputWidgetDto answer) {
+
+		if (!isInternetConnecting) {
+			showNWErrorDialog();
+			return;
+		}
+
+		String path = "channels/" + mChannelUid + "/messages";
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
+
+		mPostMessagesRequest = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers,
+				headers, new SendInputReplyCallback(answer, answer.replyTo), new PostMessagesParser());
+		if (mParamDto.appToken != null) {
+			mPostMessagesRequest.setApiToken(mParamDto.appToken);
+		}
+
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "MessageResponse Params: " + answer.toJson());
+		}
+
+		mPostMessagesRequest.setJsonBody(answer.toJson());
+		NetworkQueueHelper.enqueue(mPostMessagesRequest, REQUEST_TAG);
+
+	}
+
+	@Override
+	public void onInputAlertDismiss(final Integer messageId) {
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				hideKeyboard();
+			}
+		}, 50);
+
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				mRootLayout.post(new Runnable() {
+					@Override
+					public void run() {
+						int selectedIndex = -1;
+						for (int i = mMessagesList.size() - 1; i >= 0; i--) {
+							if (mMessagesList.get(i).id.equals(messageId)) {
+								selectedIndex = i;
+								break;
+							}
+						}
+
+						if (selectedIndex >= 0) {
+							mListView.setSelection(selectedIndex);
+						}
+					}
+				});
+			}
+		}, 500);
+
+	}
+
 	private void showOrHideSuggestionView(ChatItem chatItem) {
 
 		// Hide keyboard and WidgetMenu if need
-		hideKeyboardAndWidgetMenu();
+		hideKeyboard();
 
-		mSuggestionHorizontalView.removeAllViews();
+		mSuggestionTable = (SmallWidgetTableView) findViewById(R.id.tableSuggestion);
 
-		if (chatItem.widget.stickerAction != null && BasicWidget.WIDGET_TYPE_SELECT.equals(chatItem.widget.stickerAction.actionType)) {
+		if (chatItem != null
+				&& chatItem.widget != null
+				&& chatItem.widget.stickerAction != null
+				&& chatItem.widget.stickerAction != null
+				&& chatItem.widget.stickerAction.actionData != null
+				&& chatItem.widget.stickerAction.actionData.size() > 0
+				&& BasicWidget.WIDGET_TYPE_SELECT.equals(chatItem.widget.stickerAction.actionType)) {
 
-			for (BasicWidget.StickerAction.ActionData actionData: chatItem.widget.stickerAction.actionData) {
-				View view = getSuggestionViewForChatItem(actionData);
-				mSuggestionHorizontalView.addView(view);
-				view.getLayoutParams().width = mSuggestionWidth;
-			}
+			mSuggestionTable.bindData(chatItem.widget.stickerAction.actionData, new SmallWidgetTableView.OnItemClickListener() {
+				@Override
+				public void onSmallWidgetClicked(Object data) {
+					if (data != null && data instanceof StickerAction.ActionData) {
+						onSuggestionActionSelected((StickerAction.ActionData) data);
+					}
+				}
+			});
+
+		} else {
+			mSuggestionTable.setTableEmpty(true);
 		}
 
+		mSuggestionTable.setVisibility(View.VISIBLE);
+		mWidgetMenuBar.setActive(ButtonType.TYPE_SUGGESTION, true);
+		setTableOfSmallWidgetVisible(true);
+	}
 
-		int paddingHorizontal = (getScreenWidth() - mSuggestionWidth)/ 2;
-		mSuggestionHorizontalView.setPadding(paddingHorizontal, 0, paddingHorizontal, 0);
-
-		// Show or hide SuggestionView
-		mSuggestionPlaceHolder.setVisibility(View.VISIBLE);
-		mSuggestionPlaceHolder.post(new Runnable() {
+	/**
+	 * Show table of small widget at the bottom and scroll ListView to bottom when finished
+	 *
+	 * @param visible
+	 */
+	private void setTableOfSmallWidgetVisible(final boolean visible) {
+		mSmallWidgetTableContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+		mRootLayout.post(new Runnable() {
 			@Override
 			public void run() {
 				scrollToLast(true, false);
-			}
-		});
-	}
-
-	private View getSuggestionViewForChatItem(final BasicWidget.StickerAction.ActionData action) {
-		if (action == null) {
-			return null;
-		}
-
-		View suggestionView = LayoutInflater.from(this).inflate(R.layout.view_suggestion_title_item, null);
-		TextView contentView = (TextView) suggestionView.findViewById(R.id.suggestion_title);
-		ImageView icon = (ImageView) suggestionView.findViewById(R.id.suggestion_icon);
-
-		// Older suggestion object do not contain type
-		if (StringUtil.isBlank(action.type)) {
-			contentView.setText(action.label);
-			icon.setImageResource(R.drawable.icon_widget_schedule);
-		} else {
-			if (action.type.equals(ResponseType.MESSAGE) || action.type.equals(ResponseType.URL)) {
-				contentView.setText(action.label);
-				icon.setVisibility(View.GONE);
-			} else {
-				if (action.suggestionSticker != null
-						&& action.suggestionSticker.message != null) {
-					contentView.setText(action.suggestionSticker.message.text);
-					int iconDrawable = getSuggestionIcon(action.suggestionSticker.stickerType);
-					if (iconDrawable > 0) {
-						icon.setImageResource(iconDrawable);
-					}
-				} else {
-					contentView.setText(action.label);
-					icon.setVisibility(View.GONE);
+				if (!visible) {
+					mWidgetMenuBar.setActive(ButtonType.TYPE_SUGGESTION, false);
 				}
 			}
-		}
-
-		// contentView.setCompoundDrawables(null, null, null, null);
-		suggestionView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onSuggestionActionSelected(action);
-			}
 		});
-
-		return suggestionView;
-	}
-
-	private View getFixedPhraseView(final ChatItem chatItem) {
-		if (chatItem == null) {
-			return null;
-		}
-
-		View suggestionView = LayoutInflater.from(this).inflate(R.layout.view_suggestion_title_item, null);
-		TextView contentView = (TextView) suggestionView.findViewById(R.id.suggestion_title);
-		ImageView icon = (ImageView) suggestionView.findViewById(R.id.suggestion_icon);
-
-		if (chatItem.widget != null) {
-			if(chatItem.widget.message != null
-					&& StringUtil.isNotBlank(chatItem.widget.message.text)) {
-				contentView.setText(chatItem.widget.message.text);
-			}
-
-			if (chatItem.widget.stickerAction != null
-					&& StringUtil.isNotBlank(chatItem.widget.stickerAction.actionType)) {
-				icon.setImageResource(chatItem.widget.getWidgetIcon(chatItem.widget.stickerAction.actionType));
-				icon.setVisibility(View.VISIBLE);
-			} else {
-				icon.setVisibility(View.GONE);
-			}
-		}
-
-		// contentView.setCompoundDrawables(null, null, null, null);
-		suggestionView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-
-				openWidgetPreview(chatItem.widget.content.toString());
-			}
-		});
-
-		return suggestionView;
 	}
 
 	private void showDialogConfirmReply (final String message, final BasicWidget.StickerAction.ActionData answer, final String msgId) {
@@ -1752,68 +1762,69 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	// //////////////////////////////////////////////////////////////////////////
 
 	private void openStickerMenu() {
-		if (mSuggestionPlaceHolder.getVisibility() == View.VISIBLE) {
-			mSuggestionPlaceHolder.setVisibility(View.GONE);
-		}
+		if (mWidgetMenuBar.getVisibility() == View.VISIBLE) {
+			mIbtSendSticker.setImageResource(R.drawable.ic_close);
+			mWidgetMenuBar.setVisibility(View.GONE);
+			findViewById(R.id.ll_message_input).setVisibility(View.VISIBLE);
 
-		if (!mWidgetMenuPopupWidow.isShowing()) {
-			mWidgetMenuPopupWidow.setHeight(mKeyboardHeight);
-			if (isKeyBoardVisible) {
-				mWidgetMenuPlaceHolder.setVisibility(LinearLayout.GONE);
-			} else {
-				mWidgetMenuPlaceHolder.setVisibility(LinearLayout.VISIBLE);
-			}
-			mWidgetMenuPopupWidow.showAtLocation(mRootLayout, Gravity.BOTTOM, 0, 0);
+			mEdtMsgInput.post(new Runnable() {
+				@Override
+				public void run() {
+					// Focus on the EditText
+					mEdtMsgInput.requestFocus();
+					mSmallWidgetTableContainer.setVisibility(View.GONE);
+
+					// Show the keyboard
+					if (!isKeyBoardVisible) {
+						final InputMethodManager inputMethodManager = (InputMethodManager) ChatActivity.this
+								.getSystemService(Context.INPUT_METHOD_SERVICE);
+						inputMethodManager.showSoftInput(mEdtMsgInput, InputMethodManager.SHOW_IMPLICIT);
+					}
+				}
+			});
+
 		} else {
-			mWidgetMenuPopupWidow.dismiss();
-			if (!isKeyBoardVisible) {
-				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-			}
+			mIbtSendSticker.setImageResource(R.drawable.ic_text_input);
+			mWidgetMenuBar.setVisibility(View.VISIBLE);
+			findViewById(R.id.ll_message_input).setVisibility(View.GONE);
+			hideKeyboard();
 		}
-
-		if (!mWidgetMenuPopupWidow.isShowing()) {
-			mIbtSendSticker.setImageResource(R.drawable.btn_add_widget);
-		} else {
-			mIbtSendSticker.setImageResource(R.drawable.btn_keyboard);
-		}
-
-		mFixedPhrasePlaceHolder.setVisibility(View.GONE);
 	}
 
 	@Override
-	public void onMenuButtonClicked(String type){
-
-		hideKeyboardAndWidgetMenu();
-
+	public void onMenuButtonClicked(ButtonType type){
 		switch (type){
-			case ChatCenterConstants.StickerName.STICKER_TYPE_FIXED_PHRASE:
+			case TYPE_SUGGESTION:
+				ChatItem latestSuggestion = getLatestSuggestion();
+				showOrHideSuggestionView(latestSuggestion);
+				break;
+			case TYPE_WIDGET_FIXED_PHRASE:
 				if (!isInternetConnecting) {
 					showNWErrorDialog();
 				} else {
 					onFixedPhraseClicked();
 				}
 				break;
-			case ChatCenterConstants.StickerName.STICKER_TYPE_DATE_TIME_AVAILABILITY:
+			case TYPE_WIDGET_SCHEDULE:
 				onDateTimeAvailabilityClicked();
 				break;
-			case ChatCenterConstants.StickerName.STICKER_TYPE_LOCATION:
+			case TYPE_WIDGET_LOCATION:
 				if (!isInternetConnecting) {
 					showNWErrorDialog();
 				} else {
 					onLocationClicked();
 				}
 				break;
-			case ChatCenterConstants.StickerName.STICKER_TYPE_CAMERA:
+			case TYPE_WIDGET_CAMERA:
 				onCameraClicked();
 				break;
-			case ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE:
+			case TYPE_WIDGET_FILE:
 				onFileClicked();
 				break;
-			case ChatCenterConstants.StickerName.STICKER_TYPE_QUESTION:
+			case TYPE_WIDGET_QUESTION:
 				onQuestionClicked();
 				break;
-			case ChatCenterConstants.StickerName.STICKER_TYPE_VIDEO_CHAT:
+			case TYPE_WIDGET_VIDEO_CALL:
 				if (!isInternetConnecting) {
 					showNWErrorDialog();
 				} else {
@@ -1821,7 +1832,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				}
 				//videoChatCreateSession();
 				break;
-			case ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_PHONE_CALL:
+			case TYPE_WIDGET_VOICE_CALL:
 				if (!isInternetConnecting) {
 					showNWErrorDialog();
 				} else {
@@ -1829,7 +1840,120 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				}
 				//requestGetUsers();
 				break;
+			case TYPE_LANDING_PAGE:
+				onLandingPageButtonClicked();
+				break;
 		}
+	}
+
+	private ChatItem getLatestSuggestion() {
+		if (mMessagesList != null && mMessagesList.size() > 0) {
+			for (int i = mMessagesList.size() - 1; i >= 0; i--) {
+				ChatItem item = mMessagesList.get(i);
+				if (ResponseType.SUGGESTION.equals(item.type)) {
+					return item;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/*
+	 * When user click on LandingPage Button, show a dialog to ask user what do they want to send
+	 * URL or QR code
+	 */
+	private void onLandingPageButtonClicked() {
+		final String[] items = {getString(R.string.landing_page_send_url), getString(R.string.landing_page_send_qr), getString(R.string.cancel)};
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.landing_page_title)
+				.setItems(items, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if ( which == 0 ){
+							sendLandingPageUrl();
+						} else if ( which == 1 ){
+							sendLandingPageQRCode();
+						}
+					}
+				})
+				.show();
+	}
+
+	/**
+	 * Send a QR code to client via ChatView
+	 */
+	private void sendLandingPageQRCode() {
+		if (!isInternetConnecting || StringUtil.isBlank(mChannelUid)) {
+			return;
+		}
+
+		String path = String.format("channels/%s/landing_pages/qr", mChannelUid);
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
+
+		OkHttpApiRequest request = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers,
+				null,
+				new ApiRequest.Parser<Object>() {
+					@Override
+					public int getErrorCode() {
+						return 0;
+					}
+
+					@Override
+					public Object parser(String response) {
+						return null;
+					}
+				});
+
+		HashMap<String, String> params = new HashMap<>();
+		params.put("user_id", String.valueOf(mCurrentChannelItem.getFirstGuest().id));
+
+		request.setJsonBody(new Gson().toJson(params));
+
+		NetworkQueueHelper.enqueue(request, REQUEST_TAG);
+	}
+
+	/**
+	 * Request an URL and send it to Client when success
+	 */
+	private void sendLandingPageUrl() {
+
+		if (!isInternetConnecting || StringUtil.isBlank(mChannelUid)) {
+			return;
+		}
+
+		String path = String.format("channels/%s/landing_pages", mChannelUid);
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Authentication", CCAuthUtil.getUserToken(getApplicationContext()));
+
+		OkHttpApiRequest request = new OkHttpApiRequest<>(this, ApiRequest.Method.POST, path, headers, headers,
+				new PostLandingPageCallBack(),
+				new ApiRequest.Parser<JSONObject>() {
+					@Override
+					public int getErrorCode() {
+						return 0;
+					}
+
+					@Override
+					public JSONObject parser(String response) {
+						try {
+							return new JSONObject(response);
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+						return null;
+					}
+				});
+
+		HashMap<String, String> params = new HashMap<>();
+		params.put("user_id", String.valueOf(mCurrentChannelItem.getFirstGuest().id));
+
+		request.setJsonBody(new Gson().toJson(params));
+
+		NetworkQueueHelper.enqueue(request, REQUEST_TAG);
 	}
 
 	/*
@@ -1876,26 +2000,45 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						if ( which == 0 ){
-							GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
-							int status = googleApiAvailability.isGooglePlayServicesAvailable(ChatActivity.this);
-							try {
-								PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-								startActivityForResult(builder.build(ChatActivity.this), REQUEST_LOCATION_PICKER);
-							} catch (GooglePlayServicesRepairableException e) {
-								GooglePlayServicesUtil.getErrorDialog(status, ChatActivity.this,
-										0).show();
-							} catch (GooglePlayServicesNotAvailableException e) {
-								GooglePlayServicesUtil.getErrorDialog(status, ChatActivity.this,
-										0).show();
-							}
+							openGoogleMapPicker();
 						} else if ( which == 1 ){
-							Intent intent = new Intent(ChatActivity.this, ShareLocationActivity.class);
-							intent.putExtra("show_preview", true);
-							startActivityForResult(intent, REQUEST_LIVE_LOCATION);
+							openLiveLocation();
 						}
 					}
 				})
 				.show();
+	}
+
+	private void openGoogleMapPicker() {
+		GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+		int status = googleApiAvailability.isGooglePlayServicesAvailable(ChatActivity.this);
+		try {
+			PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+			startActivityForResult(builder.build(ChatActivity.this), REQUEST_LOCATION_PICKER);
+		} catch (GooglePlayServicesRepairableException e) {
+			GooglePlayServicesUtil.getErrorDialog(status, ChatActivity.this,
+					0).show();
+		} catch (GooglePlayServicesNotAvailableException e) {
+			GooglePlayServicesUtil.getErrorDialog(status, ChatActivity.this,
+					0).show();
+		}
+	}
+
+
+	private boolean isStartLiveLocation;
+	private void openLiveLocation() {
+		if (ContextCompat.checkSelfPermission(this,
+				Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+			ActivityCompat.requestPermissions(this,
+					new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+					PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+			isStartLiveLocation = true;
+		} else {
+			isStartLiveLocation = false;
+			Intent intent = new Intent(ChatActivity.this, ShareLocationActivity.class);
+			intent.putExtra("show_preview", true);
+			startActivityForResult(intent, REQUEST_LIVE_LOCATION);
+		}
 	}
 
 	private void startLiveLocationSharing(int interval, String widgetId, int share_time){
@@ -2065,7 +2208,12 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 					// Permission was granted
-					openPlacePicker();
+					if (isStartLiveLocation) {
+						isStartLiveLocation = false;
+						openLiveLocation();
+					} else {
+						openPlacePicker();
+					}
 				} else {
 					// Permission was denied. Possibly show a message indicating the user what happens if the app does have this permission
 					new AlertDialog.Builder(this)
@@ -2189,22 +2337,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		});
 	}
 
-	private int getSuggestionIcon(String actionType) {
-		int drawable = 0;
-		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)
-				|| actionType.equals(ResponseType.QUESTION)) {
-			drawable = R.drawable.icon_widget_question;
-		} else if (actionType.equals(ResponseType.LIST)) {
-			drawable = R.drawable.icon_widget_schedule;
-		} else if (actionType.equals(ResponseType.LOCATION)
-				|| actionType.equals(ResponseType.LOCATION)) {
-			drawable = R.drawable.icon_widget_location;
-		} else if (actionType.equals(ResponseType.FILE)) {
-			drawable = R.drawable.icon_widget_attachment;
-		}
 
-		return drawable;
-	}
 
 	private void checkIsVideoChatActive(ChatItem chatItem){
 		if ( chatItem.widget.getClass().equals(VideoCallWidget.class) ){
@@ -2315,7 +2448,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		}
 
 		// Show suggestion view if need
-		showSuggestionForLastMsg(mIsAgent);
+		showSmallWidgetTable();
 	}
 
 	private void resendFailedMessage(ChatItem chatItem) {
@@ -2471,9 +2604,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				mBtPhoneCall.setVisibility(View.VISIBLE);
 			}
 
-			if (!mIsAgent) {
-				requestGetFixedPhrase();
-			}
+			requestGetFixedPhrase(); // Get list of Fixed Phrase messages
 		}
 	}
 
@@ -2531,17 +2662,28 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			mListFixedPhrases = responseDto.getAllFixedPhrases();
 
 			if (mListFixedPhrases != null && mListFixedPhrases.size() > 0) {
-				mFixedPhraseHorizontalView.removeAllViews();
-				for (ChatItem chatItem : mListFixedPhrases) {
-					View view = getFixedPhraseView(chatItem);
-					mFixedPhraseHorizontalView.addView(view);
-					view.getLayoutParams().width = mSuggestionWidth;
-				}
+				SmallWidgetTableView mFixedPhraseTable = (SmallWidgetTableView) findViewById(R.id.tableFixedPhrase);
+				mFixedPhraseTable.bindData(mListFixedPhrases, new SmallWidgetTableView.OnItemClickListener() {
+					@Override
+					public void onSmallWidgetClicked(Object data) {
+						if (data != null && data instanceof ChatItem) {
+							ChatItem item = (ChatItem) data;
+							if (ResponseType.MESSAGE.equals(item.type) && item.widget != null && item.widget.message != null) {
+								requestPostMessages(item.widget.message.text);
+							} else {
+								if (item.widget != null && item.widget.content != null) {
+									openWidgetPreview(item.widget.content.toString());
+								} else if (item.widget != null){
+									openWidgetPreview(new Gson().toJson(item.widget).toString());
+								}
+							}
+						}
+					}
+				});
+			} else {
+				mFixedPhraseTable.setTableEmpty(true);
 			}
-
-			int paddingHorizontal = (getScreenWidth() - mSuggestionWidth) / 2;
-			mFixedPhraseHorizontalView.setPadding(paddingHorizontal, 0, paddingHorizontal, 0);
-			showFixedPhraseView(mIsAgent);
+			showSmallWidgetTable();
 		}
 	}
 
@@ -2558,6 +2700,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		@Override
 		public void onError(OkHttpApiRequest.Error error) {
 			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+
+			mReplyAction = null;
+			mReplyMsgId = null;
 
 			if (!isAuthErrorWithAlert(error)) {
 				// メッセージ送信エラーダイアログの表示
@@ -2602,6 +2747,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					mAdapter.notifyDataSetChanged();
 				}
 			}
+
+			if (mReplyAction != null && StringUtil.isNotBlank(mReplyMsgId)) {
+				sendMessageResponseForChannel(mReplyAction, mReplyMsgId);
+			}
 		}
 	}
 
@@ -2635,6 +2784,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					mAdapter.notifyDataSetChanged();
 				}
 			}
+
+			mReplyAction = null;
+			mReplyMsgId = null;
 		}
 
 		@Override
@@ -2669,6 +2821,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				mAdapter.notifyDataSetChanged();
 			}
 
+			if (mReplyAction != null && StringUtil.isNotBlank(mReplyMsgId)) {
+				sendMessageResponseForChannel(mReplyAction, mReplyMsgId);
+			}
+
 		}
 	}
 
@@ -2690,6 +2846,43 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		public void onSuccess(PostMessagesReadResponseDto responseDto) {
 			mPostMessagesReadRequest = null;
 			// empty
+		}
+	}
+
+	/**
+	 * If request for Landing Page success, sent an URL to other
+	 */
+	private class PostLandingPageCallBack implements ApiRequest.Callback<JSONObject> {
+		/**
+		 * レスポンスが成功の場合のコールバック
+		 *
+		 * @param responseDto レスポンスDTO
+		 */
+		@Override
+		public void onSuccess(JSONObject responseDto) {
+			if (responseDto != null) {
+				try {
+					String url = responseDto.getString("url");
+					if (StringUtil.isNotBlank(url)) {
+						String message = String.format(getString(R.string.landing_page_send_url_message), url);
+						openStickerMenu();
+						mEdtMsgInput.setText(message);
+						mEdtMsgInput.setSelection(message.length());
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		/**
+		 * レスポンスが失敗の場合のコールバック
+		 *
+		 * @param error エラー
+		 */
+		@Override
+		public void onError(ApiRequest.Error error) {
+
 		}
 	}
 
@@ -2794,6 +2987,23 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				}
 			}
 			mAdapter.notifyDataSetChanged();
+
+			// Open scheme
+			if (mReplyAction != null && ResponseType.URL.equals(mReplyAction.type)) {
+				try {
+					Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(mReplyAction.action.get(0)));
+					startActivity(i);
+				} catch (Exception e) {
+					DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ALERT,
+							null, getString(R.string.invalid_sheme));
+				}
+			}
+
+			// Remove replying action and id of message
+			mReplyAction = null;
+			mReplyMsgId = null;
+
+			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
 		}
 
 		/**
@@ -2808,6 +3018,12 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				// 共通エラーダイアログの表示
 				// DialogUtil.showAlertDialog(getSupportFragmentManager(), DialogUtil.Tag.ERROR, null, getString(R.string.dialog_error_body));
 			}
+
+			// Remove replying action and id of message
+			mReplyAction = null;
+			mReplyMsgId = null;
+
+			DialogUtil.closeDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
 		}
 	}
 
@@ -3019,14 +3235,19 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 									BasicWidget.StickerAction.ActionData answer = gson.fromJson(item.widget.content.getJSONObject("answer").toString(),
 											BasicWidget.StickerAction.ActionData.class);
 									ArrayList<BasicWidget.StickerAction.ActionData> answers = new ArrayList<>();
-									JSONArray jsonArray = item.widget.content.getJSONArray("answers");
-									if (jsonArray != null && jsonArray.length() > 0) {
-										for (int j = 0; j < jsonArray.length(); j++) {
-											JSONObject jsonObject = jsonArray.getJSONObject(j);
-											BasicWidget.StickerAction.ActionData ans = gson.fromJson(jsonObject.toString(),
-													BasicWidget.StickerAction.ActionData.class);
-											answers.add(ans);
+
+									if ( item.widget.content.has("answers")) {
+										JSONArray jsonArray = item.widget.content.getJSONArray("answers");
+										if (jsonArray != null && jsonArray.length() > 0) {
+											for (int j = 0; j < jsonArray.length(); j++) {
+												JSONObject jsonObject = jsonArray.getJSONObject(j);
+												BasicWidget.StickerAction.ActionData ans = gson.fromJson(jsonObject.toString(),
+														BasicWidget.StickerAction.ActionData.class);
+												answers.add(ans);
+											}
 										}
+									} else {
+										answers.add(answer);
 									}
 
 									BasicWidget.StickerAction.ResponseAction responseAction = new BasicWidget.StickerAction.ResponseAction(answer);
@@ -3100,7 +3321,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 
 								// Display suggestion view if last displayed message is Suggestion
 								if (mTvNotiNewMessage.getVisibility() != View.VISIBLE) {
-									showSuggestionForLastMsg(mIsAgent);
+									showSmallWidgetTable();
 								}
 							}
 						}
@@ -3224,10 +3445,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 							showNotifiNewMessage(item);
 						}
 
-						// Hide the Suggestion view
-						mSuggestionPlaceHolder.setVisibility(View.GONE);
+						if (!isKeyBoardVisible) {
+							showSmallWidgetTable();
+						}
 					}
-
 				}
 			});
 		}
@@ -3380,84 +3601,46 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		@Override
 		public boolean onSingleTapUp(MotionEvent e) {
 			// ソフトキーボードを非表示
-			hideKeyboardAndWidgetMenu();
+			hideKeyboard();
 
-			if (!isSuggestionAtBottom()) {
-				mSuggestionPlaceHolder.setVisibility(View.GONE);
+			// If SmallWidget Table is showing and the last message is not a suggestion
+			// we hide the suggestion view
+			if (!isSuggestionAtBottom() && mSmallWidgetTableContainer.getVisibility() == View.VISIBLE) {
+				setTableOfSmallWidgetVisible(false);
 			}
-			// フォーカスを移す
-//			mCloseButton.requestFocus();
-			// WidgetMenu を非表示
 			return false;
 		}
 	}
 
-	private ArrayList<WidgetMenuGridAdapter.MenuButton> getWidgetMenuButtons(List<String> stickers) {
+	private void getWidgetMenuButtons(List<String> stickers) {
 		if (stickers == null || stickers.size() == 0) {
-			return null;
+			return;
 		}
 
-		if (mWidgetMenuButtons == null) {
-			mWidgetMenuButtons = new ArrayList<>();
+		for (String sticker : stickers) {
+			if (ChatCenterConstants.StickerName.STICKER_TYPE_QUESTION.equals(sticker)) {
+				mWidgetMenuBar.addButton(TYPE_WIDGET_QUESTION);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_DATE_TIME_AVAILABILITY.equals(sticker)) {
+				mWidgetMenuBar.addButton(TYPE_WIDGET_SCHEDULE);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_FIXED_PHRASE.equals(sticker)) {
+				mWidgetMenuBar.addButton(TYPE_WIDGET_FIXED_PHRASE);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_LOCATION.equals(sticker)) {
+				mWidgetMenuBar.addButton(TYPE_WIDGET_LOCATION);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_VIDEO_CHAT.equals(sticker)) {
+				isVideoCallEnabledForApp = true;
 
-			for (String sticker : stickers) {
-				if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_QUESTION)) {
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_QUESTION,
-							R.drawable.icon_widget_question,
-							getString(R.string.sticker_label_confirm)));
-				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_DATE_TIME_AVAILABILITY)) {
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_DATE_TIME_AVAILABILITY,
-							R.drawable.icon_widget_schedule,
-							getString(R.string.sticker_label_calendar)));
-				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_FIXED_PHRASE)) {
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_FIXED_PHRASE,
-							R.drawable.icon_widget_custom,
-							getString(R.string.sticker_label_phrase)));
-				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_LOCATION)) {
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_LOCATION,
-							R.drawable.icon_widget_location,
-							getString(R.string.sticker_label_location)));
-				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_VIDEO_CHAT)) {
-					/*
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_VIDEO_CHAT,
-							R.drawable.icon_widget_videochat,
-							getString(R.string.sticker_label_video_call)));
-
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_PHONE_CALL,
-							R.drawable.icon_widget_phonecall,
-							getString(R.string.sticker_label_phone_call)));
-
+				if (isVideoCallEnabledForApp && mCurrentChannelItem != null && mCurrentChannelItem.canUseVideoCall(mIsAgent)) {
 					mBtVideoCall.setVisibility(View.VISIBLE);
 					mBtPhoneCall.setVisibility(View.VISIBLE);
-					*/
-
-					isVideoCallEnabledForApp = true;
-
-					if (isVideoCallEnabledForApp && mCurrentChannelItem != null && mCurrentChannelItem.canUseVideoCall(mIsAgent)) {
-						mBtVideoCall.setVisibility(View.VISIBLE);
-						mBtPhoneCall.setVisibility(View.VISIBLE);
-					}
-
-				} else if (sticker.equals(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE)) {
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE,
-							R.drawable.icon_widget_image,
-							getString(R.string.sticker_label_image)));
-
-					mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_CAMERA,
-							R.drawable.icon_widget_camera,
-							getString(R.string.sticker_label_camera)));
 				}
+
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE.equals(sticker)) {
+				mWidgetMenuBar.addButton(TYPE_WIDGET_FILE);
+				mWidgetMenuBar.addButton(TYPE_WIDGET_CAMERA);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_LANDING_PAGE.equals(sticker)) {
+				mWidgetMenuBar.addButton(TYPE_LANDING_PAGE);
 			}
-
-//			if (mCanDial) {
-//				mWidgetMenuButtons.add(new WidgetMenuGridAdapter.MenuButton(ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_PHONE_CALL,
-//						R.drawable.icon_widget_phonecall,
-//						getString(R.string.sticker_label_phone_call)));
-//			}
 		}
-
-		return mWidgetMenuButtons;
-
 	}
 
 	/**
@@ -3465,12 +3648,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (mWidgetMenuPopupWidow != null && mWidgetMenuPopupWidow.isShowing()) {
-			mWidgetMenuPopupWidow.dismiss();
-			return false;
-		} else {
-			return super.onKeyDown(keyCode, event);
-		}
+		return super.onKeyDown(keyCode, event);
 	}
 
 	/**
@@ -3489,91 +3667,39 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 						DisplayMetrics display = getResources().getDisplayMetrics();
 						int heightDifference = display.heightPixels - (r.bottom);
 
-						if (previousHeightDifferent - heightDifference > 50) {
-							if ( mWidgetMenuPopupWidow != null ) {
-								mWidgetMenuPopupWidow.dismiss();
-							}
-						}
-
 						previousHeightDifferent = heightDifference;
 						if (heightDifference > 100) {
 							if (!isKeyBoardVisible) {
-								changeKeyboardHeight(heightDifference);
-								mFixedPhrasePlaceHolder.setVisibility(View.GONE);
-								mSuggestionPlaceHolder.setVisibility(View.GONE);
-
-								scrollToLast(true, false);
+								setTableOfSmallWidgetVisible(false);
 								isKeyBoardVisible = true;
 							}
 						} else {
 							if (isKeyBoardVisible) {
-
-								if (mWidgetMenuPopupWidow == null || !mWidgetMenuPopupWidow.isShowing()) {
-									if (mFixedPhrasePlaceHolder.getVisibility() != View.VISIBLE) {
-										showFixedPhraseView(mIsAgent);
-									}
-									if (mSuggestionPlaceHolder.getVisibility() != View.VISIBLE) {
-										showSuggestionForLastMsg(mIsAgent);
-									}
-								}
-
 								isKeyBoardVisible = false;
+								mRootLayout.post(new Runnable() {
+									@Override
+									public void run() {
+										showSmallWidgetTable();
+										if (mWidgetMenuBar.getVisibility() != View.VISIBLE) {
+											mIbtSendSticker.setImageResource(R.drawable.ic_text_input);
+											mWidgetMenuBar.setVisibility(View.VISIBLE);
+											findViewById(R.id.ll_message_input).setVisibility(View.INVISIBLE);
+										}
+									}
+								});
 							}
 						}
 					}
 				});
 	}
 
-	/**
-	 * change height of emoticons keyboard according to height of actual
-	 * keyboard
-	 *
-	 * @param height
-	 *            minimum height by which we can make sure actual keyboard is
-	 *            open or not
-	 */
-	private void changeKeyboardHeight(int height) {
-		if (height > 100) {
-			mKeyboardHeight = height;
-			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.MATCH_PARENT, mKeyboardHeight);
-			mWidgetMenuPlaceHolder.setLayoutParams(params);
-		}
-	}
-
-	/**
-	 * Defining all components of emoticons keyboard
-	 */
-	private void enablePopUpView() {
-		ArrayList<WidgetMenuGridAdapter.MenuButton> buttons = getWidgetMenuButtons(mCurrentApp.stickers);
-		GridView grid = (GridView) mWidgetMenuView.findViewById(R.id.menu_grid);
-		WidgetMenuGridAdapter adapter = new WidgetMenuGridAdapter(
-				this, 0,buttons, this);
-		grid.setAdapter(adapter);
-
-		// Creating a pop window for emoticons keyboard
-		mWidgetMenuPopupWidow = new PopupWindow(mWidgetMenuView, LinearLayout.LayoutParams.MATCH_PARENT, mKeyboardHeight, false);
-
-		mWidgetMenuPopupWidow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-			@Override
-			public void onDismiss() {
-				mWidgetMenuPlaceHolder.setVisibility(LinearLayout.GONE);
-				mIbtSendSticker.setImageResource(R.drawable.btn_add_widget);
-			}
-		});
-	}
-
-	private void hideKeyboardAndWidgetMenu() {
+	private void hideKeyboard() {
 		if(isKeyBoardVisible) {
 			final InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 			inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
 		}
 
-		if (mWidgetMenuPopupWidow != null && mWidgetMenuPopupWidow.isShowing()) {
-			mWidgetMenuPopupWidow.dismiss();
-		}
-
-		showFixedPhraseView(mIsAgent);
+		// showFixedPhraseView(mIsAgent);
 	}
 
 	private void openVideoChatActivity(VideoCallWidget widget, String messageId){
@@ -3616,12 +3742,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		intent.putExtra("message_id", mVideoCallItem.messageId);
 		intent.putExtra("audioOnly", mVideoCallItem.action.equals(ChatCenterConstants.CallType.VOICE));
 		startActivity(intent);
-	}
-
-	private int getScreenWidth() {
-		DisplayMetrics metrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		return metrics.widthPixels;
 	}
 
 	/** If there are many guests in channel, Show dialog to select one*/
@@ -3887,14 +4007,51 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		}
 	}
 
-	/**
-	 * Show fixed phrase if user is guest
-	 * @param isAgent
-	 */
-	private void showFixedPhraseView(boolean isAgent) {
-		if (mListFixedPhrases != null && mListFixedPhrases.size() > 0) {
-			mFixedPhrasePlaceHolder.setVisibility(isAgent ? View.GONE : View.VISIBLE);
+	private void showSmallWidgetTable() {
+		// Display table of suggestion view if last message is a suggestion
+		if (isSuggestionAtBottom()) {
+			showSuggestionForLastMsg(mIsAgent);
+		} else {
+			mSuggestionTable.setVisibility(View.GONE);
+			mWidgetMenuBar.setActive(ButtonType.TYPE_SUGGESTION, false);
 		}
+
+		// Hide table of FixedPhrase views if last message is a selection widget
+		if (isSelectionWidgetAtBottom(mMessagesList)) {
+			mFixedPhraseTable.setVisibility(View.GONE);
+		} else {
+			mFixedPhraseTable.setVisibility(View.VISIBLE);
+		}
+
+		if (mSuggestionTable.getVisibility() != View.VISIBLE && mFixedPhraseTable.getVisibility() != View.VISIBLE) {
+			setTableOfSmallWidgetVisible(false);
+		} else {
+			setTableOfSmallWidgetVisible(true);
+		}
+	}
+
+	/**
+	 * Check if a widget with multiple choice at bottom of list chat
+	 * @param messages
+	 * @return
+	 */
+	private boolean isSelectionWidgetAtBottom(List<ChatItem> messages) {
+		if(messages != null && messages.size() > 0) {
+			ChatItem lastMessage = messages.get(messages.size() -1);
+
+			if (lastMessage != null && ResponseType.STICKER.equals(lastMessage.type)
+					&& lastMessage.widget != null && lastMessage.widget.stickerAction != null
+					&& (BasicWidget.WIDGET_TYPE_CONFIRM.equals(lastMessage.widget.stickerAction.actionType)
+					|| BasicWidget.WIDGET_TYPE_SELECT.equals(lastMessage.widget.stickerAction.actionType))) {
+
+				if (lastMessage.user != null && lastMessage.user.id.equals(CCAuthUtil.getUserId(this))) {
+					return false;
+				}
+
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -3920,6 +4077,32 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		if (isSuggestionAtBottom()) {
 			ChatItem lastItem = mMessagesList.get(mMessagesList.size() - 1);
 			showOrHideSuggestionView(lastItem);
+		}
+	}
+
+	private class SendInputReplyCallback implements ApiRequest.Callback<PostMessagesResponseDto> {
+		public SendInputReplyCallback(PostReplyInputWidgetDto answer, Object p1) {
+
+		}
+
+		/**
+		 * レスポンスが成功の場合のコールバック
+		 *
+		 * @param responseDto レスポンスDTO
+		 */
+		@Override
+		public void onSuccess(PostMessagesResponseDto responseDto) {
+
+		}
+
+		/**
+		 * レスポンスが失敗の場合のコールバック
+		 *
+		 * @param error エラー
+		 */
+		@Override
+		public void onError(ApiRequest.Error error) {
+
 		}
 	}
 }

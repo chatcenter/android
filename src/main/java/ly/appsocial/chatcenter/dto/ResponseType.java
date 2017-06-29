@@ -9,6 +9,7 @@ public class ResponseType {
 	public static final String DATETIME =		"datetime";
 	public static final String DATETIMES =		"datetimes";
 	public static final String IMAGE =			"image";
+	public static final String CALENDAR =		"calendar";
 	public static final String PDF =			"pdf";
 	public static final String LOCATION =		"location";
 	public static final String THUMB =			"yes_no";
@@ -32,4 +33,5 @@ public class ResponseType {
 	public static final String SAVED = 			"saved";
 	public static final String LIST = 			"list";
 	public static final String TYPING = 		"typing";
+	public static final String COLOCATION = 	"colocation";
 }

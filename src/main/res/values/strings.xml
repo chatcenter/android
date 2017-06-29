@@ -148,9 +148,10 @@
     <string name="schedule_create_other">他の日時を選択する</string>
 
     <string name="answer_type_yes_no">はい／いいえ</string>
-    <string name="answer_type_multi_choice">単一選択</string>
+    <string name="answer_type_multi_choice">リスト</string>
     <string name="answer_type_checkbox">複数選択</string>
     <string name="answer_type_leaner_scale">評価</string>
+    <string name="answer_type_pull_down">プルダウン</string>
 
     <string-array name="linear_scale_list">
         <item>1</item>
@@ -245,5 +246,18 @@
 
     <string name="channel_search_hint">チャンネルを検索</string>
     <string name="new_suggestion">新規サジェスチョン</string>
+    <string name="suggestion_no_title">タイトルなし</string>
+    <string name="action_input_hint">入力してください</string>
+
+    <string name="no_suggestion">サジェスチョンはありません</string>
+    <string name="no_saved_widget">定型文はありません</string>
+
+    <string name="landing_page_title">ランディングページ</string>
+    <string name="landing_page_send_url">URLを送信する</string>
+    <string name="landing_page_send_qr">QRコードを送信する</string>
+    <string name="landing_page_send_url_message">こちらのリンク先で会話を続けられます。 \n%s</string>
+
+    <string name="selectbox_please_select">選択してください</string>
+    <string name="invalid_sheme">URLは無効です。</string>
 
 </resources>

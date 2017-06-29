@@ -45,10 +45,10 @@ public class WebSocketHelper {
     }
 
     public static void setListener(CCWebSocketClient.Listener listener) {
-        CCLog.d("WebSocketHelper", "setListener: " + mWebSocketClient);
+        CCLog.d("WebSocketHelper", "setMenuWidgetListener: " + mWebSocketClient);
 
         if (mWebSocketClient == null) {
-            CCLog.d("WebSocketHelper", "setListener: skip");
+            CCLog.d("WebSocketHelper", "setMenuWidgetListener: skip");
 
             return;
         }
@@ -56,10 +56,10 @@ public class WebSocketHelper {
     }
 
     public static void removeListener(CCWebSocketClient.Listener listener) {
-        CCLog.d("WebSocketHelper", "setListener: " + mWebSocketClient);
+        CCLog.d("WebSocketHelper", "setMenuWidgetListener: " + mWebSocketClient);
 
         if (mWebSocketClient == null) {
-            CCLog.d("WebSocketHelper", "setListener: skip");
+            CCLog.d("WebSocketHelper", "setMenuWidgetListener: skip");
 
             return;
         }

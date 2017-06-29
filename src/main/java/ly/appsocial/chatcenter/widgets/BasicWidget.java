@@ -3,8 +3,10 @@ package ly.appsocial.chatcenter.widgets;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -42,6 +44,7 @@ public class BasicWidget extends Widget {
 	public static final String WIDGET_TYPE_COLOCATION = "co-location";
 	public static final String WIDGET_TYPE_CONFIRM = "confirm";
 	public static final String WIDGET_TYPE_SELECT = "select";
+	public static final String WIDGET_TYPE_INPUT = "input";
 
 	/** テキスト */
 	@SerializedName("text")
@@ -183,6 +186,7 @@ public class BasicWidget extends Widget {
 		// Hide action first, it will be shown later
 		widgetView.showConfirmActions(false);
 		widgetView.showSelectActions(false);
+		widgetView.showInputActions(false);
 
 		if (this.stickerAction == null ||
 				this.stickerAction.actionData == null ||
@@ -223,6 +227,9 @@ public class BasicWidget extends Widget {
 					case ChatCenterConstants.ViewType.YESNO:
 						widgetView.showConfirmActions(this.stickerAction);
 						break;
+					case ChatCenterConstants.ViewType.SELECTBOX:
+						widgetView.showSelectBox(this.stickerAction);
+						break;
 					default:
 						widgetView.showSelectActions(this.stickerAction);
 						break;
@@ -230,6 +237,8 @@ public class BasicWidget extends Widget {
 			} else {
 				widgetView.showSelectActions(this.stickerAction);
 			}
+		} if (WIDGET_TYPE_INPUT.equals(this.stickerAction.actionType)) {
+			widgetView.showInputActions(this.stickerAction);
 		}
 
 		// Now it has action data
@@ -271,10 +280,13 @@ public class BasicWidget extends Widget {
 	}
 
 	private void openLocation(String mapUrl, Context context) {
-		Intent intent = new Intent(context, WebViewActivity.class);
-		intent.putExtra(ChatCenterConstants.Extra.URL, mapUrl);
-		intent.putExtra(ChatCenterConstants.Extra.ACTIVITY_TITLE, context.getString(R.string.google_map));
-		context.startActivity(intent);
+		try {
+			Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(mapUrl));
+			context.startActivity(i);
+		} catch (Exception e) {
+			Toast.makeText(context, R.string.invalid_sheme, Toast.LENGTH_SHORT).show();
+		}
+
 	}
 
 	protected void openImage(String imageUrl, Context context) {
@@ -388,6 +400,9 @@ public class BasicWidget extends Widget {
 			@SerializedName("label")
 			public String label;
 
+			@SerializedName("action-name")
+			public String actionName;
+
 			/** Action list */
 			@SerializedName("action")
 			public List<String> action;
@@ -403,6 +418,9 @@ public class BasicWidget extends Widget {
 
 			@SerializedName("message")
 			public String message;
+
+			@SerializedName("input")
+			public String input;
 
 			public static class Value {
 				/** The start value of a datetime action */
@@ -497,9 +515,9 @@ public class BasicWidget extends Widget {
 
 	public int getWidgetIcon(String actionType) {
 		int drawable = 0;
-		if (actionType.equals(BasicWidget.WIDGET_TYPE_CONFIRM)) {
+		if (BasicWidget.WIDGET_TYPE_CONFIRM.equals(actionType) || BasicWidget.WIDGET_TYPE_INPUT.equals(actionType)) {
 			drawable = R.drawable.icon_widget_question;
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_SELECT)) {
+		} else if (BasicWidget.WIDGET_TYPE_SELECT.equals(actionType)) {
 
 			drawable = R.drawable.icon_widget_question;
 
@@ -512,9 +530,9 @@ public class BasicWidget extends Widget {
 					drawable = R.drawable.icon_widget_schedule;
 				}
 			}
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_LOCATION)) {
+		} else if (BasicWidget.WIDGET_TYPE_LOCATION.equals(actionType)) {
 			drawable = R.drawable.icon_widget_location;
-		} else if (actionType.equals(BasicWidget.WIDGET_TYPE_COLOCATION)) {
+		} else if (BasicWidget.WIDGET_TYPE_COLOCATION.equals(actionType)) {
 			drawable = R.drawable.icon_live_location;
 		}
 

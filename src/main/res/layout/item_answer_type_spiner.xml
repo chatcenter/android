@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:gravity="center_vertical"
@@ -9,8 +10,7 @@
         android:id="@+id/question_type_icon"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:src="@drawable/icon_widget_question"
-        android:tint="@color/color_chatcenter_text"/>
+        app:srcCompat="@drawable/ic_yes_no"/>
 
     <TextView
         android:id="@+id/question_type_title"

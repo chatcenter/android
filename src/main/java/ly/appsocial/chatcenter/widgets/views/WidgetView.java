@@ -2,6 +2,7 @@ package ly.appsocial.chatcenter.widgets.views;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -9,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -18,8 +20,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,12 +42,12 @@ import ly.appsocial.chatcenter.R;
 import ly.appsocial.chatcenter.constants.ChatCenterConstants;
 import ly.appsocial.chatcenter.dto.ChatItem;
 import ly.appsocial.chatcenter.dto.ResponseType;
-import ly.appsocial.chatcenter.dto.WidgetAction;
+import ly.appsocial.chatcenter.dto.ws.request.PostReplyInputWidgetDto;
 import ly.appsocial.chatcenter.ui.RoundImageView;
 import ly.appsocial.chatcenter.util.CCAuthUtil;
+import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.util.ViewUtil;
 import ly.appsocial.chatcenter.widgets.BasicWidget;
-import ly.appsocial.chatcenter.util.StringUtil;
 import ly.appsocial.chatcenter.widgets.LiveLocationUser;
 
 
@@ -60,6 +64,8 @@ public class WidgetView extends FrameLayout {
 	private RelativeLayout mActionLinearContainer;
 	private Button mActionConfirmPositive;
 	private Button mActionConfirmNegative;
+	private LinearLayout mActionInputContainer;
+	private EditText mEdtInputWidget;
 
 	private RecyclerView mLiveThumbnailView;
 	private TextView mLiveLabel;
@@ -79,6 +85,9 @@ public class WidgetView extends FrameLayout {
 
 	private ArrayList<CheckBox> mCheckBoxList = new ArrayList<>();
 	private ArrayList<RadioButton> mRadioButtonList = new ArrayList<>();
+
+	private AlertDialog mSelectBoxDialog;
+	private AlertDialog mInputMessageDialog;
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public WidgetView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -258,6 +267,8 @@ public class WidgetView extends FrameLayout {
 		mActionConfirmContainer = v.findViewById(R.id.sticker_action_confirm_contaier);
 		mActionConfirmPositive = (Button) v.findViewById(R.id.sticker_action_confirm_positive);
 		mActionConfirmNegative = (Button) v.findViewById(R.id.sticker_action_confirm_negative);
+		mActionInputContainer = (LinearLayout) v.findViewById(R.id.sticker_action_input_container);
+		mEdtInputWidget = (EditText) v.findViewById(R.id.edt_reply_content);
 
 		mLiveThumbnailView = (RecyclerView) v.findViewById(R.id.live_thumbnail);
 		mLayoutManager = new LinearLayoutManager(getContext(), LinearLayout.HORIZONTAL, false);
@@ -384,6 +395,151 @@ public class WidgetView extends FrameLayout {
 		}
 	}
 
+	/**
+	 * Show a widget with EditText and some button.
+	 * @param stickerAction
+	 */
+	public void showInputActions(BasicWidget.StickerAction stickerAction) {
+
+		// if StickerAction is null then finish
+		if (stickerAction == null) {
+			return;
+		}
+
+		// If there is no action in StickerAction then finish
+		final List<BasicWidget.StickerAction.ActionData> actions = stickerAction.actionData;
+		if (actions == null) {
+			return;
+		}
+
+//		EditText inputView = null;
+//		for (int i = 0; i < mActionInputContainer.getChildCount(); i++) {
+//			if (mActionInputContainer.getChildAt(i) instanceof EditText) {
+//				inputView = (EditText) mActionInputContainer.getChildAt(i);
+//				break;
+//			}
+//		}
+//
+//		if (inputView != null) {
+//			inputView.setOnFocusChangeListener(new OnFocusChangeListener() {
+//				@Override
+//				public void onFocusChange(View v, boolean hasFocus) {
+//					if (hasFocus) {
+//						if (mStickerActionListener != null) {
+//							mStickerActionListener.onWidgetInputFocused(mChatItem);
+//						}
+//					}
+//				}
+//			});
+//			inputView.addTextChangedListener(new TextWatcher() {
+//				@Override
+//				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//				}
+//
+//				@Override
+//				public void onTextChanged(CharSequence s, int start, int before, int count) {
+//					mChatItem.tempMessage = String.valueOf(s);
+//				}
+//
+//				@Override
+//				public void afterTextChanged(Editable s) {
+//
+//				}
+//			});
+
+//			if (mChatItem.widget != null
+//					&& mChatItem.widget.stickerAction != null
+//					&& mChatItem.widget.stickerAction.responseActions != null
+//					&& mChatItem.widget.stickerAction.responseActions.size() > 0) {
+//				BasicWidget.StickerAction.ActionData data = mChatItem.widget.stickerAction.responseActions.get(0).getActions().get(0);
+//				inputView.setText(data.input);
+//			} else {
+//				inputView.setText(mChatItem.tempMessage);
+//			}
+//		}
+
+		if (mChatItem.widget != null
+				&& mChatItem.widget.stickerAction != null
+				&& mChatItem.widget.stickerAction.responseActions != null
+				&& mChatItem.widget.stickerAction.responseActions.size() > 0) {
+			mEdtInputWidget.setBackgroundResource(R.drawable.bg_action_select_selected);
+		} else {
+			mEdtInputWidget.setBackgroundResource(R.drawable.bg_action_select_normal);
+		}
+
+		if (StringUtil.isNotBlank(mChatItem.tempMessage)) {
+			mEdtInputWidget.setText(mChatItem.tempMessage);
+		} else if (mChatItem.widget != null
+				&& mChatItem.widget.stickerAction != null
+				&& mChatItem.widget.stickerAction.responseActions != null
+				&& mChatItem.widget.stickerAction.responseActions.size() > 0) {
+			BasicWidget.StickerAction.ActionData data = mChatItem.widget.stickerAction.responseActions.get(0).getActions().get(0);
+			mEdtInputWidget.setText(data.input);
+
+		}
+
+		final BasicWidget.StickerAction.ActionData action = actions.get(0);
+
+		mEdtInputWidget.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				showAlertToInputReplyMessage(mChatItem.widget.message.text, mEdtInputWidget.getText().toString(), action);
+			}
+		});
+
+        // for (int i = 0; i < actions.size(); i++) {
+
+        // Create the view and add UI setting
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        Button btn = (Button) inflater.inflate(R.layout.layout_btn_select_action, null);
+        if (btn != null) {
+            btn.setText(action.label);
+
+            btn.setBackgroundResource(mSelectActionLastBackgroundId);
+
+            // Handler
+            btn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+//                    if (mStickerActionListener != null && StringUtil.isNotBlank(mChatItem.tempMessage)) {
+//                        PostReplyInputWidgetDto answer = new PostReplyInputWidgetDto();
+//                        answer.mActionData = action;
+//                        answer.answerLabel = mChatItem.tempMessage;
+//                        answer.replyTo = String.valueOf(mChatItem.id);
+//                        answer.type = "response";
+//                        mStickerActionListener.onWidgetInputFinish(answer);
+//                    }
+                }
+            });
+
+            // Add Top divider for first item
+            mActionInputContainer.addView(getStickerActionsDivider());
+
+
+            // Add view to container
+            mActionInputContainer.addView(btn);
+        }
+        // }
+
+		showInputActions(true);
+	}
+
+//	public void setInputWidgetFocus() {
+//		EditText inputView = null;
+//		for (int i = 0; i < mActionInputContainer.getChildCount(); i++) {
+//			if (mActionInputContainer.getChildAt(i) instanceof EditText) {
+//				inputView = (EditText) mActionInputContainer.getChildAt(i);
+//				break;
+//			}
+//		}
+//
+//		if (inputView != null) {
+//			inputView.requestFocus();
+//			inputView.setSelection(inputView.getText().toString().length());
+//		}
+//	}
+
 	public void showSelectActions(BasicWidget.StickerAction stickerAction) {
 		List<BasicWidget.StickerAction.ActionData> actions;
 		if (stickerAction == null) {
@@ -396,13 +552,6 @@ public class WidgetView extends FrameLayout {
 		if (actions == null) {
 			return;
 		}
-
-		// Remove ProposeOtherSlots Action
-//		for (BasicWidget.StickerAction.ActionData action: actions) {
-//			if (action.isProposeOtherSlotAction()) {
-//				actions.remove(action);
-//			}
-//		}
 
 		// Show list of actions
 		for (int i = 0; i < actions.size(); i++) {
@@ -419,8 +568,6 @@ public class WidgetView extends FrameLayout {
 					btn.setBackgroundResource(mSelectActionLastBackgroundId);
 				}
 
-			//	btn.setTextColor(mActionTextColorDrawable);
-
 				// Handler
 				btn.setOnClickListener(new ActionOnClickListener(action));
 
@@ -431,12 +578,8 @@ public class WidgetView extends FrameLayout {
 
 				btn.setSelected(mChatItem.widget.isSelectedAction(action));
 
-				LinearLayout.LayoutParams lp = new
-						LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-						getResources().getDimensionPixelSize(R.dimen.sticker_select_button_height));
-
 				// Add view to container
-				mActionSelectContainer.addView(btn, lp);
+				mActionSelectContainer.addView(btn);
 
 				// Add Bottom divider
 				if (i < actions.size() -1) {
@@ -446,9 +589,139 @@ public class WidgetView extends FrameLayout {
 		}
 		showSelectActions(true);
 
+	}
 
-		Log.d(TAG, "showSelectActions: " + actions.size());
-		Log.d(TAG, "showSelectActions: " + mActionSelectContainer.getVisibility());
+	public void showSelectBox(final BasicWidget.StickerAction stickerAction) {
+		if (stickerAction == null || stickerAction.actionData == null) {
+			return;
+		}
+
+		mActionSelectContainer.removeAllViews();
+
+		String lastAnswer = "";
+
+		boolean isReplied = stickerAction.responseActions != null && stickerAction.responseActions.size() > 0;
+
+		// If user replied this widget, show the last answer
+		if (isReplied) {
+			List<BasicWidget.StickerAction.ActionData> answers = stickerAction.responseActions.get(0).getActions();
+			if (answers != null && answers.size() > 0) {
+				lastAnswer = answers.get(0).label;
+			}
+		}
+
+		final String answer = lastAnswer;
+
+		// Create the view and add UI setting
+		Button btn = (Button) LayoutInflater.from(getContext()).inflate(R.layout.layout_btn_select_box, null);
+		if (btn != null) {
+			if (StringUtil.isNotBlank(answer)) {
+				btn.setText(answer);
+			}
+			int padding = getContext().getResources().getDimensionPixelOffset(R.dimen.margin10dp);
+			btn.setPadding(padding, 0, padding, 0);
+
+			// Handler
+			btn.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					showSelectDialog(stickerAction.actionData, answer, mChatItem.id);
+				}
+			});
+
+			// Add Top divider for first item
+			mActionSelectContainer.addView(getStickerActionsDivider());
+
+			btn.setSelected(isReplied);
+
+			// Add view to container
+			mActionSelectContainer.addView(btn);
+		}
+
+		showSelectActions(true);
+	}
+
+
+	private int checkedItem = -1; // which item user selected from list
+
+	/**
+	 * Show a dialog to user select one
+	 * @param actionDatas
+	 * @param selected
+	 * @param id
+	 */
+	private void showSelectDialog(final List<BasicWidget.StickerAction.ActionData> actionDatas, String selected, final Integer id) {
+		// Create dialog
+		if (mSelectBoxDialog == null) {
+			// setup the alert builder
+			AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+			builder.setTitle(R.string.selectbox_please_select);
+
+			// add a radio button list
+
+			String[] items = new String[actionDatas.size()];
+			for (int i = 0; i < items.length; i++) {
+				items[i] = actionDatas.get(i).label;
+				if (items[i].equals(selected)) {
+					checkedItem = i;
+				}
+			}
+
+			builder.setSingleChoiceItems(items, checkedItem, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					checkedItem = which;
+				}
+			});
+
+			// add OK and Cancel buttons
+			builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if (checkedItem >= 0) {
+						dialog.dismiss();
+						BasicWidget.StickerAction.ActionData answer = actionDatas.get(checkedItem);
+						setSelectedActionForPulldown(answer);
+						if (mStickerActionListener != null) {
+							mStickerActionListener.onActionClick(answer, String.valueOf(id));
+						}
+					}
+				}
+			});
+			builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+				}
+			});
+
+			// create and show the alert dialog
+			mSelectBoxDialog = builder.create();
+		}
+
+		// Show dialog
+		if (!mSelectBoxDialog.isShowing()) {
+			mSelectBoxDialog.show();
+		}
+	}
+
+	private void setSelectedActionForPulldown(BasicWidget.StickerAction.ActionData action) {
+		if (action == null) {
+			return;
+		}
+
+		Button button = null;
+		for (int i = 0; i < mActionSelectContainer.getChildCount(); i++) {
+			if (mActionSelectContainer.getChildAt(i) instanceof Button) {
+				button = (Button) mActionSelectContainer.getChildAt(i);
+				break;
+			}
+		}
+
+		if (button != null) {
+			button.setText(action.label);
+			button.setSelected(true);
+		}
 	}
 
 	public void showCheckboxActions(BasicWidget.StickerAction stickerAction) {
@@ -495,17 +768,8 @@ public class WidgetView extends FrameLayout {
 
 				mCheckBoxList.add(check);
 
-				LinearLayout.LayoutParams lp = new
-						LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-						getResources().getDimensionPixelSize(R.dimen.sticker_select_button_height));
-
-				lp.setMargins(
-						getResources().getDimensionPixelSize(R.dimen.margin10dp), 0,
-						getResources().getDimensionPixelSize(R.dimen.margin10dp), 0
-				);
-
 				// Add view to container
-				mActionSelectContainer.addView(item, lp);
+				mActionSelectContainer.addView(item);
 
 				// Add Bottom divider
 				if (i < actions.size() -1) {
@@ -535,8 +799,6 @@ public class WidgetView extends FrameLayout {
 
 		showSelectActions(true);
 
-		Log.d(TAG, "showSelectActions: " + actions.size());
-		Log.d(TAG, "showSelectActions: " + mActionSelectContainer.getVisibility());
 	}
 
 	public void showLinearActions(BasicWidget.StickerAction stickerAction) {
@@ -586,20 +848,10 @@ public class WidgetView extends FrameLayout {
 				layoutParams.weight = 1;
 
 				linearLayout.addView(item, layoutParams);
-
-//				if (i < actions.size() - 1) {
-//					View view = new View(getContext());
-//					LinearLayout.LayoutParams layoutParams = new
-//							LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-//					layoutParams.weight = 1;
-//					linearLayout.addView(view, layoutParams);
-//				}
 			}
 		}
 		showLinearActions(true);
 
-		Log.d(TAG, "showLinearActions: " + actions.size());
-		Log.d(TAG, "showLinearActions: " + mActionLinearContainer.getVisibility());
 	}
 
 	public void showConfirmActions(BasicWidget.StickerAction stickerAction) {
@@ -665,6 +917,10 @@ public class WidgetView extends FrameLayout {
 		this.mActionLinearContainer.setVisibility(enable ? View.VISIBLE : View.GONE);
 	}
 
+	public void showInputActions(boolean enable) {
+		this.mActionInputContainer.setVisibility(enable ? VISIBLE : GONE);
+	}
+
 	private View getStickerActionsDivider() {
 		View divider = new View(this.getContext());
 
@@ -680,13 +936,78 @@ public class WidgetView extends FrameLayout {
 	public interface StickerActionListener {
 		void onActionClick(BasicWidget.StickerAction.ActionData action, String messageId);
 		void onCheckBoxOK(List<String> labels, List<String> answers, String messageId);
-
 		void onSuggestionBubbleClicked(ChatItem chatItem);
+		void onWidgetInputFinish(PostReplyInputWidgetDto answer);
+		void onInputAlertDismiss(Integer messageId);
 	}
 
 	private void selectWidgetView(boolean isMessage) {
 		mTvMessage.setVisibility(isMessage ? VISIBLE : GONE);
 		mRlWidgetView.setVisibility(isMessage ? GONE : VISIBLE);
+	}
+
+	private void showAlertToInputReplyMessage(String title, final String content, final BasicWidget.StickerAction.ActionData action) {
+		if (mInputMessageDialog != null && mInputMessageDialog.isShowing()) {
+			return;
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+		builder.setTitle(title);
+
+		final View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_input_widget, null, false);
+		final EditText edtInput = (EditText) view.findViewById(R.id.edit_message_reply);
+		edtInput.setText(content);
+
+		builder.setView(view);
+
+		edtInput.setOnFocusChangeListener(new OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+					InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+					edtInput.setSelection(edtInput.getText().toString().length());
+				}
+			}
+		});
+
+		builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				mChatItem.tempMessage = edtInput.getText().toString();
+				mEdtInputWidget.setText(mChatItem.tempMessage);
+
+				if (mStickerActionListener != null && StringUtil.isNotBlank(mChatItem.tempMessage)) {
+					PostReplyInputWidgetDto answer = new PostReplyInputWidgetDto();
+					answer.mActionData = action;
+					answer.answerLabel = mChatItem.tempMessage;
+					answer.replyTo = String.valueOf(mChatItem.id);
+					answer.type = "response";
+					mStickerActionListener.onWidgetInputFinish(answer);
+				}
+
+				dialog.dismiss();
+				if (mStickerActionListener != null) {
+					mStickerActionListener.onInputAlertDismiss(mChatItem.id);
+				}
+			}
+		});
+
+		builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				edtInput.setText(content);
+				dialog.dismiss();
+				if (mStickerActionListener != null) {
+					mStickerActionListener.onInputAlertDismiss(mChatItem.id);
+				}
+			}
+		});
+
+		mInputMessageDialog = builder.create();
+
+		mInputMessageDialog.show();
+
 	}
 
 	// //////////////////////////////////////////////////////////////////////////

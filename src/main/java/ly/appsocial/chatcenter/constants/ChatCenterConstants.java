@@ -1,5 +1,7 @@
 package ly.appsocial.chatcenter.constants;
 
+import ly.appsocial.chatcenter.BuildConfig;
+
 /**
  * ChatCenter 全体の定数定義クラス
  */
@@ -7,13 +9,16 @@ public class ChatCenterConstants {
 
 	public static final String CHATCENTER_SDK_VERSION = "1.0.8";
 
-	public static final String URL_DASHBOARD = "https://app.chatcenter.io";
 	public static final int MAX_MESSAGE_ON_LOAD = 20;
 	public static final int MAX_CHANNEL_ON_LOAD = 20;
     public static final long SEND_TYPING_TIME_OUT = 500;
 	public static final long TIME_DISPLAYING_TYPING = 2000; // Display "typing..." in 2 seconds
 	public static final int MAX_NOTE_LENGTH = 500; // Max length of Note is 500 characters
 	public static final String LICENSE_URL = "https://chatcenter.github.io/android/Copyright/%s/Copyright";
+
+	public static String getDashboardUrl() {
+		return "https://app.chatcenter.io";
+	}
 
 	/**
 	 * プリファレンスキー
@@ -53,6 +58,7 @@ public class ChatCenterConstants {
 		public static final String ACTIVITY_TITLE = "activity_title";
 		public static final String FUNNEL_LIST = "funnel_list";
 		public static final String CHAT_PARAM = "chat_param";
+		public static final String WEBVIEW_HEADER = "open_webview_with_auth_token";
 	}
 
 	public static class StickerName {
@@ -68,6 +74,7 @@ public class ChatCenterConstants {
 		public static final String STICKER_TYPE_TYPE_PHONE_CALL = "phone_call";
 		public static final String STICKER_TYPE_SCHEDULE = "schedule";
 		public static final String STICKER_TYPE_SELECT = "select";
+		public static final String STICKER_TYPE_LANDING_PAGE = "landing_page";
 	}
 
 	public static class ActionType {
@@ -82,6 +89,7 @@ public class ChatCenterConstants {
 		public static final String DEFAULT = "default";
 		public static final String CHECKBOX = "checkbox";
 		public static final String LINEAR = "linear";
+		public static final String SELECTBOX = "selectbox";
 	}
 
 	public static class CallType {

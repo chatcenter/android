@@ -28,7 +28,7 @@
 	<dimen name="list_view_height">1460dp</dimen>
 
 	<dimen name="keyboard_height">240dp</dimen>
-	<dimen name="chatcenter_suggestion_holder_height">100dp</dimen>
+	<dimen name="chatcenter_suggestion_holder_height">200dp</dimen>
 	<dimen name="chat_history_user_ava_size">32dp</dimen>
 	<dimen name="assignee_ava_size">30dp</dimen>
 	<dimen name="info_item_vertical_margin">20dp</dimen>

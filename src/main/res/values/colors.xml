@@ -12,7 +12,7 @@
     <color name="color_chatcenter_title_text">#293b54</color>
     <color name="color_chatcenter_title_background">#ffffff</color>
     <color name="color_chatcenter_title_background_dark">#cacaca</color>
-    <color name="color_chatcenter_title_divider">#666666</color>
+    <color name="color_chatcenter_title_divider">#e0e0e0</color>
     <color name="color_chatcenter_title_button_image">#0067ff</color>
 	<color name="color_chatcenter_title_button_text">#0067ff</color>
 

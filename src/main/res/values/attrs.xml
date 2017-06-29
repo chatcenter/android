@@ -11,4 +11,11 @@
         <attr name="textColor" format="color|reference" />
         <attr name="backgroundMain" format="reference|color"/>
     </declare-styleable>
+
+
+    <declare-styleable name="SmallWidgetTableView">
+        <attr name="smallWidgetTableTitle" format="string" />
+        <attr name="smallWidgetTableContentEmpty" format="string" />
+        <attr name="smallWidgetTableBackground" format="reference|color" />
+    </declare-styleable>
 </resources>

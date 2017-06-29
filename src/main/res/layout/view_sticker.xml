@@ -102,6 +102,35 @@
             android:visibility="gone">
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/sticker_action_input_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@id/sticker_image"
+            android:layout_alignRight="@id/sticker_image"
+            android:layout_below="@id/sticker_image"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/color_chatcenter_widget_border"/>
+
+            <EditText
+                android:id="@+id/edt_reply_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/activity_header_height"
+                android:background="@android:color/white"
+                android:paddingLeft="@dimen/margin8dp"
+                android:paddingRight="@dimen/margin8dp"
+                android:textSize="12sp"
+                android:focusable="false"
+                android:hint="@string/action_input_hint"/>
+
+        </LinearLayout>
+
         <RelativeLayout
             android:id="@+id/sticker_action_linear_container"
             android:layout_width="match_parent"

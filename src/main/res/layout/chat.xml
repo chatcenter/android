@@ -1,6 +1,7 @@
 <LinearLayout
     android:id="@+id/chat_root_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
@@ -123,7 +124,6 @@
             android:id="@+id/chat_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/tv_user_typing"
             android:divider="@null"
             android:dividerHeight="3dp"
             android:transcriptMode="disabled"/>
@@ -166,79 +166,27 @@
         android:layout_height="wrap_content"/>
 
 
-    <LinearLayout
-        android:id="@+id/widget_menu_place_holder"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/keyboard_height"
-        android:orientation="vertical"
-        android:visibility="gone"/>
-
-    <LinearLayout
-        android:id="@+id/suggestion_place_holder"
+    <RelativeLayout
+        android:id="@+id/small_widget_table_container"
         android:layout_width="match_parent"
         android:layout_height="@dimen/chatcenter_suggestion_holder_height"
-        android:background="@color/color_chatcenter_suggestion_background"
-        android:orientation="vertical"
         android:visibility="gone">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="5dp"
-            android:text="@string/suggestion"
-            android:textColor="@color/color_chatcenter_text"
-            android:textStyle="bold"/>
-
-        <HorizontalScrollView
-            android:layout_width="wrap_content"
+        <ly.appsocial.chatcenter.ui.SmallWidgetTableView
+            android:id="@+id/tableFixedPhrase"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:scrollbars="none">
+            app:smallWidgetTableBackground="@color/color_chatcenter_fixedphrases_view_bg"
+            app:smallWidgetTableTitle="@string/fixed_phrases"
+            app:smallWidgetTableContentEmpty="@string/no_saved_widget"/>
 
-            <LinearLayout
-                android:id="@+id/suggestion_horizontal_view"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="horizontal"/>
-
-        </HorizontalScrollView>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/fixed_phrase_place_holder"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/chatcenter_suggestion_holder_height"
-        android:background="@color/color_chatcenter_fixedphrases_view_bg"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="5dp"
-            android:text="@string/fixed_phrases"
-            android:textColor="@color/color_chatcenter_text"
-            android:textStyle="bold"/>
-
-        <HorizontalScrollView
-            android:layout_width="wrap_content"
+        <ly.appsocial.chatcenter.ui.SmallWidgetTableView
+            android:id="@+id/tableSuggestion"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:id="@+id/fixed_phrase_horizontal_view"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="horizontal"/>
-
-        </HorizontalScrollView>
-
-    </LinearLayout>
+            app:smallWidgetTableBackground="@color/color_chatcenter_suggestion_background"
+            app:smallWidgetTableTitle="@string/suggestion"
+            app:smallWidgetTableContentEmpty="@string/no_suggestion"/>
+    </RelativeLayout>
 
 </LinearLayout>

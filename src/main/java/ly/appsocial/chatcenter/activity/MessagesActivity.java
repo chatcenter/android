@@ -2589,7 +2589,8 @@ public class MessagesActivity extends BaseActivity implements View.OnClickListen
 
     public void openDashboard() {
         Intent intent = new Intent(this, WebViewActivity.class);
-        intent.putExtra(ChatCenterConstants.Extra.URL, ChatCenterConstants.URL_DASHBOARD);
+        intent.putExtra(ChatCenterConstants.Extra.URL, ChatCenterConstants.getDashboardUrl());
+        intent.putExtra(ChatCenterConstants.Extra.WEBVIEW_HEADER, true);
         startActivity(intent);
     }
 
