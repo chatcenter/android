@@ -108,7 +108,7 @@ public class SmallWidgetView extends LinearLayout {
     public void bindData(final BasicWidget.StickerAction.ActionData action, final SmallWidgetTableView.OnItemClickListener onClickListener) {
         // Older suggestion object do not contain type
         if (StringUtil.isBlank(action.type)) {
-            mImvIcon.setImageResource(R.drawable.icon_widget_schedule);
+            mImvIcon.setImageResource(R.drawable.ic_schedule);
         } else {
             if (action.type.equals(ResponseType.MESSAGE) || action.type.equals(ResponseType.URL)) {
                 mImvIcon.setVisibility(View.GONE);
@@ -148,11 +148,11 @@ public class SmallWidgetView extends LinearLayout {
         if (stickerAction != null) {
             String actionType = stickerAction.actionType;
 
-            if (BasicWidget.WIDGET_TYPE_CONFIRM.equals(actionType) || BasicWidget.WIDGET_TYPE_INPUT.equals(actionType)) {
-                drawable = R.drawable.icon_widget_question;
+            if (BasicWidget.WIDGET_TYPE_INPUT.equals(actionType)) {
+                drawable = R.drawable.ic_question;
             } else if (BasicWidget.WIDGET_TYPE_SELECT.equals(actionType)) {
 
-                drawable = R.drawable.icon_widget_question;
+                drawable = R.drawable.ic_question;
 
                 // Change icon if this is calendar widget
                 if (stickerAction != null
@@ -161,15 +161,17 @@ public class SmallWidgetView extends LinearLayout {
                             stickerAction.actionData.get(stickerAction.actionData.size() - 1);
                     if (lastActionData != null && lastActionData.action != null
                             && lastActionData.action.contains(WidgetAction.OPEN_CALENDAR)) {
-                        drawable = R.drawable.icon_widget_schedule;
+                        drawable = R.drawable.ic_schedule;
                     }
                 }
             } else if (BasicWidget.WIDGET_TYPE_LOCATION.equals(actionType)) {
-                drawable = R.drawable.icon_widget_location;
+                drawable = R.drawable.ic_location;
             } else if (BasicWidget.WIDGET_TYPE_COLOCATION.equals(actionType)) {
                 drawable = R.drawable.icon_live_location;
             } else if (ResponseType.FILE.equals(actionType)) {
-                drawable = R.drawable.icon_widget_attachment;
+                drawable = R.drawable.ic_attachment;
+            } else if (BasicWidget.WIDGET_TYPE_CONFIRM.equalsIgnoreCase(actionType)) {
+                drawable = R.drawable.ic_confirm;
             }
         }
 

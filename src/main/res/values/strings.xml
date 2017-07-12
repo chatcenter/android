@@ -260,4 +260,19 @@
     <string name="selectbox_please_select">選択してください</string>
     <string name="invalid_sheme">URLは無効です。</string>
 
+    <string name="payment_activity_title">支払い依頼をする</string>
+    <string name="payment_activity_amount_currency_input">金額を入力して通貨を選択してください</string>
+    <string name="payment_activity_amount_not_enough">支払い金額は最低100円もしくは50セント以上です。</string>
+    <string name="payment_widget_title">タイトル</string>
+    <string name="payment_widget_content">%s支払う</string>
+
+
+    <string name="confirm_widget_title">タイトル</string>
+    <string name="confirm_option_got_it">承知しました</string>
+    <string name="confirm_option_thumb_up">👍</string>
+    <string name="confirm_option_got_yes">はい</string>
+    <string name="confirm_option_custom_text">カスタムテキスト</string>
+    <string name="confirm_widget_actions">アクション</string>
+    <string name="confirm_activity_title">確認</string>
+
 </resources>

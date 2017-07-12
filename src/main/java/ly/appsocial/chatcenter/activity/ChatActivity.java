@@ -47,6 +47,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -150,13 +151,6 @@ import ly.appsocial.chatcenter.ws.parser.PostMessagesReadParser;
 import ly.appsocial.chatcenter.ws.parser.PostUsersParser;
 import ly.appsocial.chatcenter.ws.parser.StartVideoChatParser;
 
-import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_LANDING_PAGE;
-import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_CAMERA;
-import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_FILE;
-import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_FIXED_PHRASE;
-import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_LOCATION;
-import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_QUESTION;
-import static ly.appsocial.chatcenter.ui.WidgetMenuBar.ButtonType.TYPE_WIDGET_SCHEDULE;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.StickerAction;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_ACCEPT;
 import static ly.appsocial.chatcenter.widgets.VideoCallWidget.VIDEO_CALL_ACTION_HANGUP;
@@ -185,6 +179,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	private static final int REQUEST_SCHEDULE_WIDGET = 1006;
 	private static final int REQUEST_QUESTION = 1007;
 	private static final int REQUEST_LIVE_LOCATION = 1008;
+	private static final int REQUEST_PAYMENT = 1009;
+	private static final int REQUEST_CONFIRM = 1010;
 
 	private static final int MAX_MESSAGE_TEXT_LENGTH = 2000;
 
@@ -199,6 +195,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	 * リクエストタグ
 	 */
 	private static final String REQUEST_TAG = ChatActivity.class.getCanonicalName();
+
 
 	// //////////////////////////////////////////////////////////////////////////
 	// インスタンスフィールド
@@ -1442,34 +1439,58 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			return;
 		}
 
+		mReplyAction = action;
+		mReplyMsgId = msgId;
+
+		if (ResponseType.URL.equalsIgnoreCase(action.type)) {
+			DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
+			sendMessageResponseForChannel(mReplyAction, mReplyMsgId);
+			return;
+		}
+
 		if (action.action != null || action.value != null) {
 			if (action.action != null) {
-				mReplyAction = action;
-				mReplyMsgId = msgId;
-
-				if (ResponseType.URL.equalsIgnoreCase(action.type)) {
-
-					DialogUtil.showProgressDialog(getSupportFragmentManager(), DialogUtil.Tag.PROGRESS);
-					sendMessageResponseForChannel(mReplyAction, mReplyMsgId);
-
-				} else if (ResponseType.FILE.equalsIgnoreCase(action.type)) {
-					onFileClicked();
-				} else if (ResponseType.CALENDAR.equalsIgnoreCase(action.type)) {
-					onDateTimeAvailabilityClicked();
-				} else if (ResponseType.LOCATION.equalsIgnoreCase(action.type)) {
-					if (!isInternetConnecting) {
-						showNWErrorDialog();
+				for (String actionString : action.action) {
+					if (actionString.startsWith("http")) {
+						Intent intent = new Intent(this, WebViewActivity.class);
+						intent.putExtra(ChatCenterConstants.Extra.URL, actionString);
+						startActivity(intent);
+						break;
 					} else {
-						openGoogleMapPicker();
+						if (actionString.startsWith(WidgetAction.OPEN_CALENDAR)) {
+							onDateTimeAvailabilityClicked();
+							break;
+						} else if (actionString.startsWith(WidgetAction.OPEN_FILE)) {
+							onFileClicked();
+							break;
+						} else if (actionString.startsWith(WidgetAction.OPEN_LOCATION)) {
+							if (!isInternetConnecting) {
+								showNWErrorDialog();
+							} else {
+								openGoogleMapPicker();
+							}
+							break;
+						} else if (actionString.startsWith(WidgetAction.OPEN_COLOCATION)) {
+							if (!isInternetConnecting) {
+								showNWErrorDialog();
+							} else {
+								openLiveLocation();
+							}
+							break;
+						} else if (actionString.startsWith(WidgetAction.OPEN_QUESTION)) {
+							onQuestionClicked();
+							break;
+						} else if (actionString.startsWith(WidgetAction.OPEN_PAYMENT)) {
+							if (!mIsAgent) {
+								Intent intent = new Intent(this, WebViewActivity.class);
+								intent.putExtra(ChatCenterConstants.Extra.URL, action.action.get(1));
+								intent.putExtra(ChatCenterConstants.Extra.WEBVIEW_HEADER, true);
+								startActivity(intent);
+							}
+							return;
+						}
+
 					}
-				} else if (ResponseType.COLOCATION.equalsIgnoreCase(action.type)) {
-					if (!isInternetConnecting) {
-						showNWErrorDialog();
-					} else {
-						openLiveLocation();
-					}
-				} else if (ResponseType.QUESTION.equalsIgnoreCase(action.type)) {
-					onQuestionClicked();
 				}
 			}
 
@@ -1761,39 +1782,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 	// Widget作成
 	// //////////////////////////////////////////////////////////////////////////
 
-	private void openStickerMenu() {
-		if (mWidgetMenuBar.getVisibility() == View.VISIBLE) {
-			mIbtSendSticker.setImageResource(R.drawable.ic_close);
-			mWidgetMenuBar.setVisibility(View.GONE);
-			findViewById(R.id.ll_message_input).setVisibility(View.VISIBLE);
-
-			mEdtMsgInput.post(new Runnable() {
-				@Override
-				public void run() {
-					// Focus on the EditText
-					mEdtMsgInput.requestFocus();
-					mSmallWidgetTableContainer.setVisibility(View.GONE);
-
-					// Show the keyboard
-					if (!isKeyBoardVisible) {
-						final InputMethodManager inputMethodManager = (InputMethodManager) ChatActivity.this
-								.getSystemService(Context.INPUT_METHOD_SERVICE);
-						inputMethodManager.showSoftInput(mEdtMsgInput, InputMethodManager.SHOW_IMPLICIT);
-					}
-				}
-			});
-
-		} else {
-			mIbtSendSticker.setImageResource(R.drawable.ic_text_input);
-			mWidgetMenuBar.setVisibility(View.VISIBLE);
-			findViewById(R.id.ll_message_input).setVisibility(View.GONE);
-			hideKeyboard();
-		}
-	}
-
 	@Override
 	public void onMenuButtonClicked(ButtonType type){
 		switch (type){
+			case TYPE_TEXT_INPUT:
+				closeWidgetMenuBar();
+				break;
+
 			case TYPE_SUGGESTION:
 				ChatItem latestSuggestion = getLatestSuggestion();
 				showOrHideSuggestionView(latestSuggestion);
@@ -1843,7 +1838,66 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 			case TYPE_LANDING_PAGE:
 				onLandingPageButtonClicked();
 				break;
+
+			case TYPE_PAYMENT:
+				onPaymentButtonClicked();
+				break;
+
+			case TYPE_CONFIRM:
+				onConfirmButtonClicked();
+				break;
 		}
+	}
+
+	/**
+	 * Close widget menu bar and show text input view for chatting.
+	 */
+	private void closeWidgetMenuBar() {
+		mWidgetMenuBar.setVisibility(View.GONE);
+		findViewById(R.id.ll_message_input).setVisibility(View.VISIBLE);
+
+		mEdtMsgInput.post(new Runnable() {
+            @Override
+            public void run() {
+                // Focus on the EditText
+                mEdtMsgInput.requestFocus();
+                mSmallWidgetTableContainer.setVisibility(View.GONE);
+
+                // Show the keyboard
+                if (!isKeyBoardVisible) {
+                    final InputMethodManager inputMethodManager = (InputMethodManager) ChatActivity.this
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.showSoftInput(mEdtMsgInput, InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+        });
+	}
+
+
+	/**
+	 * Open WidgetMenuBar when user clicked close button Message Input View.
+	 */
+	private void openStickerMenu() {
+		mWidgetMenuBar.setVisibility(View.VISIBLE);
+		findViewById(R.id.ll_message_input).setVisibility(View.GONE);
+
+		// Scroll menu to start
+		((HorizontalScrollView) findViewById(R.id.ll_menu_bar)).fullScroll(View.FOCUS_LEFT);
+
+
+		// Hide the keyboard.
+		hideKeyboard();
+	}
+
+
+	private void onConfirmButtonClicked() {
+		Intent intent = new Intent(this, ConfirmWidgetEditor.class);
+		startActivityForResult(intent, REQUEST_CONFIRM);
+	}
+
+	private void onPaymentButtonClicked() {
+		Intent intent = new Intent(this, PaymentWidgetEditor.class);
+		startActivityForResult(intent, REQUEST_PAYMENT);
 	}
 
 	private ChatItem getLatestSuggestion() {
@@ -2284,6 +2338,14 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 						finish();
 					}
 					break;
+
+				case REQUEST_PAYMENT:
+					onPaymentSelected(data);
+					break;
+
+				case REQUEST_CONFIRM:
+					onConfirmWidgetCreated(data);
+					break;
 			}
 		}
 	}
@@ -2335,6 +2397,29 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				requestPostSticker(content);
 			}
 		});
+	}
+
+
+	private void onPaymentSelected(Intent data) {
+		if (data == null) {
+			return;
+		}
+
+		String content = data.getStringExtra(PaymentWidgetEditor.PAYMENT_CONTENT);
+		if(StringUtil.isNotBlank(content)) {
+			requestPostSticker(content);
+		}
+	}
+
+	private void onConfirmWidgetCreated(Intent data) {
+		if (data == null) {
+			return;
+		}
+
+		String content = data.getStringExtra(ConfirmWidgetEditor.CONFIRM_CONTENT);
+		if(StringUtil.isNotBlank(content)) {
+			requestPostSticker(content);
+		}
 	}
 
 
@@ -2864,10 +2949,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 				try {
 					String url = responseDto.getString("url");
 					if (StringUtil.isNotBlank(url)) {
+						closeWidgetMenuBar();
 						String message = String.format(getString(R.string.landing_page_send_url_message), url);
-						openStickerMenu();
 						mEdtMsgInput.setText(message);
 						mEdtMsgInput.setSelection(message.length());
+						mEdtMsgInput.requestFocus();
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -3236,7 +3322,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 											BasicWidget.StickerAction.ActionData.class);
 									ArrayList<BasicWidget.StickerAction.ActionData> answers = new ArrayList<>();
 
-									if ( item.widget.content.has("answers")) {
+									if (item.widget.content.has("answers")) {
 										JSONArray jsonArray = item.widget.content.getJSONArray("answers");
 										if (jsonArray != null && jsonArray.length() > 0) {
 											for (int j = 0; j < jsonArray.length(); j++) {
@@ -3618,15 +3704,15 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 		}
 
 		for (String sticker : stickers) {
-			if (ChatCenterConstants.StickerName.STICKER_TYPE_QUESTION.equals(sticker)) {
-				mWidgetMenuBar.addButton(TYPE_WIDGET_QUESTION);
-			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_DATE_TIME_AVAILABILITY.equals(sticker)) {
-				mWidgetMenuBar.addButton(TYPE_WIDGET_SCHEDULE);
-			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_FIXED_PHRASE.equals(sticker)) {
-				mWidgetMenuBar.addButton(TYPE_WIDGET_FIXED_PHRASE);
-			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_LOCATION.equals(sticker)) {
-				mWidgetMenuBar.addButton(TYPE_WIDGET_LOCATION);
-			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_VIDEO_CHAT.equals(sticker)) {
+			if (ChatCenterConstants.StickerName.STICKER_TYPE_QUESTION.equalsIgnoreCase(sticker)) {
+				mWidgetMenuBar.addButton(ButtonType.TYPE_WIDGET_QUESTION);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_DATE_TIME_AVAILABILITY.equalsIgnoreCase(sticker)) {
+				mWidgetMenuBar.addButton(ButtonType.TYPE_WIDGET_SCHEDULE);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_FIXED_PHRASE.equalsIgnoreCase(sticker)) {
+				mWidgetMenuBar.addButton(ButtonType.TYPE_WIDGET_FIXED_PHRASE);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_LOCATION.equalsIgnoreCase(sticker)) {
+				mWidgetMenuBar.addButton(ButtonType.TYPE_WIDGET_LOCATION);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_VIDEO_CHAT.equalsIgnoreCase(sticker)) {
 				isVideoCallEnabledForApp = true;
 
 				if (isVideoCallEnabledForApp && mCurrentChannelItem != null && mCurrentChannelItem.canUseVideoCall(mIsAgent)) {
@@ -3634,13 +3720,22 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 					mBtPhoneCall.setVisibility(View.VISIBLE);
 				}
 
-			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE.equals(sticker)) {
-				mWidgetMenuBar.addButton(TYPE_WIDGET_FILE);
-				mWidgetMenuBar.addButton(TYPE_WIDGET_CAMERA);
-			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_LANDING_PAGE.equals(sticker)) {
-				mWidgetMenuBar.addButton(TYPE_LANDING_PAGE);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_TYPE_FILE.equalsIgnoreCase(sticker)) {
+				mWidgetMenuBar.addButton(ButtonType.TYPE_WIDGET_FILE);
+				mWidgetMenuBar.addButton(ButtonType.TYPE_WIDGET_CAMERA);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_LANDING_PAGE.equalsIgnoreCase(sticker)) {
+				mWidgetMenuBar.addButton(ButtonType.TYPE_LANDING_PAGE);
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_PAYMENT.equalsIgnoreCase(sticker)) {
+				if(mIsAgent) {
+					mWidgetMenuBar.addButton(ButtonType.TYPE_PAYMENT);
+				}
+			} else if (ChatCenterConstants.StickerName.STICKER_TYPE_CONFIRM.equalsIgnoreCase(sticker)) {
+				mWidgetMenuBar.addButton(ButtonType.TYPE_CONFIRM);
 			}
 		}
+
+
+		// mWidgetMenuBar.addButton(ButtonType.TYPE_CONFIRM);
 	}
 
 	/**
@@ -3681,7 +3776,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener, 
 									public void run() {
 										showSmallWidgetTable();
 										if (mWidgetMenuBar.getVisibility() != View.VISIBLE) {
-											mIbtSendSticker.setImageResource(R.drawable.ic_text_input);
 											mWidgetMenuBar.setVisibility(View.VISIBLE);
 											findViewById(R.id.ll_message_input).setVisibility(View.INVISIBLE);
 										}

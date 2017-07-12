@@ -45,6 +45,7 @@ public class BasicWidget extends Widget {
 	public static final String WIDGET_TYPE_CONFIRM = "confirm";
 	public static final String WIDGET_TYPE_SELECT = "select";
 	public static final String WIDGET_TYPE_INPUT = "input";
+	public static final String WIDGET_TYPE_PAYMENT = "payment";
 
 	/** テキスト */
 	@SerializedName("text")
@@ -422,6 +423,12 @@ public class BasicWidget extends Widget {
 			@SerializedName("input")
 			public String input;
 
+			@SerializedName("currency")
+			public String currency;
+
+			@SerializedName("amount")
+			public float amount;
+
 			public static class Value {
 				/** The start value of a datetime action */
 				@SerializedName("start")
@@ -515,25 +522,29 @@ public class BasicWidget extends Widget {
 
 	public int getWidgetIcon(String actionType) {
 		int drawable = 0;
-		if (BasicWidget.WIDGET_TYPE_CONFIRM.equals(actionType) || BasicWidget.WIDGET_TYPE_INPUT.equals(actionType)) {
-			drawable = R.drawable.icon_widget_question;
-		} else if (BasicWidget.WIDGET_TYPE_SELECT.equals(actionType)) {
+		if (BasicWidget.WIDGET_TYPE_INPUT.equalsIgnoreCase(actionType)) {
+			drawable = R.drawable.ic_question;
+		} else if (BasicWidget.WIDGET_TYPE_SELECT.equalsIgnoreCase(actionType)) {
 
-			drawable = R.drawable.icon_widget_question;
+			drawable = R.drawable.ic_question;
 
 			// Change icon if this is calendar widget
-			if (this.stickerAction != null
+			if (BasicWidget.WIDGET_TYPE_PAYMENT.equalsIgnoreCase(this.stickerType)) {
+				drawable = R.drawable.ic_payment;
+			} else if (this.stickerAction != null
 					&& this.stickerAction.actionData != null) {
 				BasicWidget.StickerAction.ActionData lastActionData =
 						this.stickerAction.actionData.get(this.stickerAction.actionData.size() - 1);
 				if (lastActionData != null && lastActionData.action != null && lastActionData.action.contains(WidgetAction.OPEN_CALENDAR)) {
-					drawable = R.drawable.icon_widget_schedule;
+					drawable = R.drawable.ic_schedule;
 				}
 			}
-		} else if (BasicWidget.WIDGET_TYPE_LOCATION.equals(actionType)) {
-			drawable = R.drawable.icon_widget_location;
-		} else if (BasicWidget.WIDGET_TYPE_COLOCATION.equals(actionType)) {
+		} else if (BasicWidget.WIDGET_TYPE_LOCATION.equalsIgnoreCase(actionType)) {
+			drawable = R.drawable.ic_location;
+		} else if (BasicWidget.WIDGET_TYPE_COLOCATION.equalsIgnoreCase(actionType)) {
 			drawable = R.drawable.icon_live_location;
+		} else if (BasicWidget.WIDGET_TYPE_CONFIRM.equalsIgnoreCase(actionType)) {
+			drawable = R.drawable.ic_confirm;
 		}
 
 		return drawable;

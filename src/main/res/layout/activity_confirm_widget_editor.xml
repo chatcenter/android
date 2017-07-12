@@ -1,0 +1,117 @@
+<LinearLayout
+    android:id="@+id/root_view"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:theme="@style/ToolbarStyle">
+
+    </android.support.v7.widget.Toolbar>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_line_width"
+        android:layout_below="@id/toolbar"
+        android:background="@color/color_chatcenter_title_divider"/>
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin10dp"
+                android:layout_marginTop="@dimen/margin10dp"
+                android:text="@string/confirm_widget_title"
+                android:textColor="@color/color_chatcenter_text"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+
+
+            <EditText
+                android:id="@+id/edt_confirm_title"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="@drawable/edittext_border"
+                android:gravity="top|left"
+                android:hint="@string/confirm_widget_title"
+                android:padding="@dimen/margin8dp"
+                android:textSize="14sp"/>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin10dp"
+                android:text="@string/confirm_widget_actions"
+                android:textColor="@color/color_chatcenter_text"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+
+            <RadioGroup
+                android:id="@+id/rdg_actions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+
+                <RadioButton
+                    android:id="@+id/rd_yes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/confirm_option_got_yes"
+                    android:textColor="@color/color_chatcenter_text"/>
+
+                <RadioButton
+                    android:id="@+id/rd_got_it"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/confirm_option_got_it"
+                    android:textColor="@color/color_chatcenter_text"/>
+
+                <RadioButton
+                    android:id="@+id/rd_like"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/confirm_option_thumb_up"
+                    android:textColor="@color/color_chatcenter_text"/>
+
+                <RadioButton
+                    android:id="@+id/rd_custom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/confirm_option_custom_text"
+                    android:textColor="@color/color_chatcenter_text"/>
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/edt_custom_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:background="@drawable/bg_dialog_edittext"
+                android:hint="@string/confirm_option_custom_text"
+                android:minHeight="@dimen/activity_header_height"
+                android:paddingLeft="@dimen/margin8dp"
+                android:paddingRight="@dimen/margin8dp"
+                android:textColor="@color/color_chatcenter_text"
+                android:textSize="14sp"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

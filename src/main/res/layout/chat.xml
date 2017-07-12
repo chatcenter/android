@@ -7,80 +7,40 @@
     android:background="@android:color/white"
     android:orientation="vertical">
 
-    <!--&lt;!&ndash; ヘッダー &ndash;&gt;-->
-    <!--<RelativeLayout-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="@dimen/activity_header_height"-->
-    <!--android:background="@color/color_chatcenter_title_background">-->
-
-    <!--&lt;!&ndash;閉じる &ndash;&gt;-->
-    <!--<ImageButton-->
-    <!--android:id="@+id/chat_close_button"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_centerVertical="true"-->
-    <!--android:background="@null"-->
-    <!--android:src="@drawable/selector_common_close_button"-->
-    <!--android:tint="@color/color_chatcenter_title_text"/>-->
-
-    <!--&lt;!&ndash; タイトル &ndash;&gt;-->
-    <!--<TextView-->
-    <!--android:id="@+id/chat_title_textview"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_centerInParent="true"-->
-    <!--android:textColor="@color/color_chatcenter_title_text"-->
-    <!--android:textSize="18sp"/>-->
-
-    <!--<ImageButton-->
-    <!--android:id="@+id/chat_info_button"-->
-    <!--android:layout_width="25dp"-->
-    <!--android:layout_height="25dp"-->
-    <!--android:layout_alignParentRight="true"-->
-    <!--android:layout_centerVertical="true"-->
-    <!--android:layout_marginBottom="10dp"-->
-    <!--android:layout_marginLeft="5dp"-->
-    <!--android:layout_marginTop="10dp"-->
-    <!--android:background="@null"-->
-    <!--android:scaleType="fitCenter"-->
-    <!--android:src="@drawable/selector_common_info_button"-->
-    <!--android:tint="@color/color_chatcenter_title_text"-->
-    <!--android:layout_marginRight="@dimen/margin10dp"/>-->
-
-    <!--<View-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="@dimen/widget_line_width"-->
-    <!--android:background="@color/color_chatcenter_separator_light"-->
-    <!--android:layout_alignParentBottom="true"/>-->
-    <!--</RelativeLayout>-->
-
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:theme="@style/ToolbarStyle">
 
-        <ImageButton
-            android:id="@+id/menu_video_call"
+        <LinearLayout
+            android:id="@+id/menu_call"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_gravity="right"
-            android:background="@android:color/transparent"
-            android:padding="@dimen/margin10dp"
-            android:src="@drawable/icon_videochat_widget"
-            android:tint="@color/color_chatcenter_title_button_image"
-            android:visibility="gone"/>
+            android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/menu_phone_call"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:background="@android:color/transparent"
-            android:padding="@dimen/margin10dp"
-            android:src="@drawable/icon_phonecall_widget"
-            android:tint="@color/color_chatcenter_title_button_image"
-            android:visibility="gone"/>
+            <ImageButton
+                android:id="@+id/menu_phone_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:padding="@dimen/margin10dp"
+                app:srcCompat="@drawable/ic_phone"
+                android:tint="@color/color_chatcenter_title_button_image"
+                android:visibility="invisible"/>
+
+            <ImageButton
+                android:id="@+id/menu_video_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:padding="@dimen/margin10dp"
+                app:srcCompat="@drawable/ic_videocam"
+                android:tint="@color/color_chatcenter_title_button_image"
+                android:visibility="invisible"/>
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/toolbar_title"

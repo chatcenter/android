@@ -10,8 +10,7 @@
     <!-- ========================================================================== -->
 
     <uses-permission android:name="android.permission.INTERNET"/>
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.GET_TASKS"/>
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -21,8 +20,9 @@
     <!-- ビデオチャット -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
-    <uses-feature android:name="android.hardware.camera"
-                  android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true"/>
 
     <!-- ========================================================================== -->
     <!-- アプリケーション -->
@@ -37,9 +37,9 @@
         <!-- 履歴 -->
         <activity
             android:name=".activity.MessagesActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/ChatCenterTheme.Slide"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="stateHidden"/>
 
         <!-- チャット -->
@@ -134,10 +134,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/ChatCenterTheme.PullUp">
         </activity>
-        <activity android:name=".activity.WidgetActivity"
-                  android:configChanges="orientation|screenSize"
-                  android:screenOrientation="portrait"
-                  android:theme="@style/ChatCenterTheme.Slide"/>
+        <activity
+            android:name=".activity.WidgetActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.Slide"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -148,6 +149,20 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths"/>
         </provider>
+
+        <activity
+            android:name=".activity.PaymentWidgetEditor"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.PullUp"
+            android:windowSoftInputMode="stateHidden"/>
+
+        <activity
+            android:name=".activity.ConfirmWidgetEditor"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/ChatCenterTheme.PullUp"
+            android:windowSoftInputMode="stateHidden|adjustPan"/>
     </application>
 
 </manifest>

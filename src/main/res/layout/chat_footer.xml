@@ -29,14 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageButton
-            android:id="@+id/ibt_add_sticker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="@dimen/margin10dp"
-            android:background="@android:color/transparent"
-            app:srcCompat="@drawable/ic_text_input"/>
+
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -52,6 +45,15 @@
                 android:orientation="horizontal"
                 android:padding="3dp"
                 android:visibility="gone">
+
+                <ImageButton
+                    android:id="@+id/ibt_add_sticker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="@dimen/margin10dp"
+                    android:background="@android:color/transparent"
+                    app:srcCompat="@drawable/ic_close"/>
 
                 <EditText
                     android:id="@+id/chat_edittext"
@@ -83,20 +85,21 @@
             </LinearLayout>
 
 
-            <!--<HorizontalScrollView-->
-            <!--android:id="@+id/ll_menu_bar"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="44dp"-->
-            <!--android:scrollbars="none">-->
-
-            <ly.appsocial.chatcenter.ui.WidgetMenuBar
-                android:id="@+id/widget_menu_bar"
-                android:layout_width="match_parent"
+            <HorizontalScrollView
+                android:id="@+id/ll_menu_bar"
+                android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:background="#fff"
-                android:gravity="center_vertical"
-                android:paddingRight="@dimen/margin10dp"/>
-            <!--</HorizontalScrollView>-->
+                android:scrollbars="none">
+
+                <ly.appsocial.chatcenter.ui.WidgetMenuBar
+                    android:id="@+id/widget_menu_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:background="#fff"
+                    android:gravity="center_vertical"
+                    android:paddingRight="@dimen/margin10dp"
+                    android:paddingLeft="@dimen/margin10dp"/>
+            </HorizontalScrollView>
         </RelativeLayout>
     </LinearLayout>
 

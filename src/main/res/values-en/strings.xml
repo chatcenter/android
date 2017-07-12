@@ -259,4 +259,18 @@
 
     <string name="no_suggestion">There\'s no suggestion so far</string>
     <string name="no_saved_widget">There\'s no saved widget so far</string>
+
+    <string name="payment_activity_title">Ask for Payment</string>
+    <string name="payment_activity_amount_currency_input">Please type an amount and select a currency</string>
+    <string name="payment_activity_amount_not_enough">Requires the payment amount to be at least 50 cent or 100 JPY</string>
+    <string name="payment_widget_title">Payment title</string>
+    <string name="payment_widget_content">Pay %s now</string>
+
+    <string name="confirm_widget_title">Title</string>
+    <string name="confirm_option_got_it">I got it</string>
+    <string name="confirm_option_thumb_up">👍</string>
+    <string name="confirm_option_got_yes">Yes</string>
+    <string name="confirm_option_custom_text">Custom Text</string>
+    <string name="confirm_widget_actions">Actions</string>
+    <string name="confirm_activity_title">Confirm</string>
 </resources>

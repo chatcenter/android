@@ -75,7 +75,9 @@ public class ChatCenterConstants {
 		public static final String STICKER_TYPE_SCHEDULE = "schedule";
 		public static final String STICKER_TYPE_SELECT = "select";
 		public static final String STICKER_TYPE_LANDING_PAGE = "landing_page";
-	}
+		public static final String STICKER_TYPE_PAYMENT = "payment";
+		public static final String STICKER_TYPE_CONFIRM = "confirm";
+    }
 
 	public static class ActionType {
 		public static final String CONFIRM = "confirm";

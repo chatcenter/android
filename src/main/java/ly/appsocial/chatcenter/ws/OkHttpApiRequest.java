@@ -110,7 +110,9 @@ public class OkHttpApiRequest<T> implements ApiRequest<T> {
 				@Override
 				public void run() {
 					Error error = new Error(response);
-					mCallback.onError(error);
+					if (mCallback != null) {
+						mCallback.onError(error);
+					}
 				}
 			});
 		}

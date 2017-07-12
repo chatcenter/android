@@ -13,4 +13,5 @@ public class WidgetAction {
 	public static final String OPEN_QUESTION =	"open:sticker/question";
 	public static final String REPLY_SUGGESTION_MSG =	"reply:suggestion/message";
 	public static final String REPLY_SUGGESTION_STICKER =	"reply:suggestion/sticker";
+	public static final java.lang.String OPEN_PAYMENT = "open://payment";
 }
